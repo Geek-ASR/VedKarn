@@ -86,11 +86,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
-    const isApiRoute = pathname.startsWith('/api'); // Assuming API routes don't need auth redirection
+    const isHowItWorksPage = pathname === '/how-it-works'; // Check for how-it-works page
+    const isApiRoute = pathname.startsWith('/api'); 
     
-    if (!user && !isAuthPage && !isRootPage && !isApiRoute) {
+    // If user is NOT logged in:
+    // AND the current page is NOT an auth page (like /auth/signin itself)
+    // AND the current page is NOT the root page (/)
+    // AND the current page is NOT the how-it-works page
+    // AND the current page is NOT an API route
+    // THEN redirect to signin.
+    if (!user && !isAuthPage && !isRootPage && !isHowItWorksPage && !isApiRoute) {
       router.push('/auth/signin');
     } else if (user && !user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
+      // If user IS logged in but profile is incomplete
+      // AND they are NOT already on the complete-profile page
+      // AND it's NOT an API route
+      // THEN redirect to complete-profile
        router.push('/auth/complete-profile');
     }
   }, [user, loading, router, pathname]);
@@ -103,10 +114,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (foundUser) {
       // If user exists in MOCK_USERS, potentially update their role if initialRole is provided
-      // This could happen if a pre-defined user tries to "sign up" again with a role
       if (initialRole && foundUser.role !== initialRole) {
-        foundUser = { ...foundUser, role: initialRole };
-        MOCK_USERS[email] = foundUser; // Update MOCK_USERS
+         // User exists, but role from signup is different or was null, update it.
+        foundUser = { ...foundUser, role: initialRole, name: foundUser.name || email.split('@')[0] }; // ensure name is set
+        MOCK_USERS[email] = foundUser; 
+      } else if (!foundUser.name && email) { // Ensure name is set if it was missing
+        foundUser = { ...foundUser, name: email.split('@')[0]};
+        MOCK_USERS[email] = foundUser;
       }
       setUser(foundUser);
       localStorage.setItem('mentorverse-user', JSON.stringify(foundUser));
@@ -120,20 +134,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const newUser: UserProfile = {
         id: `user-${Date.now()}`,
         email,
-        name: email.split('@')[0] || "New User", // Default name, handle empty email prefix
-        role: initialRole || null,
+        name: email.split('@')[0] || "New User",
+        role: initialRole || null, // Set role if provided during signup, otherwise null
       };
-      MOCK_USERS[email] = newUser; // Add new user to MOCK_USERS for this session
+      MOCK_USERS[email] = newUser; 
       setUser(newUser);
       localStorage.setItem('mentorverse-user', JSON.stringify(newUser));
-      if (!newUser.role) { // If role not set during signup (e.g. only email was provided)
+      // Redirect based on whether role was set (meaning they might need to complete profile or go to dashboard)
+      if (!newUser.role || (initialRole && !profileIsConsideredComplete(newUser, initialRole))) { 
          router.push('/auth/complete-profile');
-      } else { // Role was set (e.g. during full signup form)
-        router.push('/dashboard'); // Or to complete-profile if some fields are still missing based on role, but current logic sends to dashboard
+      } else { 
+        router.push('/dashboard'); 
       }
     }
     setLoading(false);
   };
+  
+  // Helper to check if a profile is "complete enough" based on role to skip complete-profile
+  // This is a basic check; more sophisticated logic might be needed for real app
+  const profileIsConsideredComplete = (profile: UserProfile, role: UserRole): boolean => {
+    if (!role) return false; // If no role, it's not complete
+    if (role === 'mentor' && !(profile as MentorProfile).expertise?.length) return false;
+    if (role === 'mentee' && !(profile as MenteeProfile).learningGoals) return false;
+    return true; // Otherwise, assume "complete enough" for this mock
+  }
 
   const logout = () => {
     setUser(null);
@@ -154,7 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const completeProfile = (profileData: Partial<UserProfile>, role: UserRole) => {
     if (user) {
-      const baseProfile = { ...user, ...profileData, role }; // User here is from context, should have basic details already
+      const baseProfile = { ...user, ...profileData, role }; 
       let completedProfile: UserProfile;
 
       if (role === 'mentor') {
@@ -177,14 +201,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || [],
         } as MenteeProfile;
       } else {
-        // This case should ideally not be reached if role is validated before calling completeProfile
         completedProfile = { ...baseProfile, role: null }; 
       }
       
       setUser(completedProfile);
       localStorage.setItem('mentorverse-user', JSON.stringify(completedProfile));
-      // Update MOCK_USERS with the fully completed profile.
-      // user.email should exist from the initial login/signup step.
       MOCK_USERS[user.email] = completedProfile; 
       
       router.push('/dashboard');
@@ -207,17 +228,15 @@ export const useAuth = () => {
   return context;
 };
 
-// Helper function to get mock mentor profiles for AI flow
 export const getMockMentorProfiles = (): string[] => {
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
-    .map(userProfile => { // Renamed to avoid conflict
-      const m = userProfile as MentorProfile; // Cast to MentorProfile
+    .map(userProfile => { 
+      const m = userProfile as MentorProfile; 
       return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A'}, Companies: ${m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A'}, Years of Exp: ${m.yearsOfExperience || 0}`;
     });
 };
 
-// Helper to get full mentor profile by a summarized string (used by AI flow result)
 export const getMentorByProfileString = (profileString: string): MentorProfile | undefined => {
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
@@ -227,6 +246,5 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   }
   return undefined;
 };
-
 
     
