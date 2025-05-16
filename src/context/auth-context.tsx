@@ -1,6 +1,7 @@
+
 "use client";
 
-import type { UserProfile, UserRole } from '@/lib/types';
+import type { UserProfile, UserRole, MentorProfile, MenteeProfile } from '@/lib/types'; // Added MentorProfile, MenteeProfile
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -28,7 +29,7 @@ const MOCK_USERS: Record<string, UserProfile> = {
       { id: 'slot1', startTime: new Date(Date.now() + 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + 25 * 3600 * 1000).toISOString(), isBooked: false},
       { id: 'slot2', startTime: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + 49 * 3600 * 1000).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
     ]
-  },
+  } as MentorProfile, // Explicitly cast for type safety
   'mentee@example.com': {
     id: 'mentee1',
     email: 'mentee@example.com',
@@ -41,7 +42,7 @@ const MOCK_USERS: Record<string, UserProfile> = {
     desiredUniversities: ['Stanford University', 'Carnegie Mellon University'],
     desiredJobRoles: ['Data Scientist', 'Machine Learning Engineer'],
     desiredCompanies: ['Google', 'Meta', 'Netflix'],
-  },
+  } as MenteeProfile, // Explicitly cast for type safety
 };
 
 interface AuthContextType {
@@ -64,26 +65,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('mentorverse-user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // Basic validation for parsedUser structure
+        if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
+          setUser(parsedUser);
+        } else {
+          localStorage.removeItem('mentorverse-user'); // Clear invalid item
+        }
+      } catch (error) {
+        console.error("Failed to parse user from localStorage", error);
+        localStorage.removeItem('mentorverse-user'); // Clear corrupted item
+      }
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!loading && !user && !pathname.startsWith('/auth') && pathname !== '/') {
+    if (loading) return; // Don't run redirection logic while initial loading is true
+
+    const isAuthPage = pathname.startsWith('/auth');
+    const isRootPage = pathname === '/';
+    const isApiRoute = pathname.startsWith('/api'); // Assuming API routes don't need auth redirection
+    
+    if (!user && !isAuthPage && !isRootPage && !isApiRoute) {
       router.push('/auth/signin');
-    } else if (!loading && user && !user.role && pathname !== '/auth/complete-profile' && !pathname.startsWith('/api')) {
+    } else if (user && !user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
        router.push('/auth/complete-profile');
     }
   }, [user, loading, router, pathname]);
 
   const login = async (email: string, initialRole?: UserRole) => {
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const foundUser = MOCK_USERS[email];
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+    
+    let foundUser = MOCK_USERS[email];
     
     if (foundUser) {
+      // If user exists in MOCK_USERS, potentially update their role if initialRole is provided
+      // This could happen if a pre-defined user tries to "sign up" again with a role
+      if (initialRole && foundUser.role !== initialRole) {
+        foundUser = { ...foundUser, role: initialRole };
+        MOCK_USERS[email] = foundUser; // Update MOCK_USERS
+      }
       setUser(foundUser);
       localStorage.setItem('mentorverse-user', JSON.stringify(foundUser));
       if (!foundUser.role) {
@@ -96,15 +120,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const newUser: UserProfile = {
         id: `user-${Date.now()}`,
         email,
-        name: email.split('@')[0], // Default name
-        role: initialRole || null, // Role might be set at signup or later
+        name: email.split('@')[0] || "New User", // Default name, handle empty email prefix
+        role: initialRole || null,
       };
+      MOCK_USERS[email] = newUser; // Add new user to MOCK_USERS for this session
       setUser(newUser);
       localStorage.setItem('mentorverse-user', JSON.stringify(newUser));
-      if (!newUser.role) {
+      if (!newUser.role) { // If role not set during signup (e.g. only email was provided)
          router.push('/auth/complete-profile');
-      } else {
-        router.push('/dashboard');
+      } else { // Role was set (e.g. during full signup form)
+        router.push('/dashboard'); // Or to complete-profile if some fields are still missing based on role, but current logic sends to dashboard
       }
     }
     setLoading(false);
@@ -121,7 +146,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updatedUser = { ...user, ...profileData };
       setUser(updatedUser);
       localStorage.setItem('mentorverse-user', JSON.stringify(updatedUser));
-      // Mock update to MOCK_USERS for persistence across logins in demo
       if (MOCK_USERS[user.email]) {
         MOCK_USERS[user.email] = { ...MOCK_USERS[user.email], ...updatedUser };
       }
@@ -130,7 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const completeProfile = (profileData: Partial<UserProfile>, role: UserRole) => {
     if (user) {
-      const baseProfile = { ...user, ...profileData, role };
+      const baseProfile = { ...user, ...profileData, role }; // User here is from context, should have basic details already
       let completedProfile: UserProfile;
 
       if (role === 'mentor') {
@@ -153,17 +177,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || [],
         } as MenteeProfile;
       } else {
-        completedProfile = baseProfile; // Should not happen if role is mentor/mentee
+        // This case should ideally not be reached if role is validated before calling completeProfile
+        completedProfile = { ...baseProfile, role: null }; 
       }
       
       setUser(completedProfile);
       localStorage.setItem('mentorverse-user', JSON.stringify(completedProfile));
-      // Mock update to MOCK_USERS
-       if (MOCK_USERS[user.email]) {
-         MOCK_USERS[user.email] = completedProfile;
-       } else { // New user being completed
-         MOCK_USERS[user.email] = completedProfile;
-       }
+      // Update MOCK_USERS with the fully completed profile.
+      // user.email should exist from the initial login/signup step.
+      MOCK_USERS[user.email] = completedProfile; 
+      
       router.push('/dashboard');
     }
   };
@@ -188,19 +211,22 @@ export const useAuth = () => {
 export const getMockMentorProfiles = (): string[] => {
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
-    .map(mentor => {
-      const m = mentor as MentorProfile;
-      return `Name: ${m.name}, Bio: ${m.bio}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${m.universities.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A'}, Companies: ${m.companies.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A'}, Years of Exp: ${m.yearsOfExperience || 0}`;
+    .map(userProfile => { // Renamed to avoid conflict
+      const m = userProfile as MentorProfile; // Cast to MentorProfile
+      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A'}, Companies: ${m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A'}, Years of Exp: ${m.yearsOfExperience || 0}`;
     });
 };
 
 // Helper to get full mentor profile by a summarized string (used by AI flow result)
 export const getMentorByProfileString = (profileString: string): MentorProfile | undefined => {
-  // This is a simplified match based on name. In a real app, you'd use IDs.
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
-    return Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name) as MentorProfile | undefined;
+    const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
+    return foundUser ? foundUser as MentorProfile : undefined;
   }
   return undefined;
 };
+
+
+    
