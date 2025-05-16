@@ -8,8 +8,8 @@ body {
 
 @layer base {
   :root {
-    --background: 220 25% 97%; /* Very light, slightly cool gray */
-    --foreground: 220 15% 25%; /* Dark grayish blue */
+    --background: 0 0% 96%; /* #F5F5F5 Light Gray */
+    --foreground: 220 15% 25%; /* Dark grayish blue for contrast */
 
     --card: 0 0% 100%; /* White */
     --card-foreground: 220 15% 25%;
@@ -17,7 +17,7 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 25%;
 
-    --primary: 205 75% 45%; /* Vibrant, confident blue */
+    --primary: 231 48% 48%; /* #3F51B5 Deep Blue */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
     --secondary: 220 15% 90%; /* Lighter gray for secondary elements */
@@ -26,7 +26,7 @@ body {
     --muted: 220 15% 85%; /* Muted gray */
     --muted-foreground: 220 10% 45%;
 
-    --accent: 30 90% 55%; /* Warm, inviting orange */
+    --accent: 174 60% 40%; /* #26A69A Teal */
     --accent-foreground: 0 0% 100%; /* White text on accent */
 
     --destructive: 0 84.2% 60.2%;
@@ -34,25 +34,25 @@ body {
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 205 75% 45%; /* Ring color to match primary */
+    --ring: 231 48% 48%; /* Ring color to match primary */
 
     --radius: 0.5rem;
 
-    --chart-1: 205 75% 45%; /* primary */
-    --chart-2: 30 90% 55%;  /* accent */
-    --chart-3: 205 40% 60%; /* lighter primary */
-    --chart-4: 30 80% 70%;  /* lighter accent */
+    --chart-1: 231 48% 48%; /* primary */
+    --chart-2: 174 60% 40%;  /* accent */
+    --chart-3: 231 40% 60%; /* lighter primary */
+    --chart-4: 174 50% 55%;  /* lighter accent */
     --chart-5: 220 30% 55%; /* neutral blue/gray */
 
     /* Sidebar specific theme variables */
     --sidebar-background: 0 0% 100%; /* White sidebar background */
     --sidebar-foreground: 220 15% 20%; /* Darker text for sidebar */
-    --sidebar-primary: 205 75% 45%; /* Primary blue */
+    --sidebar-primary: 231 48% 48%; /* Primary blue */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 30 90% 92%; /* Very light orange for hover/active states */
-    --sidebar-accent-foreground: 30 80% 40%; /* Darker orange text on light orange accent */
+    --sidebar-accent: 174 60% 92%; /* Very light teal for hover/active states */
+    --sidebar-accent-foreground: 174 60% 30%; /* Darker teal text on light teal accent */
     --sidebar-border: 220 10% 90%;
-    --sidebar-ring: 30 90% 55%; /* Accent orange for ring */
+    --sidebar-ring: 174 60% 40%; /* Accent teal for ring */
   }
 
   .dark {
@@ -65,8 +65,8 @@ body {
     --popover: 220 15% 15%;
     --popover-foreground: 220 20% 90%;
 
-    --primary: 205 70% 60%; /* Lighter, vibrant blue for dark mode */
-    --primary-foreground: 220 10% 10%; /* Dark text on lighter primary for contrast */
+    --primary: 231 50% 65%; /* Lighter Deep Blue for dark mode */
+    --primary-foreground: 0 0% 10%; /* Dark text on lighter primary for contrast */
 
     --secondary: 220 15% 20%;
     --secondary-foreground: 220 20% 90%;
@@ -74,31 +74,31 @@ body {
     --muted: 220 15% 20%;
     --muted-foreground: 220 15% 60%;
 
-    --accent: 30 85% 65%; /* Lighter, vibrant orange for dark mode */
-    --accent-foreground: 220 10% 10%; /* Dark text on lighter accent */
+    --accent: 174 55% 55%; /* Lighter Teal for dark mode */
+    --accent-foreground: 0 0% 10%; /* Dark text on lighter accent */
 
     --destructive: 0 70% 50%; /* Adjusted destructive for dark mode */
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 15% 25%;
     --input: 220 15% 25%;
-    --ring: 205 70% 60%; /* Ring color to match dark primary */
+    --ring: 231 50% 65%; /* Ring color to match dark primary */
 
-    --chart-1: 205 70% 60%;
-    --chart-2: 30 85% 65%;
-    --chart-3: 205 50% 70%;
-    --chart-4: 30 75% 75%;
+    --chart-1: 231 50% 65%;
+    --chart-2: 174 55% 55%;
+    --chart-3: 231 40% 75%;
+    --chart-4: 174 45% 65%;
     --chart-5: 220 25% 65%;
     
     /* Sidebar specific theme variables for dark mode */
     --sidebar-background: 220 15% 12%; /* Darker sidebar background */
     --sidebar-foreground: 220 20% 85%; /* Lighter text for sidebar */
-    --sidebar-primary: 205 70% 60%; /* Lighter Primary blue */
+    --sidebar-primary: 231 50% 65%; /* Lighter Primary blue */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 30 80% 25%; /* Darker orange for hover/active states */
-    --sidebar-accent-foreground: 30 90% 75%; /* Lighter orange text on dark orange accent */
+    --sidebar-accent: 174 60% 25%; /* Darker teal for hover/active states */
+    --sidebar-accent-foreground: 174 55% 70%; /* Lighter teal text on dark teal accent */
     --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 30 85% 65%; /* Lighter orange for ring */
+    --sidebar-ring: 174 55% 55%; /* Lighter teal for ring */
   }
 }
 
