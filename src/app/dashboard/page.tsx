@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -30,7 +29,7 @@ export default function DashboardOverviewPage() {
             <Image 
                 src="https://placehold.co/1200x400.png"
                 alt="Dashboard Welcome Banner"
-                data-ai-hint="team collaboration"
+                data-ai-hint="teamwork office"
                 width={1200}
                 height={400}
                 className="rounded-lg object-cover"
@@ -91,7 +90,7 @@ export default function DashboardOverviewPage() {
           </>
         )}
       </div>
-       <Card className="mt-8">
+       <Card className="mt-8 shadow-md">
         <CardHeader>
           <CardTitle>Quick Links</CardTitle>
         </CardHeader>
@@ -132,5 +131,3 @@ function ActionCard({ title, description, href, icon: Icon, actionText }: Action
     </Card>
   );
 }
-
-    

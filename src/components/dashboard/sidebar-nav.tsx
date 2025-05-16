@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, GraduationCap } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, GraduationCap, Briefcase } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -30,7 +30,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const mentorItems = [
     ...commonItems,
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarDays },
-    { href: "/dashboard/mentees", label: "My Mentees", icon: GraduationCap },
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Changed icon for My Mentees
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
@@ -41,7 +41,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   return (
     <nav
       className={cn(
-        "flex flex-col space-y-1 p-2 bg-card rounded-lg shadow",
+        "flex flex-col space-y-1 p-2 bg-sidebar rounded-lg shadow-sm text-sidebar-foreground",
         className
       )}
       {...props}
@@ -54,8 +54,8 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
           className={cn(
             "w-full justify-start",
             pathname === item.href
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "hover:bg-accent hover:text-accent-foreground"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+              : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground"
           )}
         >
           <Link href={item.href}>
