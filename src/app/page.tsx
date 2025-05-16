@@ -5,15 +5,129 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Added useState
 import { Logo } from "@/components/core/logo";
 import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Calendar, BookOpen, Mic } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
+// Define all session data
+const allOneOffSessionsData = [
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "conversation phone",
+    title: "Introductory Call",
+    duration: "15 minutes",
+    price: "$39",
+    description: "If you're looking for a mentor, and you're just not sure about how this all works - this should be for you. In a casual, informal introductory call, a mentor will introduce themselves...",
+    href: "#intro-call"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "resume document",
+    title: "Resume Feedback",
+    duration: "30 minutes",
+    price: "$89",
+    description: "Having a good resume on hand when going on the job hunt is crucial, and will make your search a...",
+    href: "#resume-feedback"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "linkedin profile",
+    title: "LinkedIn Feedback",
+    duration: "30 minutes",
+    price: "$89",
+    description: "This session is designed to help you optimize your LinkedIn profile for professional networking and career advancement. In this session,...",
+    href: "#linkedin-feedback"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "portfolio website",
+    title: "Portfolio Feedback",
+    duration: "30 minutes",
+    price: "$89",
+    description: "Having a good portfolio on hand is key for any designer in the job market. Even if you're not looking...",
+    href: "#portfolio-feedback"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "questions discussion",
+    title: "Ask Me Anything - 30 Minutes",
+    duration: "30 minutes",
+    price: "$109",
+    description: "Whatever doesn't fit the mold: Get 30 minutes with a mentor to discuss your needs. Be it help with some...",
+    href: "#ama-30"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "study plan",
+    title: "Study Plan",
+    duration: "45 minutes",
+    price: "$119",
+    description: "Looking to learn a new skill? The vast amount of resources on any topic on the internet can feel overwhelming...",
+    href: "#study-plan"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "career strategy",
+    title: "Career Strategy",
+    duration: "45 minutes",
+    price: "$119",
+    description: "Sometimes, a strategy is needed to accomplish a future career change, or simply to get further in your current position...",
+    href: "#career-strategy"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "code review",
+    title: "Work Review",
+    duration: "45 minutes",
+    price: "$119",
+    description: "Not sure about your newest design? Not sure if your code is as good as it can be? Portfolio site...",
+    href: "#work-review"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "pitch deck presentation",
+    title: "Pitch Deck Review",
+    duration: "60 minutes",
+    price: "$149",
+    description: "In this session, a mentor with startup, fundraising, and entrepreneurship experience will provide feedback and guidance on your pitch deck,...",
+    href: "#pitch-deck-review"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "job interview",
+    title: "Interview Preparation",
+    duration: "60 minutes",
+    price: "$149",
+    description: "Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer...",
+    href: "#interview-prep"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "pair programming",
+    title: "Pair Programming",
+    duration: "60 minutes",
+    price: "$149",
+    description: "This session involves you and your mentor working collaboratively to develop coding skills, troubleshoot coding issues, or complete coding projects...",
+    href: "#pair-programming"
+  },
+  {
+    imageSrc: "https://placehold.co/300x200.png",
+    imageHint: "deep conversation",
+    title: "Ask Me Anything - 60 Minutes",
+    duration: "60 minutes",
+    price: "$189",
+    description: "Whatever doesn't fit the mold: Get a full hour with a mentor to discuss your needs. Be it help with...",
+    href: "#ama-60"
+  }
+];
+
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [showAllSessions, setShowAllSessions] = useState(false);
 
   useEffect(() => {
     if (!loading && user && user.role) {
@@ -33,8 +147,6 @@ export default function HomePage() {
   }
 
   if (user) {
-    // User is logged in but role might be missing (handled by useEffect) or already set (will be redirected)
-    // Show loading state while redirecting
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -43,7 +155,8 @@ export default function HomePage() {
     );
   }
 
-  // Render landing page for unauthenticated users
+  const sessionsToShow = showAllSessions ? allOneOffSessionsData : allOneOffSessionsData.slice(0, 3);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -204,49 +317,42 @@ export default function HomePage() {
 
         {/* One-off Sessions Section */}
         <section className="py-16 md:py-24 bg-primary text-primary-foreground relative overflow-hidden">
-          {/* Decorative dot patterns - simplified example */}
           <div className="absolute top-10 left-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
           <div className="absolute bottom-10 right-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
           
           <div className="container mx-auto px-6 text-center relative z-10">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Not sure if mentorship is right for you?
+              The conversations that get you where you want to be.
             </h2>
-            <h3 className="text-2xl font-semibold text-accent mt-1">Give it a try with a one-off session.</h3>
             <p className="mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80">
-              A quick, easy call with an expert is just one click away with our attractive one-off sessions. Picking a brain, talking through an issue or getting to know an industry expert has never been easier.
+              Step up your career game plan, prep up interviews, job search & promotion. Your mentor will listen to you, give solutions drawn from their experience and take you where you want to be.
             </p>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-              <OneOffSessionCard
-                icon={Mic}
-                title="Introductory Call"
-                description="If you're looking for a mentor, and you're just not sure about how this all works - this should be for you. In a casual, informal introductory call, a mentor will introduce themselves..."
-                duration="Approx. 30 minutes"
-                price="$39"
-                href="#"
-              />
-              <OneOffSessionCard
-                icon={BookOpen}
-                title="Study Plan"
-                description="Looking to learn a new skill? The vast amount of resources on any topic on the internet can feel overwhelming at times. A mentor can give you an overview of worthwhile..."
-                duration="Approx. 45 minutes"
-                price="$39"
-                href="#"
-              />
-              <OneOffSessionCard
-                icon={Calendar}
-                title="Interview Preparation"
-                description="Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer and ask you some standard hiring questions..."
-                duration="Approx. 60 minutes"
-                price="$99"
-                href="#"
-              />
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {sessionsToShow.map((session, index) => (
+                <OneOffSessionCard
+                  key={index}
+                  imageSrc={session.imageSrc}
+                  imageHint={session.imageHint}
+                  title={session.title}
+                  duration={session.duration}
+                  price={session.price}
+                  description={session.description}
+                  href={session.href}
+                />
+              ))}
             </div>
-            <div className="mt-12">
-              <Button size="lg" variant="outline" className="border-accent text-accent hover:bg-accent/10 hover:text-accent">
-                Show me more
-              </Button>
-            </div>
+            {!showAllSessions && (
+              <div className="mt-12">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  onClick={() => setShowAllSessions(true)}
+                  className="border-accent text-accent hover:bg-accent/10 hover:text-accent"
+                >
+                  Show me more sessions
+                </Button>
+              </div>
+            )}
           </div>
         </section>
         
@@ -297,31 +403,38 @@ export default function HomePage() {
 }
 
 interface OneOffSessionCardProps {
-  icon: React.ElementType;
+  imageSrc: string;
+  imageHint: string;
   title: string;
-  description: string;
   duration: string;
   price: string;
+  description: string;
   href: string;
 }
 
-function OneOffSessionCard({ icon: Icon, title, description, duration, price, href }: OneOffSessionCardProps) {
+function OneOffSessionCard({ imageSrc, imageHint, title, duration, price, description, href }: OneOffSessionCardProps) {
   return (
-    <Card className="bg-card text-card-foreground shadow-xl flex flex-col text-left">
-      <CardHeader>
-        {Icon && <Icon className="h-8 w-8 mb-3 text-accent" />}
+    <Card className="bg-card text-card-foreground shadow-xl flex flex-col text-left overflow-hidden">
+      <div className="aspect-[3/2] w-full">
+        <Image 
+            src={imageSrc} 
+            alt={title} 
+            data-ai-hint={imageHint} 
+            width={300} 
+            height={200} 
+            className="object-cover w-full h-full" 
+        />
+      </div>
+      <CardHeader className="pt-4 pb-2">
         <CardTitle className="text-xl font-semibold text-primary">{title}</CardTitle>
+        <CardDescription className="text-xs text-muted-foreground pt-1">{duration} for {price}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground mb-3">
-          {description} <Link href={href} className="text-accent font-medium hover:underline">Read More</Link>
+      <CardContent className="flex-grow pt-0 pb-4">
+        <p className="text-sm text-muted-foreground line-clamp-3"> {/* Using line-clamp to control description length */}
+          {description}
         </p>
-        <div className="flex justify-between items-center text-sm">
-          <p className="text-foreground/80">{duration}</p>
-          <p className="font-bold text-accent text-lg">{price}</p>
-        </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="pt-0">
         <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href={href}>
             EXPLORE <ArrowRight className="ml-2 h-4 w-4" />
@@ -332,3 +445,4 @@ function OneOffSessionCard({ icon: Icon, title, description, duration, price, hr
   );
 }
 
+    
