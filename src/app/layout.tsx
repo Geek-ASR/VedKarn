@@ -16,8 +16,8 @@ const roboto_mono = Roboto_Mono({ // Changed from GeistMono
 });
 
 export const metadata: Metadata = {
-  title: 'MentorVerse',
-  description: 'Connect with mentors and kickstart your journey.',
+  title: 'VedKarn',
+  description: 'Connect with mentors and kickstart your journey with VedKarn.',
 };
 
 export default function RootLayout({

@@ -54,7 +54,7 @@ export default function SignInPage() {
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Sign In</CardTitle>
-          <CardDescription>Welcome back to MentorVerse. Please enter your details.</CardDescription>
+          <CardDescription>Welcome back to VedKarn. Please enter your details.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

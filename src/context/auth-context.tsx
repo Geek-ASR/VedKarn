@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('mentorverse-user');
+    const storedUser = localStorage.getItem('vedkarn-user'); // Updated localStorage key
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -71,76 +71,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
           setUser(parsedUser);
         } else {
-          localStorage.removeItem('mentorverse-user'); // Clear invalid item
+          localStorage.removeItem('vedkarn-user'); // Clear invalid item
         }
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
-        localStorage.removeItem('mentorverse-user'); // Clear corrupted item
+        localStorage.removeItem('vedkarn-user'); // Clear corrupted item
       }
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (loading) return; // Don't run redirection logic while initial loading is true
+    if (loading) return; 
 
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
-    const isHowItWorksPage = pathname === '/how-it-works'; // Check for how-it-works page
+    const isHowItWorksPage = pathname === '/how-it-works';
     const isApiRoute = pathname.startsWith('/api'); 
     
-    // If user is NOT logged in:
-    // AND the current page is NOT an auth page (like /auth/signin itself)
-    // AND the current page is NOT the root page (/)
-    // AND the current page is NOT the how-it-works page
-    // AND the current page is NOT an API route
-    // THEN redirect to signin.
     if (!user && !isAuthPage && !isRootPage && !isHowItWorksPage && !isApiRoute) {
       router.push('/auth/signin');
     } else if (user && !user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
-      // If user IS logged in but profile is incomplete
-      // AND they are NOT already on the complete-profile page
-      // AND it's NOT an API route
-      // THEN redirect to complete-profile
        router.push('/auth/complete-profile');
     }
   }, [user, loading, router, pathname]);
 
   const login = async (email: string, initialRole?: UserRole) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     
     let foundUser = MOCK_USERS[email];
     
     if (foundUser) {
-      // If user exists in MOCK_USERS, potentially update their role if initialRole is provided
       if (initialRole && foundUser.role !== initialRole) {
-         // User exists, but role from signup is different or was null, update it.
-        foundUser = { ...foundUser, role: initialRole, name: foundUser.name || email.split('@')[0] }; // ensure name is set
+        foundUser = { ...foundUser, role: initialRole, name: foundUser.name || email.split('@')[0] }; 
         MOCK_USERS[email] = foundUser; 
-      } else if (!foundUser.name && email) { // Ensure name is set if it was missing
+      } else if (!foundUser.name && email) { 
         foundUser = { ...foundUser, name: email.split('@')[0]};
         MOCK_USERS[email] = foundUser;
       }
       setUser(foundUser);
-      localStorage.setItem('mentorverse-user', JSON.stringify(foundUser));
+      localStorage.setItem('vedkarn-user', JSON.stringify(foundUser)); // Updated localStorage key
       if (!foundUser.role) {
         router.push('/auth/complete-profile');
       } else {
         router.push('/dashboard');
       }
     } else {
-      // New user
       const newUser: UserProfile = {
         id: `user-${Date.now()}`,
         email,
         name: email.split('@')[0] || "New User",
-        role: initialRole || null, // Set role if provided during signup, otherwise null
+        role: initialRole || null, 
       };
       MOCK_USERS[email] = newUser; 
       setUser(newUser);
-      localStorage.setItem('mentorverse-user', JSON.stringify(newUser));
-      // Redirect based on whether role was set (meaning they might need to complete profile or go to dashboard)
+      localStorage.setItem('vedkarn-user', JSON.stringify(newUser)); // Updated localStorage key
       if (!newUser.role || (initialRole && !profileIsConsideredComplete(newUser, initialRole))) { 
          router.push('/auth/complete-profile');
       } else { 
@@ -150,18 +136,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   };
   
-  // Helper to check if a profile is "complete enough" based on role to skip complete-profile
-  // This is a basic check; more sophisticated logic might be needed for real app
   const profileIsConsideredComplete = (profile: UserProfile, role: UserRole): boolean => {
-    if (!role) return false; // If no role, it's not complete
+    if (!role) return false; 
     if (role === 'mentor' && !(profile as MentorProfile).expertise?.length) return false;
     if (role === 'mentee' && !(profile as MenteeProfile).learningGoals) return false;
-    return true; // Otherwise, assume "complete enough" for this mock
+    return true; 
   }
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('mentorverse-user');
+    localStorage.removeItem('vedkarn-user'); // Updated localStorage key
     router.push('/auth/signin');
   };
 
@@ -169,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       const updatedUser = { ...user, ...profileData };
       setUser(updatedUser);
-      localStorage.setItem('mentorverse-user', JSON.stringify(updatedUser));
+      localStorage.setItem('vedkarn-user', JSON.stringify(updatedUser)); // Updated localStorage key
       if (MOCK_USERS[user.email]) {
         MOCK_USERS[user.email] = { ...MOCK_USERS[user.email], ...updatedUser };
       }
@@ -205,7 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       setUser(completedProfile);
-      localStorage.setItem('mentorverse-user', JSON.stringify(completedProfile));
+      localStorage.setItem('vedkarn-user', JSON.stringify(completedProfile)); // Updated localStorage key
       MOCK_USERS[user.email] = completedProfile; 
       
       router.push('/dashboard');

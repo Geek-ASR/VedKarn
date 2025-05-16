@@ -5,8 +5,8 @@ import Link from "next/link";
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'How MentorVerse Works | MentorVerse',
-  description: 'Learn about one-on-one mentorship, group sessions, and free webinars to accelerate your growth.',
+  title: 'How VedKarn Works | VedKarn',
+  description: 'Learn about one-on-one mentorship, group sessions, and free webinars to accelerate your growth on VedKarn.',
 };
 
 export default function HowItWorksLayout({
@@ -45,7 +45,7 @@ export default function HowItWorksLayout({
             <div className="mb-4 md:mb-0">
                  <Logo className="h-8 w-auto mx-auto md:mx-0" />
             </div>
-            <p>&copy; {new Date().getFullYear()} MentorVerse. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} VedKarn. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
                 <Link href="#" className="hover:text-primary">Privacy Policy</Link>
                 <Link href="#" className="hover:text-primary">Terms of Service</Link>

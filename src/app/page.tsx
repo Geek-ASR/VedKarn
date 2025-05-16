@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/core/logo";
-import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Calendar, BookOpen, Mic, User, Users2, Presentation } from "lucide-react";
+import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Calendar, BookOpen, Mic, User, Users2, Presentation, Search } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -141,7 +141,7 @@ export default function HomePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg text-foreground">Loading MentorVerse...</p>
+        <p className="text-lg text-foreground">Loading VedKarn...</p>
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function HomePage() {
               Unlock Your Potential with <span className="text-accent">1-on-1 Mentorship</span>
             </h1>
             <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl">
-              Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with MentorVerse.
+              Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg px-8 py-3.5 text-base">
@@ -237,7 +237,7 @@ export default function HomePage() {
               <div>
                 <Image
                   src="https://placehold.co/600x400.png"
-                  alt="How MentorVerse Works Illustration"
+                  alt="How VedKarn Works Illustration"
                   data-ai-hint="journey guidance"
                   width={600}
                   height={400}
@@ -294,7 +294,7 @@ export default function HomePage() {
               <div className="md:order-1">
                 <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">At your fingertips: a dedicated career coach.</h2>
                 <p className="mt-4 text-lg text-foreground/70">
-                  Want to start a new dream career? Successfully build your startup? Itching to learn high-demand skills? Work smart with an online mentor by your side to offer expert advice and guidance to match your zeal. Become unstoppable using MentorVerse.
+                  Want to start a new dream career? Successfully build your startup? Itching to learn high-demand skills? Work smart with an online mentor by your side to offer expert advice and guidance to match your zeal. Become unstoppable using VedKarn.
                 </p>
                 <ul className="mt-6 space-y-3">
                   <li className="flex items-start">
@@ -372,7 +372,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <blockquote className="text-lg italic text-card-foreground/80">
-                  "Having access to the knowledge and experience of mentors on MentorVerse was an opportunity I couldn't miss. Thanks to my mentor, I managed to reach my goal of joining a top tech company!"
+                  "Having access to the knowledge and experience of mentors on VedKarn was an opportunity I couldn't miss. Thanks to my mentor, I managed to reach my goal of joining a top tech company!"
                 </blockquote>
                 <div className="mt-6 flex items-center justify-center">
                     <Image src="https://placehold.co/40x40.png" alt="Michele V." data-ai-hint="profile woman" width={40} height={40} className="rounded-full mr-3"/>
@@ -393,7 +393,7 @@ export default function HomePage() {
             <div className="mb-4 md:mb-0">
                  <Logo className="h-8 w-auto mx-auto md:mx-0" />
             </div>
-            <p>&copy; {new Date().getFullYear()} MentorVerse. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} VedKarn. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
                 <Link href="#" className="hover:text-primary">Privacy Policy</Link>
                 <Link href="#" className="hover:text-primary">Terms of Service</Link>

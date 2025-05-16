@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
-import type { UserRole, ExperienceItem, MentorProfile, MenteeProfile } from "@/lib/types";
+import type { UserRole, ExperienceItem, MentorProfile, MenteeProfile, UserProfile } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
@@ -154,7 +154,7 @@ export default function CompleteProfilePage() {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-          <CardDescription>Tell us more about yourself to get started on MentorVerse.</CardDescription>
+          <CardDescription>Tell us more about yourself to get started on VedKarn.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -311,5 +311,3 @@ export default function CompleteProfilePage() {
     </div>
   );
 }
-
-    

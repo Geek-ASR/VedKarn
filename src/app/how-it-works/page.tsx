@@ -14,7 +14,7 @@ export default function HowItWorksPage() {
       <section className="py-16 md:py-24 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-            How MentorVerse Works
+            How VedKarn Works
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl">
             Your straightforward path to growth and learning. Discover how to connect with mentors, join sessions, and expand your knowledge.
@@ -109,7 +109,7 @@ export default function HowItWorksPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-            Ready to Start Your Mentorship Journey?
+            Ready to Start Your Mentorship Journey on VedKarn?
           </h2>
           <p className="mt-4 max-w-xl mx-auto text-lg text-foreground/70">
             Take the first step towards achieving your goals with expert guidance from experienced professionals.

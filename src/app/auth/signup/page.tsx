@@ -63,7 +63,7 @@ export default function SignUpPage() {
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
-          <CardDescription>Join MentorVerse to connect with mentors and mentees.</CardDescription>
+          <CardDescription>Join VedKarn to connect with mentors and mentees.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
