@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${roboto_mono.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${roboto_mono.variable} font-sans antialiased`} suppressHydrationWarning={true}>
         <QueryClientProviderWrapper>
           <AuthProvider>
             {children}
