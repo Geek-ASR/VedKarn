@@ -7,9 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Logo } from "@/components/core/logo";
-import { Loader2, BarChart3, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart } from "lucide-react";
+import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Calendar, BookOpen, Mic } from "lucide-react";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -201,27 +201,75 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* One-off Sessions Section */}
+        <section className="py-16 md:py-24 bg-primary text-primary-foreground relative overflow-hidden">
+          {/* Decorative dot patterns - simplified example */}
+          <div className="absolute top-10 left-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
+          <div className="absolute bottom-10 right-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
+          
+          <div className="container mx-auto px-6 text-center relative z-10">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Not sure if mentorship is right for you?
+            </h2>
+            <h3 className="text-2xl font-semibold text-accent mt-1">Give it a try with a one-off session.</h3>
+            <p className="mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80">
+              A quick, easy call with an expert is just one click away with our attractive one-off sessions. Picking a brain, talking through an issue or getting to know an industry expert has never been easier.
+            </p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <OneOffSessionCard
+                icon={Mic}
+                title="Introductory Call"
+                description="If you're looking for a mentor, and you're just not sure about how this all works - this should be for you. In a casual, informal introductory call, a mentor will introduce themselves..."
+                duration="Approx. 30 minutes"
+                price="$39"
+                href="#"
+              />
+              <OneOffSessionCard
+                icon={BookOpen}
+                title="Study Plan"
+                description="Looking to learn a new skill? The vast amount of resources on any topic on the internet can feel overwhelming at times. A mentor can give you an overview of worthwhile..."
+                duration="Approx. 45 minutes"
+                price="$39"
+                href="#"
+              />
+              <OneOffSessionCard
+                icon={Calendar}
+                title="Interview Preparation"
+                description="Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer and ask you some standard hiring questions..."
+                duration="Approx. 60 minutes"
+                price="$99"
+                href="#"
+              />
+            </div>
+            <div className="mt-12">
+              <Button size="lg" variant="outline" className="border-accent text-accent hover:bg-accent/10 hover:text-accent">
+                Show me more
+              </Button>
+            </div>
+          </div>
+        </section>
         
         {/* Testimonial Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-6 text-center">
             <MessageSquareHeart className="h-12 w-12 mx-auto mb-4 text-accent" />
             <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">Loved by Mentees Worldwide</h2>
-            <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
+            <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-card">
               <CardContent className="p-8">
                 <div className="flex justify-center mb-3">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <blockquote className="text-lg italic text-foreground/80">
+                <blockquote className="text-lg italic text-card-foreground/80">
                   "Having access to the knowledge and experience of mentors on MentorVerse was an opportunity I couldn't miss. Thanks to my mentor, I managed to reach my goal of joining a top tech company!"
                 </blockquote>
                 <div className="mt-6 flex items-center justify-center">
                     <Image src="https://placehold.co/40x40.png" alt="Michele V." data-ai-hint="profile woman" width={40} height={40} className="rounded-full mr-3"/>
                     <div>
                         <p className="font-semibold text-primary">Michele V.</p>
-                        <p className="text-sm text-foreground/60">Software Engineer at Tech Solutions</p>
+                        <p className="text-sm text-muted-foreground">Software Engineer at Tech Solutions</p>
                     </div>
                 </div>
               </CardContent>
@@ -245,6 +293,42 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+interface OneOffSessionCardProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  duration: string;
+  price: string;
+  href: string;
+}
+
+function OneOffSessionCard({ icon: Icon, title, description, duration, price, href }: OneOffSessionCardProps) {
+  return (
+    <Card className="bg-card text-card-foreground shadow-xl flex flex-col text-left">
+      <CardHeader>
+        {Icon && <Icon className="h-8 w-8 mb-3 text-accent" />}
+        <CardTitle className="text-xl font-semibold text-primary">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <p className="text-sm text-muted-foreground mb-3">
+          {description} <Link href={href} className="text-accent font-medium hover:underline">Read More</Link>
+        </p>
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-foreground/80">{duration}</p>
+          <p className="font-bold text-accent text-lg">{price}</p>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Link href={href}>
+            EXPLORE <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 
