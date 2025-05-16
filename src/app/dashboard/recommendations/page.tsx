@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MentorCard } from "@/components/dashboard/mentor-card";
 import type { MentorProfile } from "@/lib/types";
@@ -11,10 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Brain, Frown, Lightbulb } from "lucide-react";
 
-// Re-using MOCK_MENTORS_DB logic for consistency
-const MOCK_MENTORS_DB: MentorProfile[] = Object.values(getMockMentorProfiles())
-  .map(profileString => getMentorByProfileString(profileString))
-  .filter(Boolean) as MentorProfile[];
+// Define the explicit type for suggested mentor profiles with AI details
+type SuggestedMentorProfileWithDetails = MentorProfile & {
+  relevanceScore: number;
+  reason: string;
+};
 
 export default function AiRecommendationsPage() {
   const { user: menteeUser } = useAuth();
@@ -39,19 +40,29 @@ export default function AiRecommendationsPage() {
     enabled: !!menteeUser && menteeUser.role === 'mentee',
   });
 
-  const suggestedMentorProfiles = useMemo(() => {
+  const suggestedMentorProfiles = useMemo((): SuggestedMentorProfileWithDetails[] => {
     if (!suggestedMentorsData) return [];
-    return suggestedMentorsData
+
+    const profilesWithDetails = suggestedMentorsData
       .map(suggestion => {
-        const mentor = getMentorByProfileString(suggestion.mentorProfile); // Match AI output to your MentorProfile objects
+        const mentor = getMentorByProfileString(suggestion.mentorProfile);
         if (mentor) {
-          return { ...mentor, relevanceScore: suggestion.relevanceScore, reason: suggestion.reason };
+          // Create an object that matches SuggestedMentorProfileWithDetails
+          const profileWithDetails: SuggestedMentorProfileWithDetails = {
+            ...mentor,
+            relevanceScore: suggestion.relevanceScore,
+            reason: suggestion.reason
+          };
+          return profileWithDetails;
         }
         return null;
       })
-      .filter(Boolean)
-      .sort((a, b) => (b?.relevanceScore || 0) - (a?.relevanceScore || 0)) // Sort by relevance
-      as (MentorProfile & { relevanceScore: number; reason: string })[];
+      // Filter out nulls and ensure TypeScript knows the type
+      .filter((profile): profile is SuggestedMentorProfileWithDetails => Boolean(profile))
+      // Now 'a' and 'b' are definitely SuggestedMentorProfileWithDetails, so relevanceScore is a number
+      .sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+    return profilesWithDetails;
   }, [suggestedMentorsData]);
 
   if (menteeUser?.role !== 'mentee') {
@@ -86,7 +97,7 @@ export default function AiRecommendationsPage() {
 
       {isLoadingSuggestions && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <MentorCardSkeleton key={i} />)}
+          {[...Array(6)].map((_, i) => <MentorCardSkeleton key={`skeleton-${i}`} />)}
         </div>
       )}
 
@@ -119,7 +130,7 @@ export default function AiRecommendationsPage() {
   );
 }
 
-function MentorCardSkeleton() { // Copied from mentors/page.tsx for consistency
+function MentorCardSkeleton() {
   return (
     <div className="bg-card p-6 rounded-lg shadow space-y-4">
       <div className="flex items-center space-x-4">
@@ -140,5 +151,3 @@ function MentorCardSkeleton() { // Copied from mentors/page.tsx for consistency
     </div>
   );
 }
-
-    
