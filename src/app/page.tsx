@@ -166,7 +166,7 @@ export default function HomePage() {
           </Link>
           <nav className="flex items-center space-x-2">
             <Button variant="link" asChild className="text-foreground/70 hover:text-primary">
-              <Link href="#how-it-works">How it works</Link>
+              <Link href="/how-it-works">How it works</Link>
             </Button>
             <Button variant="ghost" asChild>
               <Link href="/auth/signin">Sign In</Link>
@@ -317,110 +317,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* New How MentorVerse Works Section */}
-        <section id="how-it-works" className="py-16 md:py-24 bg-background">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-                Flexible Mentorship: <span className="text-accent">Tailored to Your Needs</span>
-              </h2>
-              <p className="mt-4 max-w-3xl mx-auto text-lg text-foreground/70">
-                Choose the format that best suits your learning style and budget.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* One-on-One Sessions Card */}
-              <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader className="items-center text-center">
-                  <User className="h-12 w-12 text-primary mb-3" />
-                  <CardTitle className="text-2xl text-primary">Personalized 1-on-1 Sessions</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-3 text-center">
-                   <Image
-                    src="https://placehold.co/600x350.png"
-                    alt="One-on-one mentorship session"
-                    data-ai-hint="video call learning"
-                    width={600}
-                    height={350}
-                    className="rounded-md object-cover mb-4"
-                  />
-                  <p className="text-foreground/80">
-                    Get dedicated attention from a mentor. Each one-on-one session is tailored to your specific goals.
-                  </p>
-                  <p className="text-foreground/80">
-                    <strong>Process:</strong> Pay <span className="font-semibold text-accent">Rs. 1500</span> per session, schedule a convenient time, and connect with your mentor via our secure, in-built video call feature. Get personalized feedback and action plans.
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-center">
-                  <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                    <Link href="/auth/signup?role=mentee">Book a 1-on-1 Session</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              {/* Group Sessions Card */}
-              <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader className="items-center text-center">
-                  <Users2 className="h-12 w-12 text-primary mb-3" />
-                  <CardTitle className="text-2xl text-primary">Affordable Group Sessions</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-3 text-center">
-                  <Image
-                    src="https://placehold.co/600x350.png"
-                    alt="Group mentorship session"
-                    data-ai-hint="group discussion online"
-                    width={600}
-                    height={350}
-                    className="rounded-md object-cover mb-4"
-                  />
-                  <p className="text-foreground/80">
-                    Learn collaboratively in a small group setting. A cost-effective way to gain insights and network.
-                  </p>
-                  <p className="text-foreground/80">
-                    <strong>Details:</strong> Lower costs per student, with 5-15 participants per session. Engage in discussions, Q&A, and shared learning experiences.
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-center">
-                  <Button variant="outline" asChild>
-                    <Link href="#">Explore Group Sessions</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              {/* Free Webinars Card */}
-              <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader className="items-center text-center">
-                  <Presentation className="h-12 w-12 text-primary mb-3" />
-                  <CardTitle className="text-2xl text-primary">Free Informative Webinars</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-3 text-center">
-                   <Image
-                    src="https://placehold.co/600x350.png"
-                    alt="Free webinar presentation"
-                    data-ai-hint="online presentation audience"
-                    width={600}
-                    height={350}
-                    className="rounded-md object-cover mb-4"
-                  />
-                  <p className="text-foreground/80">
-                    Join our free webinars hosted by industry experts. Get valuable knowledge on various topics and trends.
-                  </p>
-                  <p className="text-foreground/80">
-                    <strong>Access:</strong> Open to everyone. Stay updated on our schedule for upcoming topics on career development, skill building, and more.
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-center">
-                  <Button variant="outline" asChild>
-                    <Link href="#">View Webinar Schedule</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-
+        
         {/* One-off Sessions Section */}
         <section className="py-16 md:py-24 bg-primary text-primary-foreground relative overflow-hidden">
           <div className="absolute top-10 left-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
@@ -550,3 +447,5 @@ function OneOffSessionCard({ imageSrc, imageHint, title, duration, price, descri
     </Card>
   );
 }
+
+    
