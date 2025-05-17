@@ -200,14 +200,14 @@ export default function HomePage() {
         <section ref={heroRef} className={`py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10`}>
           <div className="container mx-auto px-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-              <span className={`inline-block opacity-0 ${isHeroVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isHeroVisible ? '0.1s' : undefined }}>Unlock Your Potential</span>{' '}
-              <span className={`inline-block opacity-0 ${isHeroVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isHeroVisible ? '0.3s' : undefined }}>with</span>{' '}
-              <span className={`text-accent inline-block opacity-0 ${isHeroVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isHeroVisible ? '0.5s' : undefined }}>1-on-1 Mentorship</span>
+              <span className={`inline-block ${isHeroVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isHeroVisible ? '0.1s' : undefined }}>Unlock Your Potential</span>{' '}
+              <span className={`inline-block ${isHeroVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isHeroVisible ? '0.3s' : undefined }}>with</span>{' '}
+              <span className={`text-accent inline-block ${isHeroVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isHeroVisible ? '0.5s' : undefined }}>1-on-1 Mentorship</span>
             </h1>
-            <p className={`mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl opacity-0 ${isHeroVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isHeroVisible ? '0.7s' : undefined }}>
+            <p className={`mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl ${isHeroVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isHeroVisible ? '0.7s' : undefined }}>
               Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
             </p>
-            <div className={`mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 opacity-0 ${isHeroVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isHeroVisible ? '0.9s' : undefined }}>
+            <div className={`mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 ${isHeroVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isHeroVisible ? '0.9s' : undefined }}>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg px-8 py-3.5 text-base">
                 <Link href="/auth/signup?role=mentee">Find a Mentor</Link>
               </Button>
@@ -229,7 +229,7 @@ export default function HomePage() {
               ].map((stat, index) => (
                 <div
                   key={index}
-                  className={`p-6 bg-card rounded-lg shadow-md opacity-0 ${areStatsVisible ? 'animate-fadeInScaleUp' : ''}`}
+                  className={`p-6 bg-card rounded-lg shadow-md ${areStatsVisible ? 'animate-fadeInScaleUp' : 'opacity-0'}`}
                   style={{ animationDelay: areStatsVisible ? `${stat.delay}s` : undefined }}
                 >
                   <stat.icon className="h-10 w-10 mx-auto mb-3 text-primary" />
@@ -244,7 +244,7 @@ export default function HomePage() {
         {/* Your Mentorship Journey */}
         <section ref={journeySectionRef} className="py-16 md:py-24">
           <div className="container mx-auto px-6">
-            <div className={`text-center mb-12 opacity-0 ${isJourneyVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isJourneyVisible ? '0.1s' : undefined }}>
+            <div className={`text-center mb-12 ${isJourneyVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isJourneyVisible ? '0.1s' : undefined }}>
               <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
                 Start Your Journey in <span className="text-accent">3 Simple Steps</span>
               </h2>
@@ -253,7 +253,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className={`opacity-0 ${isJourneyVisible ? 'animate-fadeInFromLeft' : ''}`} style={{ animationDelay: isJourneyVisible ? '0.2s' : undefined }}>
+              <div className={`${isJourneyVisible ? 'animate-fadeInFromLeft' : 'opacity-0'}`} style={{ animationDelay: isJourneyVisible ? '0.2s' : undefined }}>
                 <Image
                   src="https://placehold.co/600x400.png"
                   alt="How VedKarn Works Illustration"
@@ -263,13 +263,13 @@ export default function HomePage() {
                   className="rounded-lg shadow-xl object-cover"
                 />
               </div>
-              <div className={`space-y-8 opacity-0 ${isJourneyVisible ? 'animate-fadeInFromRight' : ''}`} style={{ animationDelay: isJourneyVisible ? '0.3s' : undefined }}>
+              <div className={`space-y-8 ${isJourneyVisible ? 'animate-fadeInFromRight' : 'opacity-0'}`} style={{ animationDelay: isJourneyVisible ? '0.3s' : undefined }}>
                 {[
                   { title: "Discover", description: "Explore our curated network of vetted mentors. Find someone who matches your goals, industry, skills, and budget.", delay: 0.5 },
                   { title: "Connect", description: "Schedule an introductory call or book your first session directly. Choose a flexible plan that fits your pace.", delay: 0.7 },
                   { title: "Grow", description: "Get ongoing support through regular calls, check-ins, and feedback. Your mentor stays with you for the long haul to help you achieve breakthroughs.", delay: 0.9 },
                 ].map((step, index) => (
-                   <div key={index} className={`flex opacity-0 ${isJourneyVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isJourneyVisible ? `${step.delay}s` : undefined }}>
+                   <div key={index} className={`flex ${isJourneyVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isJourneyVisible ? `${step.delay}s` : undefined }}>
                     <div className="flex-shrink-0 mr-4">
                       <span className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground font-bold text-xl">0{index + 1}</span>
                     </div>
@@ -288,7 +288,7 @@ export default function HomePage() {
         <section ref={coachSectionRef} className="py-16 md:py-24 bg-muted/50">
           <div className="container mx-auto px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className={`md:order-2 opacity-0 ${isCoachVisible ? 'animate-fadeInFromRight' : ''}`} style={{ animationDelay: isCoachVisible ? '0.2s' : undefined }}>
+                <div className={`md:order-2 ${isCoachVisible ? 'animate-fadeInFromRight' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? '0.2s' : undefined }}>
                     <Image
                     src="https://placehold.co/600x400.png"
                     alt="Career Coach Illustration"
@@ -298,9 +298,9 @@ export default function HomePage() {
                     className="rounded-lg shadow-xl object-cover"
                     />
               </div>
-              <div className={`md:order-1 opacity-0 ${isCoachVisible ? 'animate-fadeInFromLeft' : ''}`} style={{ animationDelay: isCoachVisible ? '0.3s' : undefined }}>
-                <h2 className={`text-3xl font-bold tracking-tight text-primary sm:text-4xl opacity-0 ${isCoachVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isCoachVisible ? '0.4s' : undefined }}>At your fingertips: a dedicated career coach.</h2>
-                <p className={`mt-4 text-lg text-foreground/70 opacity-0 ${isCoachVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isCoachVisible ? '0.5s' : undefined }}>
+              <div className={`md:order-1 ${isCoachVisible ? 'animate-fadeInFromLeft' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? '0.3s' : undefined }}>
+                <h2 className={`text-3xl font-bold tracking-tight text-primary sm:text-4xl ${isCoachVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? '0.4s' : undefined }}>At your fingertips: a dedicated career coach.</h2>
+                <p className={`mt-4 text-lg text-foreground/70 ${isCoachVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? '0.5s' : undefined }}>
                   Want to start a new dream career? Successfully build your startup? Itching to learn high-demand skills? Work smart with an online mentor by your side to offer expert advice and guidance to match your zeal. Become unstoppable using VedKarn.
                 </p>
                 <ul className="mt-6 space-y-3">
@@ -309,13 +309,13 @@ export default function HomePage() {
                     "Flexible program structures and scheduling.",
                     "Personalized guidance and 1-on-1 calls."
                   ].map((item, index) => (
-                    <li key={index} className={`flex items-start opacity-0 ${isCoachVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isCoachVisible ? `${0.6 + index * 0.1}s` : undefined }}>
+                    <li key={index} className={`flex items-start ${isCoachVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? `${0.6 + index * 0.1}s` : undefined }}>
                       <CheckCircle className="h-6 w-6 text-accent mr-3 flex-shrink-0 mt-0.5" />
                       <span className="text-foreground/80">{item}</span>
                     </li>
                   ))}
                 </ul>
-                <div className={`opacity-0 ${isCoachVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isCoachVisible ? '0.9s' : undefined }}>
+                <div className={`${isCoachVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isCoachVisible ? '0.9s' : undefined }}>
                   <Button asChild size="lg" className="mt-8 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-base">
                     <Link href="/auth/signup?role=mentee">Find Your Mentor Today</Link>
                   </Button>
@@ -331,10 +331,10 @@ export default function HomePage() {
           <div className="absolute bottom-10 right-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
           
           <div className="container mx-auto px-6 text-center relative z-10">
-            <h2 className={`text-3xl font-bold tracking-tight sm:text-4xl opacity-0 ${areOneOffSessionsVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: areOneOffSessionsVisible ? '0.1s' : undefined }}>
+            <h2 className={`text-3xl font-bold tracking-tight sm:text-4xl ${areOneOffSessionsVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: areOneOffSessionsVisible ? '0.1s' : undefined }}>
               The conversations that get you where you want to be.
             </h2>
-            <p className={`mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80 opacity-0 ${areOneOffSessionsVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: areOneOffSessionsVisible ? '0.2s' : undefined }}>
+            <p className={`mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80 ${areOneOffSessionsVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: areOneOffSessionsVisible ? '0.2s' : undefined }}>
               Step up your career game plan, prep up interviews, job search & promotion. Your mentor will listen to you, give solutions drawn from their experience and take you where you want to be.
             </p>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -355,7 +355,7 @@ export default function HomePage() {
               ))}
             </div>
             {!showAllSessions && (
-              <div className={`mt-12 opacity-0 ${areOneOffSessionsVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: areOneOffSessionsVisible ? `${0.3 + sessionsToShow.length * 0.1}s` : undefined }}>
+              <div className={`mt-12 ${areOneOffSessionsVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: areOneOffSessionsVisible ? `${0.3 + sessionsToShow.length * 0.1}s` : undefined }}>
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -372,9 +372,9 @@ export default function HomePage() {
         {/* Testimonial Section */}
         <section ref={testimonialSectionRef} className="py-16 md:py-24">
           <div className="container mx-auto px-6 text-center">
-            <MessageSquareHeart className={`h-12 w-12 mx-auto mb-4 text-accent opacity-0 ${isTestimonialVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isTestimonialVisible ? '0.1s' : undefined }} />
-            <h2 className={`text-3xl font-bold tracking-tight text-primary sm:text-4xl opacity-0 ${isTestimonialVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: isTestimonialVisible ? '0.2s' : undefined }}>Loved by Mentees Worldwide</h2>
-            <Card className={`max-w-2xl mx-auto mt-8 shadow-xl bg-card opacity-0 ${isTestimonialVisible ? 'animate-fadeInScaleUp' : ''}`} style={{ animationDelay: isTestimonialVisible ? '0.3s' : undefined }}>
+            <MessageSquareHeart className={`h-12 w-12 mx-auto mb-4 text-accent ${isTestimonialVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isTestimonialVisible ? '0.1s' : undefined }} />
+            <h2 className={`text-3xl font-bold tracking-tight text-primary sm:text-4xl ${isTestimonialVisible ? 'animate-fadeInUp' : 'opacity-0'}`} style={{ animationDelay: isTestimonialVisible ? '0.2s' : undefined }}>Loved by Mentees Worldwide</h2>
+            <Card className={`max-w-2xl mx-auto mt-8 shadow-xl bg-card ${isTestimonialVisible ? 'animate-fadeInScaleUp' : 'opacity-0'}`} style={{ animationDelay: isTestimonialVisible ? '0.3s' : undefined }}>
               <CardContent className="p-8">
                 <div className="flex justify-center mb-3">
                   {[...Array(5)].map((_, i) => (
@@ -423,7 +423,7 @@ interface OneOffSessionCardProps {
   price: string;
   description: string;
   href: string;
-  isVisible: boolean; // Passed from parent
+  isVisible: boolean;
   animationDelayBase: number;
   index: number;
 }
@@ -440,13 +440,10 @@ function OneOffSessionCard({
   animationDelayBase,
   index
 }: OneOffSessionCardProps) {
-  // Individual ref for each card is not strictly necessary if parent section triggers visibility
-  // but for more granular control or if cards could enter viewport independently, it would be.
-  // For now, relying on parent section's visibility.
   const animationDelay = isVisible ? `${animationDelayBase + index * 0.1}s` : undefined;
 
   return (
-    <Card className={`bg-card text-card-foreground shadow-xl flex flex-col text-left overflow-hidden opacity-0 ${isVisible ? 'animate-fadeInScaleUp' : ''}`} style={{ animationDelay }}>
+    <Card className={`bg-card text-card-foreground shadow-xl flex flex-col text-left overflow-hidden ${isVisible ? 'animate-fadeInScaleUp' : 'opacity-0'}`} style={{ animationDelay }}>
       <div className="aspect-[3/2] w-full">
         <Image 
             src={imageSrc} 
