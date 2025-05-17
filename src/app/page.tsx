@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/core/logo";
-import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Calendar, BookOpen, Mic, User, Users2, Presentation, Search } from "lucide-react";
+import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -183,12 +183,14 @@ export default function HomePage() {
         <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-              Unlock Your Potential with <span className="text-accent">1-on-1 Mentorship</span>
+              <span className="inline-block opacity-0 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>Unlock Your Potential</span>{' '}
+              <span className="inline-block opacity-0 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>with</span>{' '}
+              <span className="text-accent inline-block opacity-0 animate-fadeInUp" style={{ animationDelay: '0.5s' }}>1-on-1 Mentorship</span>
             </h1>
-            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl">
+            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl opacity-0 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
               Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 opacity-0 animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg px-8 py-3.5 text-base">
                 <Link href="/auth/signup?role=mentee">Find a Mentor</Link>
               </Button>
