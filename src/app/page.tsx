@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/core/logo";
-import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight } from "lucide-react";
+import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Briefcase, Lightbulb, Users2, Presentation } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -18,7 +18,7 @@ const allOneOffSessionsData = [
     imageHint: "conversation phone",
     title: "Introductory Call",
     duration: "15 minutes",
-    price: "$39",
+    price: "$39", // Placeholder, update with Rs.
     description: "If you're looking for a mentor, and you're just not sure about how this all works - this should be for you. In a casual, informal introductory call, a mentor will introduce themselves...",
     href: "#intro-call"
   },
@@ -157,6 +157,7 @@ export default function HomePage() {
   }
 
   const sessionsToShow = showAllSessions ? allOneOffSessionsData : allOneOffSessionsData.slice(0, 3);
+  const heroTitleWords = ["Unlock", "Your", "Potential", "with", "1-on-1", "Mentorship"];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -184,14 +185,20 @@ export default function HomePage() {
         <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.2s' }}>Unlock Your Potential</span>{' '}
-              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.4s' }}>with</span>{' '}
-              <span className="text-accent inline-block animate-fadeInUp" style={{ animationDelay: '0.6s' }}>1-on-1 Mentorship</span>
+              {heroTitleWords.map((word, index) => (
+                <span
+                  key={index}
+                  className="inline-block opacity-0 animate-textColorEmphasisWave"
+                  style={{ animationDelay: `${index * 0.15 + 0.2}s` }} // Staggered delay for each word
+                >
+                  {word}{' '}
+                </span>
+              ))}
             </h1>
-            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
+            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl opacity-0 animate-fadeInUp" style={{ animationDelay: `${heroTitleWords.length * 0.15 + 0.3}s` }}>
               Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
+            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 opacity-0 animate-fadeInUp" style={{ animationDelay: `${heroTitleWords.length * 0.15 + 0.5}s` }}>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg px-8 py-3.5 text-base">
                 <Link href="/auth/signup?role=mentee">Find a Mentor</Link>
               </Button>
@@ -334,7 +341,7 @@ export default function HomePage() {
                 />
               ))}
             </div>
-            {!showAllSessions && (
+            {!showAllSessions && allOneOffSessionsData.length > 3 && (
               <div className="mt-12">
                 <Button 
                   size="lg" 
@@ -445,3 +452,4 @@ function OneOffSessionCard({
     </Card>
   );
 }
+

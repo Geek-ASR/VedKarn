@@ -83,15 +83,36 @@ export default {
   					height: '0'
   				}
   			},
-        'fadeInUp': {
-          '0%': { opacity: '0', transform: 'translateY(15px) scale(0.98)' },
+        'fadeInUp': { // Keeping this for other elements
+          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, // Slightly faster and less movement
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'textColorEmphasisWave': {
+          '0%': {
+            color: 'hsl(var(--primary))',
+            opacity: '0',
+            transform: 'translateY(10px)',
+          },
+          '30%': {
+            opacity: '1',
+            transform: 'translateY(0)',
+            color: 'hsl(var(--primary))',
+          },
+          '60%': {
+            color: 'hsl(var(--accent))',
+          },
+          '100%': {
+            color: 'hsl(var(--primary))',
+            opacity: '1',
+            transform: 'translateY(0)',
+          }
         },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
-        'fadeInUp': 'fadeInUp 0.7s ease-out forwards',
+        'fadeInUp': 'fadeInUp 0.6s ease-out forwards', // Slightly faster duration
+        'textColorEmphasisWave': 'textColorEmphasisWave 2s ease-out forwards',
   		}
   	}
   },
