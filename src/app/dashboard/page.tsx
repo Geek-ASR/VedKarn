@@ -8,16 +8,16 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Users, CalendarDays, MessageCircle, Video } from "lucide-react";
 import Image from "next/image";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import type { MentorProfile, MenteeProfile, GroupSession, Webinar } from "@/lib/types"; // Added GroupSession, Webinar
+import type { MentorProfile, MenteeProfile, GroupSession, Webinar } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
-import { suggestGroupSessions, type SuggestGroupSessionsOutput, type SuggestGroupSessionsInput } from "@/ai/flows/suggest-group-sessions"; // Added
-import { suggestWebinars, type SuggestWebinarsOutput, type SuggestWebinarsInput } from "@/ai/flows/suggest-webinars"; // Added
-import { MentorCard } from "@/components/dashboard/mentor-card";
-import { GroupSessionCard, GroupSessionCardSkeleton } from "@/components/dashboard/group-session-card"; // Added
-import { WebinarCard, WebinarCardSkeleton } from "@/components/dashboard/webinar-card"; // Added
+import { suggestGroupSessions, type SuggestGroupSessionsOutput, type SuggestGroupSessionsInput } from "@/ai/flows/suggest-group-sessions";
+import { suggestWebinars, type SuggestWebinarsOutput, type SuggestWebinarsInput } from "@/ai/flows/suggest-webinars";
+import { MentorCard, MentorCardSkeleton } from "@/components/dashboard/mentor-card";
+import { GroupSessionCard, GroupSessionCardSkeleton } from "@/components/dashboard/group-session-card";
+import { WebinarCard, WebinarCardSkeleton } from "@/components/dashboard/webinar-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef } from "react";
 
 const featuredSessionsData = [
   {
@@ -56,7 +56,6 @@ const faqData = [
     question: "What can I expect from mentors?",
     answer: "Mentors are vetted and continuously evaluated based on their performances, with the goal to only have the best mentors available to you. Their goal is to get you closer to your goal with the services booked in your plan. However, mentors are professionals in the industry, offering their free time to help you reach your goals. You'll typically receive replies within a few hours and will have pre-scheduled meetings with your mentor, they cannot be available to you 24/7."
   },
-  // Add more FAQs if needed from the screenshot
 ];
 
 type SuggestedMentorProfileWithDetails = MentorProfile & {
@@ -176,7 +175,7 @@ export default function DashboardHomePage() {
               {isLoadingMentors && (
                 <div className="flex space-x-6 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`mentor-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><MentorCardSkeleton /></div>
+                    <div key={`mentor-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><MentorCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -184,12 +183,12 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
                       {recommendedMentors.map((mentor) => (
-                         <div key={mentor.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                         <div key={mentor.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
                            <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
                          </div>
                       ))}
                   </div>
-                  {recommendedMentors.length > 3 && (
+                  {recommendedMentors.length > 3 && ( // Show arrows if more than ~3 cards might be offscreen
                       <>
                           <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
                               <ChevronLeft className="h-6 w-6" />
@@ -212,7 +211,7 @@ export default function DashboardHomePage() {
               {isLoadingGroupSessions && (
                 <div className="flex space-x-6 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><GroupSessionCardSkeleton /></div>
+                    <div key={`gs-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -220,7 +219,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
                       {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                         <div key={session.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
                            <GroupSessionCard session={session} />
                          </div>
                       ))}
@@ -248,7 +247,7 @@ export default function DashboardHomePage() {
                {isLoadingWebinars && (
                 <div className="flex space-x-6 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`webinar-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><WebinarCardSkeleton /></div>
+                    <div key={`webinar-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><WebinarCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -256,7 +255,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
                       {suggestedWebinarsData.map((webinar) => (
-                         <div key={webinar.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                         <div key={webinar.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
                            <WebinarCard webinar={webinar} />
                          </div>
                       ))}
@@ -331,11 +330,13 @@ export default function DashboardHomePage() {
   );
 }
 
-
-function MentorCardSkeleton() {
+// MentorCardSkeleton uses the MentorCard's internal skeleton structure
+// No direct min-width change needed here as parent div controls it.
+// But we can update its internal padding to match the actual MentorCard.
+function MentorCardSkeletonPlaceholder() { // Renamed to avoid conflict if MentorCard exports its own skeleton
   return (
     <Card className="overflow-hidden shadow-lg flex flex-col h-full">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 p-6">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 sm:p-5">
         <div className="flex items-start space-x-4">
           <Skeleton className="h-20 w-20 rounded-full border-2 border-background shadow-md" />
           <div className="flex-1 space-y-1">
@@ -345,7 +346,7 @@ function MentorCardSkeleton() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-6 space-y-3 flex-grow">
+      <CardContent className="p-4 sm:p-5 space-y-3 flex-grow">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-5/6" />
         <div>
@@ -357,8 +358,8 @@ function MentorCardSkeleton() {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-6 bg-muted/30 border-t mt-auto">
-        <Skeleton className="h-10 w-full rounded-md" />
+      <CardFooter className="p-4 sm:p-5 bg-muted/30 border-t mt-auto">
+        <Skeleton className="h-9 w-full rounded-md" />
       </CardFooter>
     </Card>
   );

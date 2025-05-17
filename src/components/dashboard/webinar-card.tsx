@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { Mic, CalendarDays, Tag, Clock, Presentation } from "lucide-react";
+import { Mic, CalendarDays, Presentation, Clock } from "lucide-react"; 
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WebinarCardProps {
   webinar: Webinar;
@@ -25,14 +26,14 @@ export function WebinarCard({ webinar }: WebinarCardProps) {
           />
         </div>
       )}
-      <CardHeader className="pt-4 pb-2">
-        <CardTitle className="text-lg font-semibold text-primary line-clamp-2">{webinar.title}</CardTitle>
-        <CardDescription className="text-xs text-muted-foreground pt-1 flex items-center">
+      <CardHeader className="px-4 pt-3 pb-1">
+        <CardTitle className="text-base font-semibold text-primary line-clamp-2">{webinar.title}</CardTitle>
+        <CardDescription className="text-xs text-muted-foreground pt-0.5 flex items-center">
           <Mic className="h-3 w-3 mr-1.5" /> By {webinar.speakerName}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow space-y-2 text-sm">
-        <p className="text-muted-foreground line-clamp-3 text-xs">{webinar.description}</p>
+      <CardContent className="flex-grow space-y-1.5 px-4 pb-3 pt-2 text-sm">
+        <p className="text-muted-foreground line-clamp-2 text-xs">{webinar.description}</p>
         <div className="flex items-center text-xs text-muted-foreground">
           <CalendarDays className="h-3 w-3 mr-1.5 text-accent" /> {webinar.date}
         </div>
@@ -45,7 +46,7 @@ export function WebinarCard({ webinar }: WebinarCardProps) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
+      <CardFooter className="px-4 pt-2 pb-3 mt-auto">
         <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href={`/dashboard/webinars/${webinar.id}`}>View Details & Register</Link>
         </Button>
@@ -57,18 +58,18 @@ export function WebinarCard({ webinar }: WebinarCardProps) {
 export function WebinarCardSkeleton() {
   return (
     <Card className="overflow-hidden shadow-lg flex flex-col h-full">
-      <div className="relative aspect-[16/9] w-full bg-muted animate-pulse"></div>
-      <CardHeader className="pt-4 pb-2">
-        <div className="h-5 bg-muted rounded w-3/4 animate-pulse mb-1"></div>
-        <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
+      <Skeleton className="relative aspect-[16/9] w-full" />
+      <CardHeader className="px-4 pt-3 pb-1">
+        <Skeleton className="h-5 w-3/4 mb-1" />
+        <Skeleton className="h-3 w-1/2" />
       </CardHeader>
-      <CardContent className="flex-grow space-y-2 text-sm">
-        <div className="h-3 bg-muted rounded w-full animate-pulse"></div>
-        <div className="h-3 bg-muted rounded w-5/6 animate-pulse"></div>
-        <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
+      <CardContent className="flex-grow space-y-1.5 px-4 pb-3 pt-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-5/6" />
+        <Skeleton className="h-3 w-1/2" />
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
-        <div className="h-8 bg-muted rounded w-full animate-pulse"></div>
+      <CardFooter className="px-4 pt-2 pb-3 mt-auto">
+        <Skeleton className="h-8 w-full rounded-md" />
       </CardFooter>
     </Card>
   );

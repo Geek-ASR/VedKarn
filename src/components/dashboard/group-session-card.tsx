@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { Users, CalendarDays, Tag, Users2, DollarSign, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 interface GroupSessionCardProps {
   session: GroupSession;
@@ -25,20 +27,20 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
           />
         </div>
       )}
-      <CardHeader className="pt-4 pb-2">
-        <CardTitle className="text-lg font-semibold text-primary line-clamp-2">{session.title}</CardTitle>
-        <CardDescription className="text-xs text-muted-foreground pt-1 flex items-center">
+      <CardHeader className="px-4 pt-3 pb-1">
+        <CardTitle className="text-base font-semibold text-primary line-clamp-2">{session.title}</CardTitle>
+        <CardDescription className="text-xs text-muted-foreground pt-0.5 flex items-center">
           <Users className="h-3 w-3 mr-1.5" /> Hosted by {session.hostName}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow space-y-2 text-sm">
-        <p className="text-muted-foreground line-clamp-3 text-xs">{session.description}</p>
+      <CardContent className="flex-grow space-y-1.5 px-4 pb-3 pt-2 text-sm">
+        <p className="text-muted-foreground line-clamp-2 text-xs">{session.description}</p>
         <div className="flex items-center text-xs text-muted-foreground">
           <CalendarDays className="h-3 w-3 mr-1.5 text-accent" /> {session.date}
         </div>
         {session.tags && session.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-1">
-            {session.tags.slice(0, 3).map((tag) => (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {session.tags.slice(0, 2).map((tag) => ( 
               <Badge key={tag} variant="outline" className="text-xs bg-accent/10 text-accent-foreground border-accent/30 px-1.5 py-0.5">
                 <Tag className="h-2.5 w-2.5 mr-1" />{tag}
               </Badge>
@@ -59,7 +61,7 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
             )}
         </div>
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
+      <CardFooter className="px-4 pt-2 pb-3 mt-auto">
         <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href={`/dashboard/sessions/${session.id}`}>Learn More & Join</Link>
         </Button>
@@ -71,22 +73,22 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
 export function GroupSessionCardSkeleton() {
   return (
     <Card className="overflow-hidden shadow-lg flex flex-col h-full">
-      <div className="relative aspect-[16/9] w-full bg-muted animate-pulse"></div>
-      <CardHeader className="pt-4 pb-2">
-        <div className="h-5 bg-muted rounded w-3/4 animate-pulse mb-1"></div>
-        <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
+      <Skeleton className="relative aspect-[16/9] w-full" />
+      <CardHeader className="px-4 pt-3 pb-1">
+        <Skeleton className="h-5 w-3/4 mb-1" />
+        <Skeleton className="h-3 w-1/2" />
       </CardHeader>
-      <CardContent className="flex-grow space-y-2 text-sm">
-        <div className="h-3 bg-muted rounded w-full animate-pulse"></div>
-        <div className="h-3 bg-muted rounded w-5/6 animate-pulse"></div>
-        <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
-        <div className="flex flex-wrap gap-1 pt-1">
-            <div className="h-4 bg-muted rounded w-12 animate-pulse"></div>
-            <div className="h-4 bg-muted rounded w-16 animate-pulse"></div>
+      <CardContent className="flex-grow space-y-1.5 px-4 pb-3 pt-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-5/6" />
+        <Skeleton className="h-3 w-1/2" />
+        <div className="flex flex-wrap gap-1 pt-0.5">
+            <Skeleton className="h-4 w-12 rounded-full" />
+            <Skeleton className="h-4 w-16 rounded-full" />
         </div>
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
-        <div className="h-8 bg-muted rounded w-full animate-pulse"></div>
+      <CardFooter className="px-4 pt-2 pb-3 mt-auto">
+        <Skeleton className="h-8 w-full rounded-md" />
       </CardFooter>
     </Card>
   );
