@@ -184,14 +184,14 @@ export default function HomePage() {
         <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.1s' }}>Unlock Your Potential</span>{' '}
-              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.3s' }}>with</span>{' '}
-              <span className="text-accent inline-block animate-fadeInUp" style={{ animationDelay: '0.5s' }}>1-on-1 Mentorship</span>
+              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.2s' }}>Unlock Your Potential</span>{' '}
+              <span className="inline-block animate-fadeInUp" style={{ animationDelay: '0.4s' }}>with</span>{' '}
+              <span className="text-accent inline-block animate-fadeInUp" style={{ animationDelay: '0.6s' }}>1-on-1 Mentorship</span>
             </h1>
-            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
+            <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
               Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
+            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg px-8 py-3.5 text-base">
                 <Link href="/auth/signup?role=mentee">Find a Mentor</Link>
               </Button>
