@@ -205,17 +205,17 @@ export default function HomePage() {
         <section className="py-16 bg-muted/50">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div className="p-6 bg-card rounded-lg shadow-md">
+              <div className="p-6 bg-card rounded-lg shadow-md opacity-0 animate-fadeInScaleUp" style={{ animationDelay: '0.1s' }}>
                 <Users className="h-10 w-10 mx-auto mb-3 text-primary" />
                 <h3 className="text-3xl font-bold text-primary">6,100+</h3>
                 <p className="text-foreground/70">Available Mentors</p>
               </div>
-              <div className="p-6 bg-card rounded-lg shadow-md">
+              <div className="p-6 bg-card rounded-lg shadow-md opacity-0 animate-fadeInScaleUp" style={{ animationDelay: '0.2s' }}>
                 <TrendingUp className="h-10 w-10 mx-auto mb-3 text-primary" />
                 <h3 className="text-3xl font-bold text-primary">29,000+</h3>
                 <p className="text-foreground/70">Successful Connections</p>
               </div>
-              <div className="p-6 bg-card rounded-lg shadow-md">
+              <div className="p-6 bg-card rounded-lg shadow-md opacity-0 animate-fadeInScaleUp" style={{ animationDelay: '0.3s' }}>
                 <Zap className="h-10 w-10 mx-auto mb-3 text-primary" />
                 <h3 className="text-3xl font-bold text-primary">97%</h3>
                 <p className="text-foreground/70">Satisfaction Rate</p>
@@ -227,7 +227,7 @@ export default function HomePage() {
         {/* Your Mentorship Journey (Previously How It Works) */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
+            <div className="text-center mb-12 opacity-0 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
               <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
                 Start Your Journey in <span className="text-accent">3 Simple Steps</span>
               </h2>
@@ -236,7 +236,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
+              <div className="opacity-0 animate-fadeInFromLeft" style={{ animationDelay: '0.2s' }}>
                 <Image
                   src="https://placehold.co/600x400.png"
                   alt="How VedKarn Works Illustration"
@@ -246,8 +246,8 @@ export default function HomePage() {
                   className="rounded-lg shadow-xl object-cover"
                 />
               </div>
-              <div className="space-y-8">
-                <div className="flex">
+              <div className="space-y-8 opacity-0 animate-fadeInFromRight" style={{ animationDelay: '0.3s' }}>
+                <div className="flex opacity-0 animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
                   <div className="flex-shrink-0 mr-4">
                     <span className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground font-bold text-xl">01</span>
                   </div>
@@ -256,7 +256,7 @@ export default function HomePage() {
                     <p className="mt-1 text-foreground/70">Explore our curated network of vetted mentors. Find someone who matches your goals, industry, skills, and budget.</p>
                   </div>
                 </div>
-                <div className="flex">
+                <div className="flex opacity-0 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
                   <div className="flex-shrink-0 mr-4">
                     <span className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground font-bold text-xl">02</span>
                   </div>
@@ -265,7 +265,7 @@ export default function HomePage() {
                     <p className="mt-1 text-foreground/70">Schedule an introductory call or book your first session directly. Choose a flexible plan that fits your pace.</p>
                   </div>
                 </div>
-                <div className="flex">
+                <div className="flex opacity-0 animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
                   <div className="flex-shrink-0 mr-4">
                     <span className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground font-bold text-xl">03</span>
                   </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
         <section className="py-16 md:py-24 bg-muted/50">
           <div className="container mx-auto px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="md:order-2">
+                <div className="md:order-2 opacity-0 animate-fadeInFromRight" style={{ animationDelay: '0.2s' }}>
                     <Image
                     src="https://placehold.co/600x400.png"
                     alt="Career Coach Illustration"
@@ -293,28 +293,30 @@ export default function HomePage() {
                     className="rounded-lg shadow-xl object-cover"
                     />
               </div>
-              <div className="md:order-1">
-                <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">At your fingertips: a dedicated career coach.</h2>
-                <p className="mt-4 text-lg text-foreground/70">
+              <div className="md:order-1 opacity-0 animate-fadeInFromLeft" style={{ animationDelay: '0.3s' }}>
+                <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl opacity-0 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>At your fingertips: a dedicated career coach.</h2>
+                <p className="mt-4 text-lg text-foreground/70 opacity-0 animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
                   Want to start a new dream career? Successfully build your startup? Itching to learn high-demand skills? Work smart with an online mentor by your side to offer expert advice and guidance to match your zeal. Become unstoppable using VedKarn.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  <li className="flex items-start">
+                  <li className="flex items-start opacity-0 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
                     <CheckCircle className="h-6 w-6 text-accent mr-3 flex-shrink-0 mt-0.5" />
                     <span className="text-foreground/80">Thousands of mentors available across diverse fields.</span>
                   </li>
-                  <li className="flex items-start">
+                  <li className="flex items-start opacity-0 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
                     <CheckCircle className="h-6 w-6 text-accent mr-3 flex-shrink-0 mt-0.5" />
                     <span className="text-foreground/80">Flexible program structures and scheduling.</span>
                   </li>
-                  <li className="flex items-start">
+                  <li className="flex items-start opacity-0 animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
                     <CheckCircle className="h-6 w-6 text-accent mr-3 flex-shrink-0 mt-0.5" />
                     <span className="text-foreground/80">Personalized guidance and 1-on-1 calls.</span>
                   </li>
                 </ul>
-                <Button asChild size="lg" className="mt-8 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-base">
-                  <Link href="/auth/signup?role=mentee">Find Your Mentor Today</Link>
-                </Button>
+                <div className="opacity-0 animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
+                  <Button asChild size="lg" className="mt-8 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-base">
+                    <Link href="/auth/signup?role=mentee">Find Your Mentor Today</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -326,10 +328,10 @@ export default function HomePage() {
           <div className="absolute bottom-10 right-10 w-32 h-32 opacity-10 " style={{backgroundImage: 'radial-gradient(hsl(var(--primary-foreground)) 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
           
           <div className="container mx-auto px-6 text-center relative z-10">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl opacity-0 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
               The conversations that get you where you want to be.
             </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80">
+            <p className="mt-4 max-w-3xl mx-auto text-lg text-primary-foreground/80 opacity-0 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
               Step up your career game plan, prep up interviews, job search & promotion. Your mentor will listen to you, give solutions drawn from their experience and take you where you want to be.
             </p>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -343,11 +345,14 @@ export default function HomePage() {
                   price={session.price}
                   description={session.description}
                   href={session.href}
+                  // Stagger animation for initially visible cards, and for newly shown cards
+                  className="opacity-0 animate-fadeInScaleUp"
+                  style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                 />
               ))}
             </div>
             {!showAllSessions && (
-              <div className="mt-12">
+              <div className="mt-12 opacity-0 animate-fadeInUp" style={{ animationDelay: `${0.3 + sessionsToShow.length * 0.1}s` }}>
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -364,9 +369,9 @@ export default function HomePage() {
         {/* Testimonial Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-6 text-center">
-            <MessageSquareHeart className="h-12 w-12 mx-auto mb-4 text-accent" />
-            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">Loved by Mentees Worldwide</h2>
-            <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-card">
+            <MessageSquareHeart className="h-12 w-12 mx-auto mb-4 text-accent opacity-0 animate-fadeInUp" style={{ animationDelay: '0.1s' }} />
+            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl opacity-0 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>Loved by Mentees Worldwide</h2>
+            <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-card opacity-0 animate-fadeInScaleUp" style={{ animationDelay: '0.3s' }}>
               <CardContent className="p-8">
                 <div className="flex justify-center mb-3">
                   {[...Array(5)].map((_, i) => (
@@ -415,11 +420,13 @@ interface OneOffSessionCardProps {
   price: string;
   description: string;
   href: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-function OneOffSessionCard({ imageSrc, imageHint, title, duration, price, description, href }: OneOffSessionCardProps) {
+function OneOffSessionCard({ imageSrc, imageHint, title, duration, price, description, href, className, style }: OneOffSessionCardProps) {
   return (
-    <Card className="bg-card text-card-foreground shadow-xl flex flex-col text-left overflow-hidden">
+    <Card className={`bg-card text-card-foreground shadow-xl flex flex-col text-left overflow-hidden ${className || ''}`} style={style}>
       <div className="aspect-[3/2] w-full">
         <Image 
             src={imageSrc} 
