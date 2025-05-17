@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Logo } from "@/components/core/logo";
 import { Loader2, Users, CheckCircle, Star, TrendingUp, Zap, MessageSquareHeart, ArrowRight, Briefcase, Lightbulb, Users2, Presentation } from "lucide-react";
 import Image from "next/image";
@@ -184,7 +184,7 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-6 text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold text-primary md:text-5xl lg:text-6xl">
               {heroTitleWords.map((word, index) => {
                 const isLastTwoWords = index >= heroTitleWords.length - 2; // "1-on-1" and "Mentorship"
                 const animationClass = isLastTwoWords
