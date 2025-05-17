@@ -83,8 +83,8 @@ export default {
   					height: '0'
   				}
   			},
-        'fadeInUp': { // Keeping this for other elements
-          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, // Slightly faster and less movement
+        'fadeInUp': {
+          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         'textColorEmphasisWave': {
@@ -107,12 +107,33 @@ export default {
             transform: 'translateY(0)',
           }
         },
+        'textColorEmphasisWaveAccentEnd': {
+          '0%': {
+            color: 'hsl(var(--primary))',
+            opacity: '0',
+            transform: 'translateY(10px)',
+          },
+          '30%': {
+            opacity: '1',
+            transform: 'translateY(0)',
+            color: 'hsl(var(--primary))',
+          },
+          '60%': {
+            color: 'hsl(var(--accent))',
+          },
+          '100%': {
+            color: 'hsl(var(--accent))', // End with accent color
+            opacity: '1',
+            transform: 'translateY(0)',
+          }
+        },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
-        'fadeInUp': 'fadeInUp 0.6s ease-out forwards', // Slightly faster duration
+        'fadeInUp': 'fadeInUp 0.6s ease-out forwards',
         'textColorEmphasisWave': 'textColorEmphasisWave 2s ease-out forwards',
+        'textColorEmphasisWaveAccentEnd': 'textColorEmphasisWaveAccentEnd 2s ease-out forwards',
   		}
   	}
   },

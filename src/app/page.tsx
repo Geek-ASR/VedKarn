@@ -185,15 +185,21 @@ export default function HomePage() {
         <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-primary md:text-5xl lg:text-6xl">
-              {heroTitleWords.map((word, index) => (
-                <span
-                  key={index}
-                  className="inline-block opacity-0 animate-textColorEmphasisWave"
-                  style={{ animationDelay: `${index * 0.15 + 0.2}s` }} // Staggered delay for each word
-                >
-                  {word}{' '}
-                </span>
-              ))}
+              {heroTitleWords.map((word, index) => {
+                const isLastTwoWords = index >= heroTitleWords.length - 2; // "1-on-1" and "Mentorship"
+                const animationClass = isLastTwoWords
+                  ? 'animate-textColorEmphasisWaveAccentEnd'
+                  : 'animate-textColorEmphasisWave';
+                return (
+                  <span
+                    key={index}
+                    className={`inline-block opacity-0 ${animationClass}`}
+                    style={{ animationDelay: `${index * 0.15 + 0.2}s` }}
+                  >
+                    {word}{' '}
+                  </span>
+                );
+              })}
             </h1>
             <p className="mt-6 max-w-3xl mx-auto text-lg text-foreground/80 md:text-xl opacity-0 animate-fadeInUp" style={{ animationDelay: `${heroTitleWords.length * 0.15 + 0.3}s` }}>
               Connect with experienced professionals, gain invaluable insights, and accelerate your career or academic journey with VedKarn.
