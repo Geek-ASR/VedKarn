@@ -1,3 +1,4 @@
+
 export type UserRole = 'mentor' | 'mentee' | null;
 
 export interface User {
@@ -24,9 +25,9 @@ export interface MentorProfile extends User {
   expertise?: string[]; // Specific areas of expertise
   universities: ExperienceItem[];
   companies: ExperienceItem[];
-  availabilitySlots?: AvailabilitySlot[]; 
-  hourlyRate?: number; 
-  yearsOfExperience?: number; 
+  availabilitySlots?: AvailabilitySlot[];
+  hourlyRate?: number;
+  yearsOfExperience?: number;
 }
 
 export interface MenteeProfile extends User {
@@ -46,7 +47,7 @@ export interface AvailabilitySlot {
   endTime: string; // ISO DateTime string
   isBooked: boolean;
   bookedByMenteeId?: string;
-  meetingLink?: string; 
+  meetingLink?: string;
 }
 
 export interface Booking {
@@ -65,4 +66,28 @@ export interface MentorSearchFilters {
   jobRole?: string;
   company?: string;
   query?: string;
+}
+
+export interface GroupSession {
+  id: string;
+  title: string;
+  description: string;
+  hostName: string;
+  date: string; // Simple string for now, e.g., "October 26th, 2024 at 2:00 PM"
+  tags: string[];
+  imageUrl?: string; // Placeholder URL
+  participantCount?: number;
+  maxParticipants?: number;
+  price?: string; // e.g., "Free", "$20"
+}
+
+export interface Webinar {
+  id: string;
+  title: string;
+  description: string;
+  speakerName: string;
+  date: string; // Simple string for now
+  topic: string;
+  imageUrl?: string; // Placeholder URL
+  duration?: string; // e.g., "60 minutes"
 }

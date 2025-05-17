@@ -5,15 +5,19 @@ import { useAuth, getMockMentorProfiles, getMentorByProfileString } from "@/cont
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Users, CalendarDays, MessageCircle, Video } from "lucide-react";
 import Image from "next/image";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import type { MentorProfile } from "@/lib/types";
+import type { MentorProfile, MenteeProfile, GroupSession, Webinar } from "@/lib/types"; // Added GroupSession, Webinar
 import { useQuery } from "@tanstack/react-query";
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
+import { suggestGroupSessions, type SuggestGroupSessionsOutput, type SuggestGroupSessionsInput } from "@/ai/flows/suggest-group-sessions"; // Added
+import { suggestWebinars, type SuggestWebinarsOutput, type SuggestWebinarsInput } from "@/ai/flows/suggest-webinars"; // Added
 import { MentorCard } from "@/components/dashboard/mentor-card";
+import { GroupSessionCard, GroupSessionCardSkeleton } from "@/components/dashboard/group-session-card"; // Added
+import { WebinarCard, WebinarCardSkeleton } from "@/components/dashboard/webinar-card"; // Added
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 
 const featuredSessionsData = [
   {
@@ -21,21 +25,21 @@ const featuredSessionsData = [
     description: "If you're looking for a mentor, and you're just not sure about how this all works - this should be for you.",
     details: "Approx. 30 minutes",
     price: "$39",
-    href: "#intro-call" // Placeholder link
+    href: "#intro-call"
   },
   {
     title: "Work Review",
     description: "In this session, a mentor will sit down with you, and give you some inputs to make your work better, be it a review, inputs on your design, or some inspiration.",
     details: "Approx. 45 minutes",
-    price: "$80", // Screenshot shows $89, using $80 from previous data for consistency
-    href: "#work-review" // Placeholder link
+    price: "$80",
+    href: "#work-review"
   },
   {
     title: "Interview Preparation",
     description: "Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer and ask you some standard hiring questions.",
     details: "Approx. 60 minutes",
     price: "$99",
-    href: "#interview-prep" // Placeholder link
+    href: "#interview-prep"
   }
 ];
 
@@ -52,18 +56,7 @@ const faqData = [
     question: "What can I expect from mentors?",
     answer: "Mentors are vetted and continuously evaluated based on their performances, with the goal to only have the best mentors available to you. Their goal is to get you closer to your goal with the services booked in your plan. However, mentors are professionals in the industry, offering their free time to help you reach your goals. You'll typically receive replies within a few hours and will have pre-scheduled meetings with your mentor, they cannot be available to you 24/7."
   },
-  {
-    question: "My mentor hasn't responded to my application in some days, what should I do?",
-    answer: "We're continuously looking after the mentors and their activity. However at times it can be the case that a mentor is unavailable, even though they were recently active. In that case, if you have not received a reply in more than 5 days, it's a safe bet to reach out to someone else."
-  },
-  {
-    question: "Can I withdraw my applications?",
-    answer: "If you've changed your mind about a mentor, you can withdraw your application. The withdrawal option is available three days after your application, to allow the mentor to react."
-  },
-  {
-    question: "How many mentors can I reach out to?",
-    answer: "We impose a light limit on the amount of mentors you can reach out to in a given day and week for spam and security reasons. However there's no limit on the amount of mentors you can subscribe to."
-  }
+  // Add more FAQs if needed from the screenshot
 ];
 
 type SuggestedMentorProfileWithDetails = MentorProfile & {
@@ -73,11 +66,18 @@ type SuggestedMentorProfileWithDetails = MentorProfile & {
 
 export default function DashboardHomePage() {
   const { user } = useAuth();
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const [mentorScrollPosition, setMentorScrollPosition] = useState(0);
+  const [sessionScrollPosition, setSessionScrollPosition] = useState(0);
+  const [webinarScrollPosition, setWebinarScrollPosition] = useState(0);
+
+  const mentorScrollContainerRef = useRef<HTMLDivElement>(null);
+  const sessionScrollContainerRef = useRef<HTMLDivElement>(null);
+  const webinarScrollContainerRef = useRef<HTMLDivElement>(null);
+
 
   const menteeProfileForAI = useMemo(() => {
     if (!user || user.role !== 'mentee') return "Generic student interested in learning.";
-    const mentee = user as MenteeProfile; // Cast to MenteeProfile for type safety
+    const mentee = user as MenteeProfile;
     return "Name: " + mentee.name +
            ", Bio: " + (mentee.bio || 'N/A') +
            ", Learning Goals: " + (mentee.learningGoals || 'N/A') +
@@ -87,18 +87,39 @@ export default function DashboardHomePage() {
            ", Interests: " + (mentee.interests?.join(', ') || 'N/A');
   }, [user]);
 
-  const { data: suggestedMentorsData, isLoading: isLoadingSuggestions } = useQuery<SuggestMentorsOutput, Error>({
+  const { data: suggestedMentorsData, isLoading: isLoadingMentors } = useQuery<SuggestMentorsOutput, Error>({
     queryKey: ['dashboardRecommendedMentors', user?.id],
     queryFn: async () => {
       if (!user || user.role !== 'mentee') return [];
       const input: SuggestMentorsInput = {
         menteeProfile: menteeProfileForAI,
-        mentorProfiles: getMockMentorProfiles(), // Assuming this fetches all mentor profile strings
+        mentorProfiles: getMockMentorProfiles(),
       };
       return suggestMentors(input);
     },
     enabled: !!user && user.role === 'mentee',
   });
+
+  const { data: suggestedGroupSessionsData, isLoading: isLoadingGroupSessions } = useQuery<SuggestGroupSessionsOutput, Error>({
+    queryKey: ['dashboardRecommendedGroupSessions', user?.id],
+    queryFn: async () => {
+      if (!user || user.role !== 'mentee') return [];
+      const input: SuggestGroupSessionsInput = { menteeProfile: menteeProfileForAI };
+      return suggestGroupSessions(input);
+    },
+    enabled: !!user && user.role === 'mentee',
+  });
+
+  const { data: suggestedWebinarsData, isLoading: isLoadingWebinars } = useQuery<SuggestWebinarsOutput, Error>({
+    queryKey: ['dashboardRecommendedWebinars', user?.id],
+    queryFn: async () => {
+      if (!user || user.role !== 'mentee') return [];
+      const input: SuggestWebinarsInput = { menteeProfile: menteeProfileForAI };
+      return suggestWebinars(input);
+    },
+    enabled: !!user && user.role === 'mentee',
+  });
+
 
   const recommendedMentors = useMemo((): SuggestedMentorProfileWithDetails[] => {
     if (!suggestedMentorsData) return [];
@@ -114,17 +135,15 @@ export default function DashboardHomePage() {
       .sort((a, b) => b.relevanceScore - a.relevanceScore);
   }, [suggestedMentorsData]);
 
-  const handleScroll = (direction: 'left' | 'right') => {
+  const handleScroll = (direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
     const scrollAmount = 320; // Approximate width of a card + gap
-    const scrollContainer = document.getElementById('recommended-mentors-scroll');
-    if (scrollContainer) {
+    if (scrollContainerRef.current) {
         if (direction === 'left') {
-            scrollContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             setScrollPosition(prev => Math.max(0, prev - scrollAmount));
         } else {
-            scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            // Needs max scroll calculation based on actual container width vs content width
-            setScrollPosition(prev => prev + scrollAmount); 
+            scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            setScrollPosition(prev => prev + scrollAmount);
         }
     }
   };
@@ -150,57 +169,114 @@ export default function DashboardHomePage() {
       {/* Recommended for you Section */}
       {user.role === 'mentee' && (
         <section className="py-10 md:py-12 bg-background">
-          <div className="container mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended for you</h2>
-            {isLoadingSuggestions && (
-              <div className="flex space-x-6 overflow-hidden">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="min-w-[300px] md:min-w-[350px]"><MentorCardSkeleton /></div>
-                ))}
-              </div>
-            )}
-            {!isLoadingSuggestions && recommendedMentors && recommendedMentors.length > 0 && (
-              <div className="relative">
-                <div id="recommended-mentors-scroll" className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
-                    {recommendedMentors.map((mentor) => (
-                       <div key={mentor.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
-                         <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
-                       </div>
-                    ))}
-                </div>
-                {recommendedMentors.length > 3 && ( // Show arrows only if there's overflow potential
-                    <>
-                        <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={() => handleScroll('left')} 
-                            disabled={scrollPosition === 0} 
-                            className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex"
-                        >
-                            <ChevronLeft className="h-6 w-6" />
-                        </Button>
-                        <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={() => handleScroll('right')} 
-                            // Add disabled logic based on max scroll for right arrow
-                            className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex"
-                        >
-                            <ChevronRight className="h-6 w-6" />
-                        </Button>
-                    </>
-                )}
-                <div className="flex justify-center space-x-2 mt-4">
-                  {/* Simplified dots, not interactive for now */}
-                  {recommendedMentors.slice(0, Math.min(5, recommendedMentors.length)).map((_, i) => (
-                    <button key={`dot-${i}`} className={`h-2 w-2 rounded-full ${i === 0 ? 'bg-primary' : 'bg-muted'}`}></button>
+          <div className="container mx-auto px-6 space-y-10">
+            {/* Recommended Mentors */}
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Mentors</h2>
+              {isLoadingMentors && (
+                <div className="flex space-x-6 overflow-hidden">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={`mentor-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><MentorCardSkeleton /></div>
                   ))}
                 </div>
-              </div>
-            )}
-            {!isLoadingSuggestions && recommendedMentors && recommendedMentors.length === 0 && (
-              <p className="text-muted-foreground">No specific recommendations for you at the moment. Complete your profile or explore all mentors!</p>
-            )}
+              )}
+              {!isLoadingMentors && recommendedMentors && recommendedMentors.length > 0 && (
+                <div className="relative">
+                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                      {recommendedMentors.map((mentor) => (
+                         <div key={mentor.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                           <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
+                         </div>
+                      ))}
+                  </div>
+                  {recommendedMentors.length > 3 && (
+                      <>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronLeft className="h-6 w-6" />
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronRight className="h-6 w-6" />
+                          </Button>
+                      </>
+                  )}
+                </div>
+              )}
+              {!isLoadingMentors && recommendedMentors && recommendedMentors.length === 0 && (
+                <p className="text-muted-foreground">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
+              )}
+            </div>
+
+            {/* Recommended Group Sessions */}
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Group Sessions</h2>
+              {isLoadingGroupSessions && (
+                <div className="flex space-x-6 overflow-hidden">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={`gs-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><GroupSessionCardSkeleton /></div>
+                  ))}
+                </div>
+              )}
+              {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length > 0 && (
+                <div className="relative">
+                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                      {suggestedGroupSessionsData.map((session) => (
+                         <div key={session.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                           <GroupSessionCard session={session} />
+                         </div>
+                      ))}
+                  </div>
+                   {suggestedGroupSessionsData.length > 3 && (
+                      <>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronLeft className="h-6 w-6" />
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronRight className="h-6 w-6" />
+                          </Button>
+                      </>
+                  )}
+                </div>
+              )}
+              {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length === 0 && (
+                <p className="text-muted-foreground">No group session recommendations for you right now. Check back later!</p>
+              )}
+            </div>
+
+            {/* Recommended Webinars */}
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Webinars</h2>
+               {isLoadingWebinars && (
+                <div className="flex space-x-6 overflow-hidden">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={`webinar-skeleton-${i}`} className="min-w-[300px] md:min-w-[350px]"><WebinarCardSkeleton /></div>
+                  ))}
+                </div>
+              )}
+              {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length > 0 && (
+                <div className="relative">
+                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                      {suggestedWebinarsData.map((webinar) => (
+                         <div key={webinar.id} className="min-w-[300px] md:min-w-[350px] flex-shrink-0">
+                           <WebinarCard webinar={webinar} />
+                         </div>
+                      ))}
+                  </div>
+                  {suggestedWebinarsData.length > 3 && (
+                      <>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronLeft className="h-6 w-6" />
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
+                              <ChevronRight className="h-6 w-6" />
+                          </Button>
+                      </>
+                  )}
+                </div>
+              )}
+              {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length === 0 && (
+                <p className="text-muted-foreground">No webinar recommendations for you at this time. Explore upcoming events!</p>
+              )}
+            </div>
           </div>
         </section>
       )}
@@ -246,7 +322,7 @@ export default function DashboardHomePage() {
           </Accordion>
           <div className="text-center mt-10">
             <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8" asChild>
-              <Link href="/how-it-works">Read more</Link> 
+              <Link href="/how-it-works">Read more</Link>
             </Button>
           </div>
         </div>
@@ -256,7 +332,7 @@ export default function DashboardHomePage() {
 }
 
 
-function MentorCardSkeleton() { 
+function MentorCardSkeleton() {
   return (
     <Card className="overflow-hidden shadow-lg flex flex-col h-full">
       <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 p-6">
@@ -287,4 +363,3 @@ function MentorCardSkeleton() {
     </Card>
   );
 }
-
