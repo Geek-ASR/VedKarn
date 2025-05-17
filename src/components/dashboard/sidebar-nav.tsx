@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, GraduationCap, Briefcase } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase } from "lucide-react"; // Removed GraduationCap as it's not used
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -15,7 +16,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const pathname = usePathname();
 
   const commonItems = [
-    { href: "/dashboard", label: "Overview", icon: Home },
+    { href: "/dashboard", label: "Home", icon: Home }, // Changed "Overview" to "Home"
     { href: "/dashboard/profile", label: "Profile", icon: User },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
@@ -30,7 +31,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const mentorItems = [
     ...commonItems,
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarDays },
-    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Changed icon for My Mentees
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
