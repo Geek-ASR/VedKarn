@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, MessageSquare, CalendarClock } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -18,21 +18,20 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const commonItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/profile", label: "Profile", icon: User },
-    // { href: "/dashboard/messages", label: "Messages", icon: MessageSquare }, // Example for future
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   const menteeItems = [
     ...commonItems,
     { href: "/dashboard/mentors", label: "Find Mentors", icon: Users },
-    { href: "/dashboard/schedule", label: "My Sessions", icon: CalendarDays },
+    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays }, // Standardized label
     { href: "/dashboard/recommendations", label: "AI Suggestions", icon: Brain },
   ];
 
   const mentorItems = [
     ...commonItems,
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarDays },
-    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarClock }, // Added for mentors
+    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays }, // Standardized label and icon
     { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
   ];
 
