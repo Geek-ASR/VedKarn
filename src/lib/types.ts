@@ -47,7 +47,7 @@ export interface AvailabilitySlot {
   endTime: string; // ISO DateTime string
   isBooked: boolean;
   bookedByMenteeId?: string;
-  meetingLink?: string;
+  // meetingLink?: string; // Removed as we are simulating in-app call
 }
 
 export interface Booking {
@@ -58,7 +58,7 @@ export interface Booking {
   startTime: string; // ISO DateTime string
   endTime: string; // ISO DateTime string
   status: 'confirmed' | 'pending' | 'cancelled';
-  meetingLink?: string; // Added for mock meet link
+  // meetingLink?: string; // Removed
   meetingNotes?: string;
 }
 

@@ -16,7 +16,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, parseISO } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast"; // Import ToastAction
+import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
 
 
@@ -53,8 +53,6 @@ export default function MentorProfilePage() {
       return;
     }
     
-    const fakeMeetLink = `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
-
     const newBooking: Booking = {
       id: `booking-${Date.now()}`,
       mentorId: mentor.id,
@@ -63,12 +61,11 @@ export default function MentorProfilePage() {
       startTime: selectedSlot.startTime,
       endTime: selectedSlot.endTime,
       status: 'confirmed',
-      meetingLink: fakeMeetLink,
       meetingNotes: `Session with ${mentor.name} for ${currentUser.name}`
     };
     
     const updatedMentorAvailability = mentor.availabilitySlots?.map(slot => 
-        slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id, meetingLink: fakeMeetLink } : slot
+        slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id } : slot
     );
     
     const updatedMentor = {
@@ -85,28 +82,12 @@ export default function MentorProfilePage() {
 
     setSelectedSlot(null);
 
-    const formatGoogleCalendarDate = (date: Date) => {
-      return date.toISOString().replace(/-|:|\.\d{3}/g, '');
-    };
-    const startTime = parseISO(newBooking.startTime);
-    const endTime = parseISO(newBooking.endTime);
-
-    const calendarEventUrl = new URL('https://www.google.com/calendar/render');
-    calendarEventUrl.searchParams.append('action', 'TEMPLATE');
-    calendarEventUrl.searchParams.append('text', `Mentorship Session: ${mentor.name} & ${currentUser.name}`);
-    calendarEventUrl.searchParams.append('dates', `${formatGoogleCalendarDate(startTime)}/${formatGoogleCalendarDate(endTime)}`);
-    calendarEventUrl.searchParams.append('details', `Join your mentorship session with ${mentor.name}.\nMeeting Link: ${newBooking.meetingLink}\n\nBooked via VedKarn.`);
-    calendarEventUrl.searchParams.append('location', newBooking.meetingLink || '');
-
-
     toast({
       title: "Session Booked!",
-      description: `Session with ${mentor.name} on ${format(startTime, "PPP 'at' p")} confirmed. Meeting Link: ${newBooking.meetingLink}`,
+      description: `Your session with ${mentor.name} on ${format(parseISO(selectedSlot.startTime), "PPP 'at' p")} is confirmed. You'll be able to join via an in-app video call from your schedule closer to the time.`,
       action: (
-        <ToastAction altText="Add to Google Calendar" asChild>
-          <a href={calendarEventUrl.toString()} target="_blank" rel="noopener noreferrer">
-            Add to Calendar
-          </a>
+        <ToastAction altText="View Schedule" asChild>
+          <Link href="/dashboard/schedule">View Schedule</Link>
         </ToastAction>
       ),
       duration: 10000,
@@ -209,9 +190,9 @@ export default function MentorProfilePage() {
           <div className="md:col-span-1 space-y-6 sticky top-24 self-start">
              <Alert className="bg-blue-50 border-blue-200 text-blue-700 mb-6">
                 <Info className="h-5 w-5 text-blue-500" />
-                <AlertTitle className="font-semibold">Note on Scheduling</AlertTitle>
+                <AlertTitle className="font-semibold">Note on In-App Sessions</AlertTitle>
                 <AlertDescription>
-                    Booking a session will generate a mock Google Meet link. You'll also get an "Add to Google Calendar" link, which pre-fills the event in your calendar for you to save. Direct API integration is not part of this demo.
+                    Booking a session confirms your slot. In a full version of VedKarn, you would join your session via a secure, built-in video call feature directly on our platform. For this demo, the booking is confirmed, and you can imagine accessing the video call from your schedule page.
                 </AlertDescription>
             </Alert>
             <Card className="shadow-lg rounded-lg">
@@ -328,3 +309,4 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
+
