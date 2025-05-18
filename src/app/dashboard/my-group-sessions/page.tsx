@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function MyGroupSessionsPage() {
   const { user, getGroupSessionsByMentor, deleteMentorGroupSession, sessionsVersion } = useAuth();
@@ -42,9 +43,10 @@ export default function MyGroupSessionsPage() {
   const handleDelete = async (sessionId: string) => {
     if (!user || user.role !== 'mentor') return;
     try {
-      await deleteMentorGroupSession(sessionId);
+      // The deleteMentorGroupSession in context already checks if currentMentorId matches session's hostId
+      await deleteMentorGroupSession(sessionId, user.id); 
       toast({ title: "Success", description: "Group session deleted successfully." });
-      // The sessionsVersion change in AuthContext will trigger re-fetch
+      // The sessionsVersion change in AuthContext will trigger re-fetch via useEffect
     } catch (error) {
       toast({ title: "Error", description: (error as Error).message || "Failed to delete session.", variant: "destructive" });
     }
@@ -57,6 +59,7 @@ export default function MyGroupSessionsPage() {
             <Frown className="h-4 w-4" />
             <AlertTitle>Access Denied</AlertTitle>
             <AlertDescription>This page is for mentors only.</AlertDescription>
+            <Button variant="link" onClick={() => window.history.back()} className="mt-2">Go Back</Button>
         </Alert>
       </div>
     );

@@ -32,7 +32,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
     ...commonItems,
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
-    { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 }, // Added link
+    { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 },
     { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Assuming this page exists or will be created
   ];
 
