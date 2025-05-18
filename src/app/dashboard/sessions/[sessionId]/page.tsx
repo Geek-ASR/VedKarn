@@ -4,8 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { GroupSession } from "@/lib/types";
-import { getGroupSessionById } from "@/ai/flows/suggest-group-sessions";
-import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context"; // Correctly import useAuth
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,24 +13,24 @@ import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarDays, Clock, DollarSign, Frown, Info, Tag, Users, Users2, CheckCircle, ArrowLeft, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { UserAvatar } from "@/components/core/user-avatar"; // Assuming UserAvatar can take a simple name/imageUrl
+import { UserAvatar } from "@/components/core/user-avatar";
 
 export default function GroupSessionDetailPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, getGroupSessionDetails } = useAuth(); // Use getGroupSessionDetails from AuthContext
   const { toast } = useToast();
 
   const [session, setSession] = useState<GroupSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isJoined, setIsJoined] = useState(false); // Mock state for joined status
+  const [isJoined, setIsJoined] = useState(false);
 
   useEffect(() => {
     if (sessionId) {
       setIsLoading(true);
-      getGroupSessionById(sessionId)
+      getGroupSessionDetails(sessionId) // Use getGroupSessionDetails from AuthContext
         .then((data) => {
           if (data) {
             setSession(data);
@@ -42,19 +41,15 @@ export default function GroupSessionDetailPage() {
         .catch(() => setError("Failed to load session details."))
         .finally(() => setIsLoading(false));
     }
-  }, [sessionId]);
+  }, [sessionId, getGroupSessionDetails]);
 
   const handleJoinSession = () => {
     if (!session) return;
-    // Mock joining logic
     setIsJoined(true);
     toast({
       title: "Successfully Joined!",
       description: `You've joined the session: "${session.title}". A confirmation email would be sent (mock).`,
     });
-    // In a real app, this would involve API calls, payment processing if applicable, etc.
-    // For now, we just update the UI state.
-    // Potentially update participantCount if we were mutating shared mock data
   };
 
   const isSessionFull = session ? (session.participantCount || 0) >= (session.maxParticipants || Infinity) : false;
@@ -109,7 +104,7 @@ export default function GroupSessionDetailPage() {
                 </CardTitle>
             )}
             <div className="flex items-center space-x-3 text-muted-foreground">
-              <UserAvatar user={{ name: session.hostName, profileImageUrl: session.hostImageUrl } as any} className="h-10 w-10" />
+              <UserAvatar user={{ name: session.hostName, profileImageUrl: session.hostProfileImageUrl } as any} className="h-10 w-10" />
               <div>
                 <span className="font-semibold text-foreground">Hosted by {session.hostName}</span>
               </div>
@@ -159,7 +154,7 @@ export default function GroupSessionDetailPage() {
                             <span className="font-semibold text-lg text-primary">{session.price}</span>
                         </div>
                     )}
-                    {session.maxParticipants && (
+                    {session.maxParticipants !== undefined && (
                          <div className="flex items-center">
                             <Users2 className="h-5 w-5 mr-3 text-accent"/>
                             <span className="text-foreground">
@@ -167,7 +162,7 @@ export default function GroupSessionDetailPage() {
                             </span>
                         </div>
                     )}
-                     {session.maxParticipants && (session.participantCount || 0) < session.maxParticipants && (
+                     {session.maxParticipants !== undefined && (session.participantCount || 0) < session.maxParticipants && (
                         <Progress value={((session.participantCount || 0) / session.maxParticipants) * 100} className="h-2" />
                      )}
                 </CardContent>
@@ -257,4 +252,3 @@ const Progress = ({ value, className }: { value: number, className?: string }) =
     <div className="bg-primary h-2.5 rounded-full" style={{ width: `${value}%` }}></div>
   </div>
 );
-
