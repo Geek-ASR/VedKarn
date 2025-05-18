@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-// No longer need FullGroupSessionType specifically here if GroupSessionZodSchema covers it
 import type { GroupSession } from '@/lib/types'; 
 import { getAllGroupSessions } from '@/context/auth-context'; 
 
@@ -20,23 +19,24 @@ const SuggestGroupSessionsInputSchema = z.object({
 });
 export type SuggestGroupSessionsInput = z.infer<typeof SuggestGroupSessionsInputSchema>;
 
-// Define a Zod schema for the GroupSession type
+// Define a Zod schema for the GroupSession type (for input to the LLM)
 const GroupSessionZodSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string(),
   hostId: z.string(),
   hostName: z.string(),
-  hostProfileImageUrl: z.string().optional().nullable(), // Match type
+  hostProfileImageUrl: z.string().optional().nullable(),
   date: z.string(),
   tags: z.array(z.string()),
-  imageUrl: z.string().optional().nullable(), // Match type
-  participantCount: z.number().optional().nullable(), // Match type
-  maxParticipants: z.number().optional().nullable(), // Match type
-  price: z.string().optional().nullable(), // Match type
-  duration: z.string().optional().nullable(), // Match type
+  imageUrl: z.string().url().optional().nullable(), // Expect valid URLs from input data
+  participantCount: z.number().optional().nullable(),
+  maxParticipants: z.number().optional().nullable(),
+  price: z.string().optional().nullable(),
+  duration: z.string().optional().nullable(),
 });
 
+// Schema for the AI's output
 const SuggestedSessionSchema = z.object({
     id: z.string().describe("The unique ID of the original group session."),
     title: z.string().describe('The title of the group session.'),
@@ -44,7 +44,7 @@ const SuggestedSessionSchema = z.object({
     hostName: z.string().describe('The name of the host or mentor leading the session.'),
     date: z.string().describe('The date and time of the session (e.g., "October 26th, 2024 at 2:00 PM").'),
     tags: z.array(z.string()).describe('Relevant tags or keywords for the session.'),
-    imageUrl: z.string().url().optional().nullable().describe('A URL for a relevant image for the session card.'),
+    imageUrl: z.string().optional().nullable().describe('A URL for a relevant image for the session card. Can be a placeholder string if a URL is not suitable.'), // Relaxed from .url()
     price: z.string().optional().nullable().describe('Price of the session (e.g., "Free", "$20").'),
   });
 
@@ -58,9 +58,23 @@ export async function suggestGroupSessions(input: SuggestGroupSessionsInput): Pr
     console.log("No group sessions available in the system to suggest from.");
     return [];
   }
-  // Validate or transform allSessions to ensure they match GroupSessionZodSchema if necessary,
-  // though for this example, we assume data from getAllGroupSessions is compatible.
-  return suggestGroupSessionsFlow({ menteeProfile: input.menteeProfile, availableSessions: allSessions });
+  
+  const validatedInputSessions = allSessions.map(session => {
+    const parseResult = GroupSessionZodSchema.safeParse(session);
+    if (parseResult.success) {
+      return parseResult.data;
+    } else {
+      console.warn(`Session with ID ${session.id} failed validation, excluding from AI suggestions:`, parseResult.error.flatten());
+      return null;
+    }
+  }).filter((session): session is z.infer<typeof GroupSessionZodSchema> => session !== null);
+
+  if (validatedInputSessions.length === 0) {
+    console.log("No valid group sessions after validation to suggest from.");
+    return [];
+  }
+
+  return suggestGroupSessionsFlow({ menteeProfile: input.menteeProfile, availableSessions: validatedInputSessions });
 }
 
 const recommendationPrompt = ai.definePrompt({
@@ -68,7 +82,7 @@ const recommendationPrompt = ai.definePrompt({
   input: { 
     schema: z.object({
       menteeProfile: SuggestGroupSessionsInputSchema.shape.menteeProfile,
-      availableSessions: z.array(GroupSessionZodSchema) // Use the explicit Zod schema
+      availableSessions: z.array(GroupSessionZodSchema) 
     })
   },
   output: { schema: SuggestGroupSessionsOutputSchema },
@@ -95,7 +109,7 @@ No group sessions are currently available.
 {{/if}}
 
 Based on the mentee's profile and the available sessions, select up to 3 sessions that you believe would be most beneficial.
-For each recommended session, provide its original ID, title, description, hostName, date, tags, imageUrl, and price.
+For each recommended session, provide its original ID, title, description, hostName, date, tags, imageUrl (can be the original URL or a placeholder string like 'placeholder_image.png' if a specific image is not suitable or available), and price.
 Ensure your output strictly adheres to the requested JSON format. If no sessions are suitable, return an empty array.
 `,
 });
@@ -105,7 +119,7 @@ const suggestGroupSessionsFlow = ai.defineFlow(
     name: 'suggestGroupSessionsFlow',
     inputSchema: z.object({ 
       menteeProfile: SuggestGroupSessionsInputSchema.shape.menteeProfile,
-      availableSessions: z.array(GroupSessionZodSchema) // Use the explicit Zod schema
+      availableSessions: z.array(GroupSessionZodSchema)
     }),
     outputSchema: SuggestGroupSessionsOutputSchema,
   },
@@ -116,9 +130,17 @@ const suggestGroupSessionsFlow = ai.defineFlow(
     
     try {
         const { output } = await recommendationPrompt({ menteeProfile, availableSessions });
-        return output || [];
+        // Ensure output is an array even if the LLM returns null or undefined
+        if (Array.isArray(output)) {
+          return output;
+        } else if (output) {
+          // If the LLM returns a single object instead of an array (less likely with current prompt but defensive)
+          console.warn("recommendGroupSessionsPrompt returned a single object, expected array. Wrapping it.", output);
+          return [output as z.infer<typeof SuggestedSessionSchema>]; // Type assertion
+        }
+        return []; // Default to empty array if output is nullish
     } catch (error) {
-        console.error("Error in recommendGroupSessionsPrompt:", error);
+        console.error("Error in recommendGroupSessionsPrompt or its processing:", error);
         return []; // Return empty array on error to allow UI to settle
     }
   }
