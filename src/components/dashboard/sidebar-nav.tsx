@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, CalendarClock } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -24,15 +24,15 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const menteeItems = [
     ...commonItems,
     { href: "/dashboard/mentors", label: "Find Mentors", icon: Users },
-    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays }, // Standardized label
+    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/recommendations", label: "AI Suggestions", icon: Brain },
   ];
 
   const mentorItems = [
     ...commonItems,
-    { href: "/dashboard/availability", label: "Set Availability", icon: CalendarDays },
-    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays }, // Standardized label and icon
-    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
+    { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock }, // Ensured icon is distinct if needed
+    { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Assuming this page exists or will be created
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
