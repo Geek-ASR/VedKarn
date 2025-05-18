@@ -9,12 +9,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge"; // Added import
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
 import { format, parseISO, setHours, setMinutes, startOfDay, isBefore, isEqual, addMinutes } from 'date-fns';
 import { CalendarClock, Trash2, PlusCircle, AlertCircle, Frown, Info } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 
 const HOURS_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')); // 00 to 23
 const MINUTES_OPTIONS = ['00', '15', '30', '45'];
@@ -308,15 +311,3 @@ export default function AvailabilityPage() {
     </div>
   );
 }
-
-// Tabs and TabsList, TabsTrigger, TabsContent are assumed to be imported from '@/components/ui/tabs'
-// For simplicity, if they are not already present, a basic implementation would be:
-// const Tabs = ({ children, ...props }) => <div {...props}>{children}</div>;
-// const TabsList = ({ children, ...props }) => <div {...props} className="flex border-b">{children}</div>;
-// const TabsTrigger = ({ children, ...props }) => <button {...props} className="p-2 -mb-px border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary">{children}</button>;
-// const TabsContent = ({ children, ...props }) => <div {...props}>{children}</div>;
-// Ensure these are correctly imported from ShadCN. Added to imports.
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-
-
-    
