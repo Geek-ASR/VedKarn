@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/core/user-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO, isFuture, isPast, intervalToDuration, formatDuration } from 'date-fns';
+import { format, parseISO, isFuture, isPast, intervalToDuration } from 'date-fns';
 import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle, MicOff, CameraOff } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -18,8 +18,7 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SchedulePage() {
-  const auth = useAuth(); 
-  const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = auth; 
+  const auth = useAuth();
   const [upcomingSessions, setUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [pastSessions, setPastSessions] = useState<EnrichedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,9 +26,9 @@ export default function SchedulePage() {
 
   const [isVideoCallModalOpen, setIsVideoCallModalOpen] = useState(false);
   const [currentCallSession, setCurrentCallSession] = useState<EnrichedBooking | null>(null);
-  
+
   const [isMicMuted, setIsMicMuted] = useState(false);
-  const [isCameraOff, setIsCameraOff] = useState(true); // Start with camera off conceptually
+  const [isCameraOff, setIsCameraOff] = useState(true);
   const [callStartTime, setCallStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState("00:00");
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,6 +39,8 @@ export default function SchedulePage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Depend on the auth object, which will change if bookingsVersion changes
+    const { user, getScheduledSessionsForCurrentUser } = auth;
     if (user) {
       const fetchSessions = async () => {
         setIsLoading(true);
@@ -58,9 +59,9 @@ export default function SchedulePage() {
       };
       fetchSessions();
     } else {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
-  }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]); 
+  }, [auth]); // Key dependency change here
 
   useEffect(() => {
     if (isVideoCallModalOpen && callStartTime) {
@@ -89,8 +90,8 @@ export default function SchedulePage() {
         localVideoRef.current.srcObject = stream;
       }
       setHasCameraPermission(true);
-      setIsCameraOff(false); // Turn camera on by default if permission granted
-      setIsMicMuted(false); // Mic on by default
+      setIsCameraOff(false);
+      setIsMicMuted(false);
     } catch (err) {
       console.error("Error accessing media devices.", err);
       setHasCameraPermission(false);
@@ -129,9 +130,9 @@ export default function SchedulePage() {
     }
     setCallStartTime(null);
     setElapsedTime("00:00");
-    setHasCameraPermission(null); // Reset permission status for next call
-    setIsCameraOff(true); // Reset camera state
-    setIsMicMuted(false); // Reset mic state
+    setHasCameraPermission(null);
+    setIsCameraOff(true);
+    setIsMicMuted(false);
   };
 
   const toggleMic = () => {
@@ -143,7 +144,7 @@ export default function SchedulePage() {
       }
     }
   };
-  
+
   const toggleCamera = () => {
     if (localStreamRef.current) {
       const videoTracks = localStreamRef.current.getVideoTracks();
@@ -167,8 +168,8 @@ export default function SchedulePage() {
         </Alert>
       );
   }
-  
-  if (!user) {
+
+  if (!auth.user) {
      return (
         <Alert className="max-w-lg mx-auto">
             <Info className="h-4 w-4" />
@@ -180,8 +181,8 @@ export default function SchedulePage() {
      );
   }
 
-  const otherParticipant = currentCallSession 
-    ? (user.id === currentCallSession.mentor.id ? currentCallSession.mentee : currentCallSession.mentor) 
+  const otherParticipant = currentCallSession
+    ? (auth.user.id === currentCallSession.mentor.id ? currentCallSession.mentee : currentCallSession.mentor)
     : null;
 
   return (
@@ -209,14 +210,14 @@ export default function SchedulePage() {
 
         <TabsContent value="upcoming" className="mt-6">
           {upcomingSessions.length === 0 ? (
-            <EmptyState userRole={user.role!} sessionType="upcoming" />
+            <EmptyState userRole={auth.user.role!} sessionType="upcoming" />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {upcomingSessions.map(session => (
-                <SessionCard 
-                  key={session.id} 
-                  session={session} 
-                  userRole={user.role!} 
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  userRole={auth.user!.role!}
                   isPastSession={false}
                   onJoinCall={() => handleJoinCall(session)}
                 />
@@ -227,15 +228,15 @@ export default function SchedulePage() {
 
         <TabsContent value="past" className="mt-6">
           {pastSessions.length === 0 ? (
-            <EmptyState userRole={user.role!} sessionType="past" />
+            <EmptyState userRole={auth.user.role!} sessionType="past" />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {pastSessions.map(session => (
-                <SessionCard 
-                  key={session.id} 
-                  session={session} 
-                  userRole={user.role!} 
-                  isPastSession={true} 
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  userRole={auth.user!.role!}
+                  isPastSession={true}
                 />
               ))}
             </div>
@@ -243,7 +244,7 @@ export default function SchedulePage() {
         </TabsContent>
       </Tabs>
 
-      {currentCallSession && otherParticipant && user && (
+      {currentCallSession && otherParticipant && auth.user && (
         <Dialog open={isVideoCallModalOpen} onOpenChange={(isOpen) => { if (!isOpen) handleEndCall(); setIsVideoCallModalOpen(isOpen); }}>
           <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 sm:p-0">
             <DialogHeader className="p-4 border-b flex flex-row justify-between items-center">
@@ -255,32 +256,30 @@ export default function SchedulePage() {
               </div>
               <div className="text-sm font-mono text-primary">{elapsedTime}</div>
             </DialogHeader>
-            
+
             <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-1 p-1 bg-black overflow-hidden">
-              {/* Other Participant's Video Panel (Still Mocked) */}
               <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                <Image 
-                  src={otherParticipant.profileImageUrl || `https://placehold.co/800x600.png`} 
-                  alt={`${otherParticipant.name}'s video feed`} 
+                <Image
+                  src={otherParticipant.profileImageUrl || `https://placehold.co/800x600.png`}
+                  alt={`${otherParticipant.name}'s video feed`}
                   fill={true}
                   style={{objectFit: 'cover'}}
-                  data-ai-hint="person in video call"
+                  data-ai-hint="person video call"
                   className="opacity-80"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
-                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on for other participant */}
+                  <Mic className="h-3 w-3 mr-1.5 text-green-400" />
                   {otherParticipant.name}
                 </div>
                 <UserAvatar user={otherParticipant} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl pointer-events-none" />
               </div>
-              
-              {/* User's Video Panel (Live if permission granted) */}
+
               <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
                  <video ref={localVideoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                  {(isCameraOff || hasCameraPermission === false) && (
                     <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
-                        <UserAvatar user={user} className="h-24 w-24 text-4xl opacity-80 mb-2" />
+                        <UserAvatar user={auth.user} className="h-24 w-24 text-4xl opacity-80 mb-2" />
                         {hasCameraPermission === false && <p className="text-sm">Camera access denied</p>}
                         {isCameraOff && hasCameraPermission && <p className="text-sm">Camera is off</p>}
                         {!hasCameraPermission && hasCameraPermission !== false && <p className="text-sm">Attempting to start camera...</p>}
@@ -366,9 +365,9 @@ function SessionCard({ session, userRole, isPastSession, onJoinCall }: SessionCa
         )}
       </CardContent>
       <CardFooter>
-        <Button 
-          className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
-          disabled={(isPastSession && userRole === 'mentee') || (isPastSession && userRole === 'mentor')} // Mentors also can't join past calls
+        <Button
+          className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+          disabled={(isPastSession)}
           onClick={!isPastSession ? onJoinCall : undefined}
         >
           <Video className="mr-2 h-4 w-4" />
@@ -380,16 +379,16 @@ function SessionCard({ session, userRole, isPastSession, onJoinCall }: SessionCa
 }
 
 function EmptyState({ userRole, sessionType }: { userRole: UserRole, sessionType: 'upcoming' | 'past' }) {
-  const message = sessionType === 'upcoming' 
-    ? "You have no upcoming sessions." 
+  const message = sessionType === 'upcoming'
+    ? "You have no upcoming sessions."
     : "You have no past sessions recorded.";
-  
-  const ctaText = userRole === 'mentee' 
-    ? "Find a Mentor" 
+
+  const ctaText = userRole === 'mentee'
+    ? "Find a Mentor"
     : (userRole === 'mentor' ? "Update Availability" : "Explore");
-  
-  const ctaLink = userRole === 'mentee' 
-    ? "/dashboard/mentors" 
+
+  const ctaLink = userRole === 'mentee'
+    ? "/dashboard/mentors"
     : (userRole === 'mentor' ? "/dashboard/availability" : "/dashboard");
 
   return (

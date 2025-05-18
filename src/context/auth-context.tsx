@@ -1,14 +1,11 @@
 
 "use client";
 
-import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking } from '@/lib/types';
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem } from '@/lib/types';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Mock user data (replace with actual API calls)
-// Ensure MOCK_USERS is accessible for getScheduledSessionsForUser or pass it
-// For simplicity in this context, it's defined here.
-// In a real app, this would come from a DB or API.
 export const MOCK_USERS: Record<string, UserProfile> = {
   'mentor@example.com': {
     id: 'mentor1',
@@ -20,19 +17,19 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     interests: ['AI Ethics', 'Deep Learning', 'Academic Research'],
     expertise: ['Machine Learning', 'NLP', 'Computer Vision'],
     universities: [
-      { id: 'uni1', institutionName: 'Stanford University', roleOrDegree: 'PhD in AI', startDate: '2010-09-01', endDate: '2014-06-01', description: 'Focused on novel neural network architectures.' },
-      { id: 'uni2', institutionName: 'MIT', roleOrDegree: 'M.S. Computer Science', startDate: '2008-09-01', endDate: '2010-06-01' },
+      { id: 'uni1-mv', institutionName: 'Stanford University', roleOrDegree: 'PhD in AI', startDate: '2010-09-01', endDate: '2014-06-01', description: 'Focused on novel neural network architectures.' },
+      { id: 'uni2-mv', institutionName: 'MIT', roleOrDegree: 'M.S. Computer Science', startDate: '2008-09-01', endDate: '2010-06-01' },
     ],
     companies: [
-      { id: 'comp1', institutionName: 'Google AI', roleOrDegree: 'Senior Research Scientist', startDate: '2016-07-01', description: 'Led projects in large language model development.' },
-      { id: 'comp2', institutionName: 'OpenAI', roleOrDegree: 'Research Engineer', startDate: '2014-07-01', endDate: '2016-06-30' },
+      { id: 'comp1-mv', institutionName: 'Google AI', roleOrDegree: 'Senior Research Scientist', startDate: '2016-07-01', description: 'Led projects in large language model development.' },
+      { id: 'comp2-mv', institutionName: 'OpenAI', roleOrDegree: 'Research Engineer', startDate: '2014-07-01', endDate: '2016-06-30' },
     ],
     yearsOfExperience: 10,
     availabilitySlots: [
-      { id: 'slot1', startTime: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (1 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false}, // Tomorrow
-      { id: 'slot2', startTime: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (2 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false }, // Day after tomorrow
-      { id: 'slot3', startTime: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (3 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false }, // In 3 days
-      { id: 'slot-past-booked', startTime: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() - (24 - 1) * 3600 * 1000).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' }, // A past session
+      { id: 'slot1', startTime: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (1 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false},
+      { id: 'slot2', startTime: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (2 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
+      { id: 'slot3', startTime: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (3 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
+      { id: 'slot-past-booked', startTime: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() - (24 - 1) * 3600 * 1000).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
     ]
   } as MentorProfile,
   'mentee@example.com': {
@@ -48,6 +45,26 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     desiredJobRoles: ['Data Scientist', 'Machine Learning Engineer'],
     desiredCompanies: ['Google', 'Meta', 'Netflix'],
   } as MenteeProfile,
+   'mentor2@example.com': {
+    id: 'mentor2',
+    email: 'mentor2@example.com',
+    name: 'Dr. Ben Carter',
+    role: 'mentor',
+    profileImageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Product Management expert with 12+ years in tech. Passionate about building great products and mentoring future leaders.',
+    interests: ['Product Strategy', 'User Experience', 'Startups'],
+    expertise: ['Product Management', 'Agile Development', 'Market Analysis', 'UX Strategy'],
+    universities: [{ id: 'uni1-bc', institutionName: 'UC Berkeley', roleOrDegree: 'MBA', startDate: '2006-08-01', endDate: '2008-05-01', description: 'Emphasis on Technology Management.' }],
+    companies: [
+        { id: 'comp1-bc', institutionName: 'Salesforce', roleOrDegree: 'Director of Product', startDate: '2015-03-01', description: 'Led product strategy for key cloud services.' },
+        { id: 'comp2-bc', institutionName: 'Adobe', roleOrDegree: 'Senior Product Manager', startDate: '2010-06-01', endDate: '2015-02-28', description: 'Managed flagship creative software products.' }
+    ],
+    yearsOfExperience: 12,
+    availabilitySlots: [
+      { id: 'slot4', startTime: new Date(Date.now() + 1.5 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (1.5 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
+      { id: 'slot5', startTime: new Date(Date.now() + 2.5 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (2.5 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
+    ]
+  } as MentorProfile,
 };
 
 interface AuthContextType {
@@ -59,7 +76,7 @@ interface AuthContextType {
   completeProfile: (profileData: Partial<UserProfile>, role: UserRole) => void;
   getScheduledSessionsForCurrentUser: () => Promise<EnrichedBooking[]>;
   confirmBooking: (mentorEmail: string, slotId: string) => Promise<void>;
-  bookingsVersion: number; // Added for triggering re-fetches
+  bookingsVersion: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +84,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bookingsVersion, setBookingsVersion] = useState(0); // State for bookings version
+  const [bookingsVersion, setBookingsVersion] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -78,13 +95,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
           if (MOCK_USERS[parsedUser.email]) {
-            const mockUserData = MOCK_USERS[parsedUser.email];
-            if (mockUserData.role === 'mentor' && !(mockUserData as MentorProfile).availabilitySlots) {
-              (mockUserData as MentorProfile).availabilitySlots = [];
+            const mockUserDataFromDB = MOCK_USERS[parsedUser.email];
+             // Merge, ensuring role and other core fields from parsedUser are kept if they were partially completed
+            const mergedUser = { ...mockUserDataFromDB, ...parsedUser };
+
+            if (mergedUser.role === 'mentor' && !(mergedUser as MentorProfile).availabilitySlots) {
+              (mergedUser as MentorProfile).availabilitySlots = (mockUserDataFromDB as MentorProfile)?.availabilitySlots || [];
             }
-            setUser({ ...mockUserData, ...parsedUser }); 
+            setUser(mergedUser);
           } else {
-            setUser(parsedUser); 
+             // User from localStorage not in MOCK_USERS (e.g. newly created then page refreshed)
+            setUser(parsedUser);
+            MOCK_USERS[parsedUser.email] = parsedUser; // Add to in-memory MOCK_USERS
           }
         } else {
           localStorage.removeItem('vedkarn-user');
@@ -98,13 +120,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (loading) return; 
+    if (loading) return;
 
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
     const isHowItWorksPage = pathname === '/how-it-works';
-    const isApiRoute = pathname.startsWith('/api'); 
-    
+    const isApiRoute = pathname.startsWith('/api');
+
     if (!user && !isAuthPage && !isRootPage && !isHowItWorksPage && !isApiRoute) {
       router.push('/auth/signin');
     } else if (user && !user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
@@ -114,70 +136,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, initialRole?: UserRole) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-    
-    let foundUser = MOCK_USERS[email];
-    
-    if (foundUser) {
-      if (initialRole && foundUser.role !== initialRole) {
-        foundUser = { ...foundUser, role: initialRole, name: foundUser.name || email.split('@')[0] }; 
-        MOCK_USERS[email] = foundUser; 
-      } else if (!foundUser.name && email) { 
-        foundUser = { ...foundUser, name: email.split('@')[0]};
-        MOCK_USERS[email] = foundUser;
-      }
-      if (foundUser.role === 'mentor' && !(foundUser as MentorProfile).availabilitySlots) {
-        (foundUser as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
-      }
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      setUser(foundUser);
-      localStorage.setItem('vedkarn-user', JSON.stringify(foundUser));
-      if (!foundUser.role) {
-        router.push('/auth/complete-profile');
-      } else {
-        router.push('/dashboard');
+    let userToLogin = MOCK_USERS[email];
+
+    if (userToLogin) {
+      if (initialRole && userToLogin.role !== initialRole) {
+        userToLogin = { ...userToLogin, role: initialRole, name: userToLogin.name || email.split('@')[0] };
+        MOCK_USERS[email] = userToLogin;
+      } else if (!userToLogin.name && email) {
+        userToLogin = { ...userToLogin, name: email.split('@')[0]};
+        MOCK_USERS[email] = userToLogin;
+      }
+      if (userToLogin.role === 'mentor' && !(userToLogin as MentorProfile).availabilitySlots) {
+        (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
       }
     } else {
+      // New user
       const newUserProfile: UserProfile = {
         id: `user-${Date.now()}-${Math.random().toString(36).substring(7)}`,
         email,
-        name: initialRole ? email.split('@')[0] : "New User", 
+        name: email.split('@')[0],
         role: initialRole || null,
-        profileImageUrl: 'https://placehold.co/100x100.png', 
+        profileImageUrl: 'https://placehold.co/100x100.png',
         bio: '',
         interests: [],
       };
 
       if (initialRole === 'mentor') {
-        (newUserProfile as MentorProfile).expertise = [];
-        (newUserProfile as MentorProfile).universities = [];
-        (newUserProfile as MentorProfile).companies = [];
-        (newUserProfile as MentorProfile).availabilitySlots = [];
-        (newUserProfile as MentorProfile).yearsOfExperience = 0;
+        (newUserProfile as Partial<MentorProfile>).expertise = [];
+        (newUserProfile as Partial<MentorProfile>).universities = [];
+        (newUserProfile as Partial<MentorProfile>).companies = [];
+        (newUserProfile as Partial<MentorProfile>).availabilitySlots = [];
+        (newUserProfile as Partial<MentorProfile>).yearsOfExperience = 0;
       } else if (initialRole === 'mentee') {
-        (newUserProfile as MenteeProfile).learningGoals = '';
-        (newUserProfile as MenteeProfile).desiredUniversities = [];
-        (newUserProfile as MenteeProfile).desiredJobRoles = [];
-        (newUserProfile as MenteeProfile).desiredCompanies = [];
+        (newUserProfile as Partial<MenteeProfile>).learningGoals = '';
+        (newUserProfile as Partial<MenteeProfile>).desiredUniversities = [];
+        (newUserProfile as Partial<MenteeProfile>).desiredJobRoles = [];
+        (newUserProfile as Partial<MenteeProfile>).desiredCompanies = [];
       }
-      
       MOCK_USERS[email] = newUserProfile;
-      setUser(newUserProfile);
-      localStorage.setItem('vedkarn-user', JSON.stringify(newUserProfile));
-      if (!newUserProfile.role || (initialRole && !profileIsConsideredComplete(newUserProfile, initialRole))) {
-         router.push('/auth/complete-profile');
-      } else {
-        router.push('/dashboard');
-      }
+      userToLogin = newUserProfile;
+    }
+
+    setUser(userToLogin);
+    localStorage.setItem('vedkarn-user', JSON.stringify(userToLogin));
+
+    if (!userToLogin.role) {
+      router.push('/auth/complete-profile');
+    } else {
+      router.push('/dashboard');
     }
     setLoading(false);
   };
-  
+
   const profileIsConsideredComplete = (profile: UserProfile, role: UserRole): boolean => {
-    if (!role) return false; 
+    if (!role) return false;
     if (role === 'mentor' && (!(profile as MentorProfile).expertise || (profile as MentorProfile).expertise!.length === 0)) return false;
     if (role === 'mentee' && !(profile as MenteeProfile).learningGoals) return false;
-    return true; 
+    return true;
   }
 
   const logout = () => {
@@ -188,85 +205,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUserProfile = (profileData: Partial<UserProfile>) => {
     if (user) {
-      const updatedUserInDb = { ...MOCK_USERS[user.email], ...profileData };
-      MOCK_USERS[user.email] = updatedUserInDb;
-      
-      setUser(updatedUserInDb);
-      localStorage.setItem('vedkarn-user', JSON.stringify(updatedUserInDb));
+      const updatedUser = { ...MOCK_USERS[user.email], ...profileData };
+      MOCK_USERS[user.email] = updatedUser;
+      setUser(updatedUser);
+      localStorage.setItem('vedkarn-user', JSON.stringify(updatedUser));
     }
   };
-  
+
   const completeProfile = (profileData: Partial<UserProfile>, role: UserRole) => {
     if (user) {
-      const baseProfile = { ...MOCK_USERS[user.email], ...profileData, role }; 
-      let completedProfile: UserProfile;
+      let completedProfile: UserProfile = { ...MOCK_USERS[user.email], ...profileData, role };
 
       if (role === 'mentor') {
-        completedProfile = {
-          ...baseProfile,
-          role: 'mentor',
-          expertise: (profileData as Partial<MentorProfile>).expertise || (baseProfile as MentorProfile).expertise || [],
-          universities: (profileData as Partial<MentorProfile>).universities || (baseProfile as MentorProfile).universities || [],
-          companies: (profileData as Partial<MentorProfile>).companies || (baseProfile as MentorProfile).companies || [],
-          availabilitySlots: (profileData as Partial<MentorProfile>).availabilitySlots || (baseProfile as MentorProfile).availabilitySlots || [],
-          yearsOfExperience: (profileData as Partial<MentorProfile>).yearsOfExperience ?? (baseProfile as MentorProfile).yearsOfExperience ?? 0,
-        } as MentorProfile;
+        const mentorSpecifics: Partial<MentorProfile> = {
+          expertise: (profileData as Partial<MentorProfile>).expertise || (completedProfile as MentorProfile).expertise || [],
+          universities: (profileData as Partial<MentorProfile>).universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random()}`})) || (completedProfile as MentorProfile).universities || [],
+          companies: (profileData as Partial<MentorProfile>).companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random()}`})) || (completedProfile as MentorProfile).companies || [],
+          availabilitySlots: (profileData as Partial<MentorProfile>).availabilitySlots || (completedProfile as MentorProfile).availabilitySlots || [],
+          yearsOfExperience: (profileData as Partial<MentorProfile>).yearsOfExperience ?? (completedProfile as MentorProfile).yearsOfExperience ?? 0,
+        };
+        completedProfile = { ...completedProfile, ...mentorSpecifics, role: 'mentor' };
       } else if (role === 'mentee') {
-        completedProfile = {
-          ...baseProfile,
-          role: 'mentee',
-          learningGoals: (profileData as Partial<MenteeProfile>).learningGoals || (baseProfile as MenteeProfile).learningGoals || '',
-          desiredUniversities: (profileData as Partial<MenteeProfile>).desiredUniversities || (baseProfile as MenteeProfile).desiredUniversities || [],
-          desiredJobRoles: (profileData as Partial<MenteeProfile>).desiredJobRoles || (baseProfile as MenteeProfile).desiredJobRoles || [],
-          desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || (baseProfile as MenteeProfile).desiredCompanies || [],
-        } as MenteeProfile;
+        const menteeSpecifics: Partial<MenteeProfile> = {
+          learningGoals: (profileData as Partial<MenteeProfile>).learningGoals || (completedProfile as MenteeProfile).learningGoals || '',
+          desiredUniversities: (profileData as Partial<MenteeProfile>).desiredUniversities || (completedProfile as MenteeProfile).desiredUniversities || [],
+          desiredJobRoles: (profileData as Partial<MenteeProfile>).desiredJobRoles || (completedProfile as MenteeProfile).desiredJobRoles || [],
+          desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || (completedProfile as MenteeProfile).desiredCompanies || [],
+        };
+        completedProfile = { ...completedProfile, ...menteeSpecifics, role: 'mentee' };
       } else {
-        completedProfile = { ...baseProfile, role: null }; 
+        completedProfile.role = null;
       }
-      
-      MOCK_USERS[user.email] = completedProfile; 
+
+      MOCK_USERS[user.email] = completedProfile;
       setUser(completedProfile);
       localStorage.setItem('vedkarn-user', JSON.stringify(completedProfile));
-      
       router.push('/dashboard');
     }
   };
 
-  const confirmBooking = async (mentorEmail: string, slotId: string): Promise<void> => {
+  const confirmBooking = useCallback(async (mentorEmail: string, slotId: string): Promise<void> => {
     if (!user || user.role !== 'mentee') {
-      return Promise.reject(new Error("Only mentees can book sessions."));
+      throw new Error("Only mentees can book sessions.");
     }
     const menteeId = user.id;
-
-    const mentorToUpdate = MOCK_USERS[mentorEmail] as MentorProfile;
+    const mentorToUpdate = MOCK_USERS[mentorEmail] as MentorProfile | undefined;
 
     if (mentorToUpdate && mentorToUpdate.availabilitySlots) {
       const slotIndex = mentorToUpdate.availabilitySlots.findIndex(s => s.id === slotId);
       if (slotIndex > -1 && !mentorToUpdate.availabilitySlots[slotIndex].isBooked) {
-        
-        const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) => 
+        const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) =>
           index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
         );
-        
+        // Directly mutate the MOCK_USERS object for this mock setup
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
-        setBookingsVersion(v => v + 1); // Increment version
+        setBookingsVersion(v => v + 1); // Increment version to trigger re-fetches
 
-        if (user && user.email === mentorEmail) {
-          const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] }; 
-          setUser(updatedCurrentUser);
-          localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
+        // If current user IS the mentor (e.g., for testing/dev scenarios), update their local state.
+        // This specific block might be less relevant if mentors cannot book their own slots.
+        if (user.email === mentorEmail) {
+            const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
+            setUser(updatedCurrentUser);
+            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
         }
-        
-        return Promise.resolve();
+        return; // Resolve promise
       } else {
-        return Promise.reject(new Error("Slot not found or already booked."));
+        throw new Error("Slot not found or already booked.");
       }
     }
-    return Promise.reject(new Error("Mentor not found."));
-  };
+    throw new Error("Mentor not found.");
+  }, [user]);
 
-  const getScheduledSessionsForCurrentUser = async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100)); 
+
+  const getScheduledSessionsForCurrentUser = useCallback(async (): Promise<EnrichedBooking[]> => {
+    await new Promise(resolve => setTimeout(resolve, 100));
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
@@ -278,22 +290,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mentorProfile.availabilitySlots) {
           for (const slot of mentorProfile.availabilitySlots) {
             if (slot.isBooked && slot.bookedByMenteeId) {
+              // Check if the current user is either the mentor of this slot OR the mentee who booked it
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) {
+                if (menteeProfile) { // Ensure mentee profile exists
                   scheduledSessions.push({
-                    id: slot.id, 
+                    id: `${mentorProfile.id}-${slot.id}`, // Ensure unique ID for bookings
                     mentorId: mentorProfile.id,
                     menteeId: menteeProfile.id,
                     startTime: slot.startTime,
                     endTime: slot.endTime,
-                    status: 'confirmed', 
+                    status: 'confirmed',
                     mentor: mentorProfile,
                     mentee: menteeProfile,
-                    sessionTitle: user.role === 'mentor' 
-                                  ? `Session with ${menteeProfile.name}` 
+                    sessionTitle: user.role === 'mentor'
+                                  ? `Session with ${menteeProfile.name}`
                                   : `Session with ${mentorProfile.name}`,
-                    meetingNotes: `Mentorship session between ${mentorProfile.name} and ${menteeProfile.name}. Topic: ${slot.id}` 
+                    meetingNotes: `Mentorship session: ${mentorProfile.name} & ${menteeProfile.name}. Focus: ${slot.id}`
                   });
                 }
               }
@@ -303,19 +316,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return scheduledSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  };
+  }, [user]); // Dependency on user, so it gets the latest user.id
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      login, 
-      logout, 
-      updateUserProfile, 
-      completeProfile, 
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      logout,
+      updateUserProfile,
+      completeProfile,
       getScheduledSessionsForCurrentUser,
       confirmBooking,
-      bookingsVersion // Provide bookingsVersion
+      bookingsVersion
     }}>
       {children}
     </AuthContext.Provider>
@@ -330,12 +343,15 @@ export const useAuth = () => {
   return context;
 };
 
+// Helper functions to get mock data, ensuring they use the single MOCK_USERS source
 export const getMockMentorProfiles = (): string[] => {
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
-    .map(userProfile => { 
-      const m = userProfile as MentorProfile; 
-      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A'}, Companies: ${m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A'}, Years of Exp: ${m.yearsOfExperience || 0}`;
+    .map(userProfile => {
+      const m = userProfile as MentorProfile;
+      const universities = m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A';
+      const companies = m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A';
+      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${universities}, Companies: ${companies}, Years of Exp: ${m.yearsOfExperience || 0}`;
     });
 };
 
