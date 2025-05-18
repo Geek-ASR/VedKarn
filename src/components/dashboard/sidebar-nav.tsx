@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -21,25 +22,35 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   ];
 
   const menteeItems = [
-    ...commonItems,
+    { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/mentors", label: "Find Mentors", icon: Users },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/recommendations", label: "AI Suggestions", icon: Brain },
     { href: "/dashboard/group-sessions", label: "Browse Group Sessions", icon: Presentation },
     { href: "/dashboard/webinars", label: "Browse Webinars", icon: Tv2 },
+    { href: "/dashboard/profile", label: "Profile", icon: User },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   const mentorItems = [
-    ...commonItems,
+    { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 },
     { href: "/dashboard/my-webinars", label: "My Webinars", icon: Tv2 },
     { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
+    { href: "/dashboard/profile", label: "Profile", icon: User },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
-  const items = user?.role === "mentor" ? mentorItems : menteeItems;
-  const displayItems = user?.role ? items : commonItems;
+  const items = user?.role === "mentor" ? mentorItems : (user?.role === "mentee" ? menteeItems : commonItems);
+  // Deduplicate items based on href, keeping the order of the role-specific list
+  const uniqueItems = items.reduce((acc, current) => {
+    if (!acc.find(item => item.href === current.href)) {
+      acc.push(current);
+    }
+    return acc;
+  }, [] as typeof items);
 
 
   return (
@@ -50,7 +61,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
       )}
       {...props}
     >
-      {displayItems.map((item) => (
+      {uniqueItems.map((item) => (
         <Button
           key={item.href}
           asChild
