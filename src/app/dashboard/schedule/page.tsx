@@ -10,15 +10,15 @@ import { UserAvatar } from '@/components/core/user-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
-import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff } from 'lucide-react';
+import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Image from 'next/image';
 
 export default function SchedulePage() {
-  const auth = useAuth(); // Get the whole auth context
-  const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = auth; // Destructure needed parts
+  const auth = useAuth(); 
+  const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = auth; 
   const [upcomingSessions, setUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [pastSessions, setPastSessions] = useState<EnrichedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,7 @@ export default function SchedulePage() {
     } else {
       setIsLoading(false); 
     }
-  }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]); // Add bookingsVersion to dependency array
+  }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]); 
 
   const handleJoinCall = (session: EnrichedBooking) => {
     setCurrentCallSession(session);
@@ -111,7 +111,7 @@ export default function SchedulePage() {
 
         <TabsContent value="upcoming" className="mt-6">
           {upcomingSessions.length === 0 ? (
-            <EmptyState userRole={user.role} sessionType="upcoming" />
+            <EmptyState userRole={user.role!} sessionType="upcoming" />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {upcomingSessions.map(session => (
@@ -129,7 +129,7 @@ export default function SchedulePage() {
 
         <TabsContent value="past" className="mt-6">
           {pastSessions.length === 0 ? (
-            <EmptyState userRole={user.role} sessionType="past" />
+            <EmptyState userRole={user.role!} sessionType="past" />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {pastSessions.map(session => (
@@ -147,46 +147,70 @@ export default function SchedulePage() {
 
       {currentCallSession && otherParticipant && (
         <Dialog open={isVideoCallModalOpen} onOpenChange={setIsVideoCallModalOpen}>
-          <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 sm:p-0">
             <DialogHeader className="p-4 border-b">
-              <DialogTitle className="text-lg">Video Call with {otherParticipant.name}</DialogTitle>
+              <DialogTitle className="text-lg md:text-xl">Video Call with {otherParticipant.name}</DialogTitle>
               <DialogDescription>
-                Session: {format(parseISO(currentCallSession.startTime), "PPP 'at' p")}
+                Session Time: {format(parseISO(currentCallSession.startTime), "PPP 'at' p")}
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-2 p-2 bg-muted/40 overflow-hidden">
-              {/* Other Participant's Video */}
-              <div className="relative bg-card rounded-md overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                <Image src={otherParticipant.profileImageUrl || "https://placehold.co/600x400.png"} alt={otherParticipant.name || "Participant"} layout="fill" objectFit="cover" data-ai-hint="person portrait" />
-                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-1 p-1 bg-black overflow-hidden">
+              {/* Other Participant's Video Panel */}
+              <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                <Image 
+                  src={otherParticipant.profileImageUrl || `https://placehold.co/800x600.png`} 
+                  alt={`${otherParticipant.name}'s video feed`} 
+                  layout="fill" 
+                  objectFit="cover" 
+                  data-ai-hint="person in video call"
+                  className="opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
+                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on */}
                   {otherParticipant.name}
                 </div>
+                <UserAvatar user={otherParticipant} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl" />
               </div>
-              {/* User's Video (Placeholder) */}
-              <div className="relative bg-card rounded-md overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                 <Image src={user.profileImageUrl || "https://placehold.co/600x400.png"} alt={user.name || "You"} layout="fill" objectFit="cover" data-ai-hint="person looking at screen" />
-                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+              
+              {/* User's Video Panel */}
+              <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                 <Image 
+                   src={user.profileImageUrl || `https://placehold.co/800x600.png`} 
+                   alt="Your video feed" 
+                   layout="fill" 
+                   objectFit="cover" 
+                   data-ai-hint="user looking at screen"
+                   className="opacity-80"
+                  />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
+                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on */}
                   You
                 </div>
-                 <div className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full">
-                    <Mic className="h-4 w-4"/>
+                 <UserAvatar user={user} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl" />
+                <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full" title="Mock Camera Status">
+                    <Video className="h-4 w-4 text-green-400"/> {/* Mock camera on */}
                 </div>
               </div>
             </div>
 
-            <DialogFooter className="p-4 border-t bg-background flex flex-row justify-center items-center space-x-3">
-              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Mute/Unmute Mic (Mock)">
-                <Mic className="h-5 w-5" />
+            <DialogFooter className="p-3 sm:p-4 border-t bg-background flex flex-row justify-center items-center space-x-2 sm:space-x-3">
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Mute/Unmute Mic (Mock)">
+                <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Turn Camera On/Off (Mock)">
-                <VideoOff className="h-5 w-5" />
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Turn Camera On/Off (Mock)">
+                <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Share Screen (Mock)">
-                <ScreenShare className="h-5 w-5" />
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Share Screen (Mock)">
+                <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Button variant="destructive" size="icon" className="rounded-full h-12 w-12" title="End Call" onClick={() => setIsVideoCallModalOpen(false)}>
-                <PhoneOff className="h-5 w-5" />
+                <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12 md:hidden" title="Chat (Mock)">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+              <Button variant="destructive" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="End Call" onClick={() => setIsVideoCallModalOpen(false)}>
+                <PhoneOff className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DialogFooter>
           </DialogContent>
