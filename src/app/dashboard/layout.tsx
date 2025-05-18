@@ -13,6 +13,7 @@ import { Logo } from "@/components/core/logo";
 import { Bell, LifeBuoy, LogOut, Settings, User as UserIcon, Menu, CalendarCheck, UserPlus, Gift, CheckCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge"; // Added import
 
 // Mock notifications data
 const mockNotifications = [
