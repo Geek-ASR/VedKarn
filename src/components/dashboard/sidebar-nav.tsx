@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -6,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, CalendarClock, Users2, Presentation } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, CalendarClock, Users2, Presentation, Tv2 } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -27,6 +26,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/recommendations", label: "AI Suggestions", icon: Brain },
     { href: "/dashboard/group-sessions", label: "Browse Group Sessions", icon: Presentation },
+    { href: "/dashboard/webinars", label: "Browse Webinars", icon: Tv2 },
   ];
 
   const mentorItems = [
@@ -34,7 +34,8 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 },
-    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, 
+    { href: "/dashboard/my-webinars", label: "My Webinars", icon: Tv2 },
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
