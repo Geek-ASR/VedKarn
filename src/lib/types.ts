@@ -58,6 +58,7 @@ export interface Booking {
   startTime: string; // ISO DateTime string
   endTime: string; // ISO DateTime string
   status: 'confirmed' | 'pending' | 'cancelled';
+  meetingLink?: string; // Added for mock meet link
   meetingNotes?: string;
 }
 

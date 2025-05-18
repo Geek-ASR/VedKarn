@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth, getMentorByProfileString, getMockMentorProfiles } from "@/context/auth-context"; // Ensure getMockMentorProfiles is imported
+import { useAuth, getMentorByProfileString, getMockMentorProfiles } from "@/context/auth-context";
 import type { MentorProfile, AvailabilitySlot, Booking } from "@/lib/types";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +16,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, parseISO } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast"; // Import ToastAction
 import Link from "next/link";
 
-// In a real app, this would come from your database/API
-// Initialize MOCK_MENTORS_DB using functions from auth-context
+
 const MOCK_MENTORS_DB: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
   .filter((mentor): mentor is MentorProfile => Boolean(mentor));
@@ -36,11 +36,9 @@ export default function MentorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
-  // const [bookings, setBookings] = useState<Booking[]>([]); // Local state for bookings - not strictly needed if we update MOCK_MENTORS_DB
 
   useEffect(() => {
     if (mentorId) {
-      // Simulate API call by finding mentor in our derived MOCK_MENTORS_DB
       setTimeout(() => {
         const foundMentor = MOCK_MENTORS_DB.find(m => m.id === mentorId);
         setMentor(foundMentor || null);
@@ -55,9 +53,22 @@ export default function MentorProfilePage() {
       return;
     }
     
-    // Mock booking creation & update mentor's availability
+    const fakeMeetLink = `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
+
+    const newBooking: Booking = {
+      id: `booking-${Date.now()}`,
+      mentorId: mentor.id,
+      menteeId: currentUser.id,
+      slotId: selectedSlot.id,
+      startTime: selectedSlot.startTime,
+      endTime: selectedSlot.endTime,
+      status: 'confirmed',
+      meetingLink: fakeMeetLink,
+      meetingNotes: `Session with ${mentor.name} for ${currentUser.name}`
+    };
+    
     const updatedMentorAvailability = mentor.availabilitySlots?.map(slot => 
-        slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id } : slot
+        slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id, meetingLink: fakeMeetLink } : slot
     );
     
     const updatedMentor = {
@@ -65,23 +76,41 @@ export default function MentorProfilePage() {
         availabilitySlots: updatedMentorAvailability
     };
     
-    setMentor(updatedMentor); // Update local mentor state
+    setMentor(updatedMentor); 
 
-    // In a real app, update MOCK_MENTORS_DB (or backend)
     const mentorIndex = MOCK_MENTORS_DB.findIndex(m => m.id === mentor.id);
     if(mentorIndex > -1) {
       MOCK_MENTORS_DB[mentorIndex] = updatedMentor;
     }
 
-    setSelectedSlot(null); // Reset selected slot
+    setSelectedSlot(null);
+
+    const formatGoogleCalendarDate = (date: Date) => {
+      return date.toISOString().replace(/-|:|\.\d{3}/g, '');
+    };
+    const startTime = parseISO(newBooking.startTime);
+    const endTime = parseISO(newBooking.endTime);
+
+    const calendarEventUrl = new URL('https://www.google.com/calendar/render');
+    calendarEventUrl.searchParams.append('action', 'TEMPLATE');
+    calendarEventUrl.searchParams.append('text', `Mentorship Session: ${mentor.name} & ${currentUser.name}`);
+    calendarEventUrl.searchParams.append('dates', `${formatGoogleCalendarDate(startTime)}/${formatGoogleCalendarDate(endTime)}`);
+    calendarEventUrl.searchParams.append('details', `Join your mentorship session with ${mentor.name}.\nMeeting Link: ${newBooking.meetingLink}\n\nBooked via VedKarn.`);
+    calendarEventUrl.searchParams.append('location', newBooking.meetingLink || '');
+
 
     toast({
       title: "Session Booked!",
-      description: `Your session with ${mentor.name} on ${format(parseISO(selectedSlot.startTime), "PPP 'at' p")} is confirmed. A mock Google Meet link would be generated here.`,
-      action: <Button asChild variant="link"><Link href="/dashboard/schedule">View Schedule</Link></Button>,
-      duration: 7000,
+      description: `Session with ${mentor.name} on ${format(startTime, "PPP 'at' p")} confirmed. Meeting Link: ${newBooking.meetingLink}`,
+      action: (
+        <ToastAction altText="Add to Google Calendar" asChild>
+          <a href={calendarEventUrl.toString()} target="_blank" rel="noopener noreferrer">
+            Add to Calendar
+          </a>
+        </ToastAction>
+      ),
+      duration: 10000,
     });
-    // console.log("Mock Google Calendar & Meet API call: Event created for", selectedSlot.startTime);
   };
 
   if (loading) {
@@ -177,13 +206,12 @@ export default function MentorProfilePage() {
             
           </div>
           
-          {/* Booking Section */}
           <div className="md:col-span-1 space-y-6 sticky top-24 self-start">
              <Alert className="bg-blue-50 border-blue-200 text-blue-700 mb-6">
                 <Info className="h-5 w-5 text-blue-500" />
                 <AlertTitle className="font-semibold">Note on Scheduling</AlertTitle>
                 <AlertDescription>
-                    Booking a session will mock the creation of a Google Calendar event and a Google Meet link. Full API integration is not part of this demo.
+                    Booking a session will generate a mock Google Meet link. You'll also get an "Add to Google Calendar" link, which pre-fills the event in your calendar for you to save. Direct API integration is not part of this demo.
                 </AlertDescription>
             </Alert>
             <Card className="shadow-lg rounded-lg">
@@ -300,5 +328,3 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
-
-    
