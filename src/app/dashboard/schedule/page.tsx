@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/auth-context';
 import type { EnrichedBooking, UserProfile, UserRole } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/core/user-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO, isFuture, isPast } from 'date-fns';
-import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle } from 'lucide-react';
+import { format, parseISO, isFuture, isPast, intervalToDuration, formatDuration } from 'date-fns';
+import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle, MicOff } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -26,6 +26,14 @@ export default function SchedulePage() {
 
   const [isVideoCallModalOpen, setIsVideoCallModalOpen] = useState(false);
   const [currentCallSession, setCurrentCallSession] = useState<EnrichedBooking | null>(null);
+  
+  // States for mock call features
+  const [isMicMuted, setIsMicMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
+  const [callStartTime, setCallStartTime] = useState<Date | null>(null);
+  const [elapsedTime, setElapsedTime] = useState("00:00");
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
 
   useEffect(() => {
     if (user) {
@@ -50,10 +58,46 @@ export default function SchedulePage() {
     }
   }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]); 
 
+  useEffect(() => {
+    if (isVideoCallModalOpen && callStartTime) {
+      timerIntervalRef.current = setInterval(() => {
+        const duration = intervalToDuration({ start: callStartTime, end: new Date() });
+        const formattedTime = `${String(duration.minutes || 0).padStart(2, '0')}:${String(duration.seconds || 0).padStart(2, '0')}`;
+        setElapsedTime(formattedTime);
+      }, 1000);
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    }
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [isVideoCallModalOpen, callStartTime]);
+
   const handleJoinCall = (session: EnrichedBooking) => {
     setCurrentCallSession(session);
+    setIsMicMuted(false);
+    setIsCameraOff(false);
+    setCallStartTime(new Date());
+    setElapsedTime("00:00");
     setIsVideoCallModalOpen(true);
   };
+
+  const handleEndCall = () => {
+    setIsVideoCallModalOpen(false);
+    setCurrentCallSession(null);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    setCallStartTime(null);
+    setElapsedTime("00:00");
+  };
+
+  const toggleMic = () => setIsMicMuted(prev => !prev);
+  const toggleCamera = () => setIsCameraOff(prev => !prev);
 
   if (isLoading) {
     return <SchedulePageSkeleton />;
@@ -82,9 +126,8 @@ export default function SchedulePage() {
   }
 
   const otherParticipant = currentCallSession 
-    ? (user.role === 'mentor' ? currentCallSession.mentee : currentCallSession.mentor) 
+    ? (user.id === currentCallSession.mentor.id ? currentCallSession.mentee : currentCallSession.mentor) 
     : null;
-
 
   return (
     <div className="space-y-8">
@@ -145,14 +188,17 @@ export default function SchedulePage() {
         </TabsContent>
       </Tabs>
 
-      {currentCallSession && otherParticipant && (
+      {currentCallSession && otherParticipant && user && (
         <Dialog open={isVideoCallModalOpen} onOpenChange={setIsVideoCallModalOpen}>
           <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 sm:p-0">
-            <DialogHeader className="p-4 border-b">
-              <DialogTitle className="text-lg md:text-xl">Video Call with {otherParticipant.name}</DialogTitle>
-              <DialogDescription>
-                Session Time: {format(parseISO(currentCallSession.startTime), "PPP 'at' p")}
-              </DialogDescription>
+            <DialogHeader className="p-4 border-b flex flex-row justify-between items-center">
+              <div>
+                <DialogTitle className="text-lg md:text-xl">Video Call with {otherParticipant.name}</DialogTitle>
+                <DialogDescription>
+                  Session Time: {format(parseISO(currentCallSession.startTime), "PPP 'at' p")}
+                </DialogDescription>
+              </div>
+              <div className="text-sm font-mono text-primary">{elapsedTime}</div>
             </DialogHeader>
             
             <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-1 p-1 bg-black overflow-hidden">
@@ -161,47 +207,53 @@ export default function SchedulePage() {
                 <Image 
                   src={otherParticipant.profileImageUrl || `https://placehold.co/800x600.png`} 
                   alt={`${otherParticipant.name}'s video feed`} 
-                  layout="fill" 
-                  objectFit="cover" 
+                  fill={true}
+                  style={{objectFit: 'cover'}}
                   data-ai-hint="person in video call"
                   className="opacity-80"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
-                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on */}
+                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on for other participant */}
                   {otherParticipant.name}
                 </div>
-                <UserAvatar user={otherParticipant} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl" />
+                <UserAvatar user={otherParticipant} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl pointer-events-none" />
               </div>
               
               {/* User's Video Panel */}
               <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                 <Image 
-                   src={user.profileImageUrl || `https://placehold.co/800x600.png`} 
-                   alt="Your video feed" 
-                   layout="fill" 
-                   objectFit="cover" 
-                   data-ai-hint="user looking at screen"
-                   className="opacity-80"
-                  />
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                 {isCameraOff ? (
+                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                        <UserAvatar user={user} className="h-24 w-24 text-4xl opacity-80" />
+                        <VideoOff className="h-10 w-10 text-white mt-4" />
+                    </div>
+                 ) : (
+                    <Image 
+                        src={user.profileImageUrl || `https://placehold.co/800x600.png`} 
+                        alt="Your video feed" 
+                        fill={true}
+                        style={{objectFit: 'cover'}}
+                        data-ai-hint="user looking at screen"
+                        className="opacity-80"
+                    />
+                 )}
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
-                  <Mic className="h-3 w-3 mr-1.5 text-green-400" /> {/* Mock mic on */}
+                  {isMicMuted ? <MicOff className="h-3 w-3 mr-1.5 text-red-400" /> : <Mic className="h-3 w-3 mr-1.5 text-green-400" />}
                   You
                 </div>
-                 <UserAvatar user={user} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl" />
                 <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full" title="Mock Camera Status">
-                    <Video className="h-4 w-4 text-green-400"/> {/* Mock camera on */}
+                    {isCameraOff ? <VideoOff className="h-4 w-4 text-red-400"/> : <Video className="h-4 w-4 text-green-400"/>}
                 </div>
               </div>
             </div>
 
             <DialogFooter className="p-3 sm:p-4 border-t bg-background flex flex-row justify-center items-center space-x-2 sm:space-x-3">
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Mute/Unmute Mic (Mock)">
-                <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isMicMuted ? "Unmute Mic" : "Mute Mic"} onClick={toggleMic}>
+                {isMicMuted ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Turn Camera On/Off (Mock)">
-                <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isCameraOff ? "Turn Camera On" : "Turn Camera Off"} onClick={toggleCamera}>
+                {isCameraOff ? <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Video className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
               <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Share Screen (Mock)">
                 <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -209,7 +261,7 @@ export default function SchedulePage() {
                 <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12 md:hidden" title="Chat (Mock)">
                 <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Button variant="destructive" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="End Call" onClick={() => setIsVideoCallModalOpen(false)}>
+              <Button variant="destructive" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="End Call" onClick={handleEndCall}>
                 <PhoneOff className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DialogFooter>
@@ -350,4 +402,4 @@ function SchedulePageSkeleton() {
   );
 }
 
-    
+
