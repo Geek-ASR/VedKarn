@@ -6,7 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import type { GroupSession } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Trash2, Edit, CalendarDays, Users, DollarSign, Tag, ExternalLink, Info, Frown } from "lucide-react";
+import { PlusCircle, Trash2, Edit, CalendarDays, Users, DollarSign, Tag, ExternalLink, Info, Frown, Users2 as GroupIcon } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -98,12 +98,12 @@ export default function MyGroupSessionsPage() {
       {mySessions.length === 0 ? (
         <Card className="text-center py-12 border-dashed">
             <CardHeader>
-                 <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-                 <CardTitle className="text-xl text-muted-foreground">No Group Sessions Yet</CardTitle>
+                 <GroupIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                 <CardTitle className="text-xl text-muted-foreground">No Group Sessions Created Yet</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                    You haven't created any group sessions. Click the button above to get started!
+                    You haven't created any group sessions. Click the button above to schedule your first one!
                 </p>
             </CardContent>
         </Card>
@@ -172,3 +172,4 @@ export default function MyGroupSessionsPage() {
     </div>
   );
 }
+

@@ -10,7 +10,10 @@ import { getMockMentorProfiles, getMentorByProfileString, useAuth } from "@/cont
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Brain, Frown } from "lucide-react";
+import { Brain, Frown, SearchX } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const MOCK_MENTORS_DB: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
@@ -141,11 +144,18 @@ export default function MentorDiscoveryPage() {
           </Alert>
         )}
         {!isLoading && !error && mentors && mentors.length === 0 && (
-          <Alert>
-            <Frown className="h-4 w-4" />
-            <AlertTitle>No Mentors Found</AlertTitle>
-            <AlertDescription>Try adjusting your search filters or check back later.</AlertDescription>
-          </Alert>
+           <Card className="col-span-full py-12 flex flex-col items-center justify-center text-center border-dashed">
+            <CardHeader>
+                 <SearchX className="mx-auto h-12 w-12 text-muted-foreground" />
+                 <CardTitle className="text-xl text-muted-foreground">No Mentors Found</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                    Try adjusting your search filters or check back later for new mentors.
+                </p>
+                <Button variant="outline" onClick={() => handleSearch({})}>Clear Filters & View All</Button>
+            </CardContent>
+        </Card>
         )}
         {!isLoading && !error && mentors && mentors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -181,5 +191,3 @@ function MentorCardSkeleton() {
     </div>
   );
 }
-
-    

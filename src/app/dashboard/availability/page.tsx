@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge"; // Added import
+import { Badge } from "@/components/ui/badge"; 
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -232,8 +232,8 @@ export default function AvailabilityPage() {
                     {upcomingSlots.length === 0 ? (
                          <Alert className="bg-blue-50 border-blue-200 text-blue-700">
                             <Info className="h-4 w-4 text-blue-500" />
-                            <AlertTitle>No Upcoming Slots</AlertTitle>
-                            <AlertDescription>You have no upcoming availability slots. Add some using the form!</AlertDescription>
+                            <AlertTitle className="font-semibold text-blue-800">No Upcoming Slots</AlertTitle>
+                            <AlertDescription className="text-blue-700">You currently have no upcoming availability slots. Add some using the form to let mentees book sessions!</AlertDescription>
                         </Alert>
                     ) : (
                         <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
@@ -282,7 +282,7 @@ export default function AvailabilityPage() {
                      {pastSlots.length === 0 ? (
                          <Alert>
                             <Info className="h-4 w-4" />
-                            <AlertTitle>No Past Slots</AlertTitle>
+                            <AlertTitle className="font-semibold">No Past Slots</AlertTitle>
                             <AlertDescription>You have no past availability slots recorded.</AlertDescription>
                         </Alert>
                     ) : (
@@ -311,3 +311,4 @@ export default function AvailabilityPage() {
     </div>
   );
 }
+

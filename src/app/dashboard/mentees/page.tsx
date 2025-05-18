@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Briefcase, CalendarClock, Frown, MessageCircle, UserCircle } from "lucide-react";
+import { Briefcase, CalendarClock, Frown, MessageCircle, UserCircle2, Info } from "lucide-react";
 import { format, parseISO, isFuture, isPast } from 'date-fns';
 import Link from "next/link";
 
@@ -177,12 +177,12 @@ export default function MyMenteesPage() {
       {processedMentees.length === 0 ? (
         <Card className="text-center py-12 border-dashed">
           <CardHeader>
-            <UserCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+            <UserCircle2 className="mx-auto h-12 w-12 text-muted-foreground" />
             <CardTitle className="text-xl text-muted-foreground">No Mentees Yet</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              No mentees have booked sessions with you yet. Ensure your availability is set!
+              No mentees have booked sessions with you yet. Ensure your availability is set so they can find you!
             </p>
             <Button asChild>
               <Link href="/dashboard/availability">Set Availability</Link>
@@ -220,7 +220,7 @@ export default function MyMenteesPage() {
               </CardContent>
               <CardFooter className="flex gap-2 border-t pt-4 mt-auto">
                 <Button variant="outline" size="sm" className="flex-1" disabled>
-                  <UserCircle className="mr-2 h-4 w-4" /> View Profile (Soon)
+                  <UserCircle2 className="mr-2 h-4 w-4" /> View Profile (Soon)
                 </Button>
                 <Button variant="default" size="sm" className="flex-1" disabled>
                   <MessageCircle className="mr-2 h-4 w-4" /> Message (Soon)
@@ -233,3 +233,4 @@ export default function MyMenteesPage() {
     </div>
   );
 }
+

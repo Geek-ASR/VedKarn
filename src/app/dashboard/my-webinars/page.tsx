@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,7 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import type { Webinar } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Trash2, Edit, CalendarDays, Users, DollarSign, Tag, ExternalLink, Info, Frown, Tv2 } from "lucide-react";
+import { PlusCircle, Trash2, Edit, CalendarDays, Tag, ExternalLink, Clock, Frown, Tv2 as WebinarIcon } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -95,12 +96,12 @@ export default function MyWebinarsPage() {
       {myWebinars.length === 0 ? (
         <Card className="text-center py-12 border-dashed">
             <CardHeader>
-                 <Tv2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                 <CardTitle className="text-xl text-muted-foreground">No Webinars Yet</CardTitle>
+                 <WebinarIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                 <CardTitle className="text-xl text-muted-foreground">No Webinars Created Yet</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                    You haven't created any webinars. Click the button above to get started!
+                    You haven't created any webinars. Click the button above to schedule your first one!
                 </p>
             </CardContent>
         </Card>
@@ -125,7 +126,7 @@ export default function MyWebinarsPage() {
                     <Tag className="h-3.5 w-3.5 mr-1.5 text-accent" /> Topic: <span className="font-medium text-foreground ml-1">{webinar.topic}</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
-                    <Users className="h-3.5 w-3.5 mr-1.5 text-accent" /> Speaker: {webinar.speakerName}
+                    <UserIcon className="h-3.5 w-3.5 mr-1.5 text-accent" /> Speaker: {webinar.speakerName}
                 </div>
                  {webinar.duration && (
                     <div className="flex items-center text-muted-foreground">

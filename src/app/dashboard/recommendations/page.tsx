@@ -9,7 +9,11 @@ import { getMockMentorProfiles, getMentorByProfileString, useAuth } from "@/cont
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Brain, Frown, Lightbulb } from "lucide-react";
+import { Brain, Frown, Lightbulb, SearchX } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 
 // Define the explicit type for suggested mentor profiles with AI details
 type SuggestedMentorProfileWithDetails = MentorProfile & {
@@ -91,7 +95,8 @@ export default function AiRecommendationsPage() {
         <Lightbulb className="h-5 w-5 text-primary" />
         <AlertTitle className="font-semibold">How it Works</AlertTitle>
         <AlertDescription>
-          Our AI analyzes your profile and compares it against potential mentors to find the best fits. The more complete your profile, the better the recommendations!
+          Our AI analyzes your profile and compares it against potential mentors to find the best fits. The more complete your profile, the better the recommendations! 
+          <Button variant="link" asChild className="p-0 h-auto ml-1 text-primary"><Link href="/dashboard/profile">Complete Your Profile</Link></Button>
         </AlertDescription>
       </Alert>
 
@@ -110,13 +115,21 @@ export default function AiRecommendationsPage() {
       )}
 
       {!isLoadingSuggestions && !suggestionsError && suggestedMentorProfiles && suggestedMentorProfiles.length === 0 && (
-        <Alert>
-          <Frown className="h-4 w-4" />
-          <AlertTitle>No Specific Suggestions Yet</AlertTitle>
-          <AlertDescription>
-            We couldn't find highly specific matches right now. Make sure your profile is complete and detailed. In the meantime, you can browse all mentors.
-          </AlertDescription>
-        </Alert>
+         <Card className="col-span-full py-12 flex flex-col items-center justify-center text-center border-dashed">
+            <CardHeader>
+                 <SearchX className="mx-auto h-12 w-12 text-muted-foreground" />
+                 <CardTitle className="text-xl text-muted-foreground">No Specific Suggestions Yet</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                 We couldn't find highly specific matches right now. Ensure your profile is detailed for better suggestions.
+                </p>
+                <div className="flex gap-2 justify-center">
+                    <Button asChild><Link href="/dashboard/profile">Update Profile</Link></Button>
+                    <Button variant="outline" asChild><Link href="/dashboard/mentors">Browse All Mentors</Link></Button>
+                </div>
+            </CardContent>
+        </Card>
       )}
 
       {!isLoadingSuggestions && !suggestionsError && suggestedMentorProfiles && suggestedMentorProfiles.length > 0 && (
@@ -151,3 +164,4 @@ function MentorCardSkeleton() {
     </div>
   );
 }
+

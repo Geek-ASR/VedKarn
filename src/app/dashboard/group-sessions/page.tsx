@@ -6,8 +6,11 @@ import { useAuth } from "@/context/auth-context";
 import type { GroupSession } from "@/lib/types";
 import { GroupSessionCard, GroupSessionCardSkeleton } from "@/components/dashboard/group-session-card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Users, SearchX } from "lucide-react";
+import { Users, SearchX, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardContent, CardTitle, CardFooter } from "@/components/ui/card"; // Added CardFooter
+import { Button } from "@/components/ui/button"; // Added Button
+import Link from "next/link"; // Added Link
 
 export default function BrowseGroupSessionsPage() {
   const { getAllGroupSessions } = useAuth();
@@ -68,12 +71,20 @@ export default function BrowseGroupSessionsPage() {
         <Card className="col-span-full py-12 flex flex-col items-center justify-center text-center border-dashed">
             <CardHeader>
                  <SearchX className="mx-auto h-12 w-12 text-muted-foreground" />
-                 <CardTitle className="text-xl text-muted-foreground">No Group Sessions Found</CardTitle>
+                 <CardTitle className="text-xl text-muted-foreground">
+                    {searchTerm ? "No Sessions Match Your Search" : "No Group Sessions Available"}
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                    {searchTerm ? "No sessions match your search criteria." : "There are currently no group sessions available. Check back soon!"}
+                    {searchTerm 
+                        ? "Try a different search term or clear your search to see all sessions." 
+                        : "There are currently no group sessions. Check back soon or explore other mentorship options!"
+                    }
                 </p>
+                 {searchTerm && (
+                     <Button variant="outline" onClick={() => setSearchTerm("")}>Clear Search</Button>
+                 )}
             </CardContent>
         </Card>
       )}
@@ -88,9 +99,3 @@ export default function BrowseGroupSessionsPage() {
     </div>
   );
 }
-
-// Minimal Card components for empty state to avoid circular dependencies or large imports
-const Card = ({className, children}: {className?: string, children: React.ReactNode}) => <div className={`bg-card p-6 rounded-lg shadow ${className}`}>{children}</div>;
-const CardHeader = ({children}: {children: React.ReactNode}) => <div className="mb-2">{children}</div>;
-const CardTitle = ({className, children}: {className?: string, children: React.ReactNode}) => <h3 className={`text-xl font-semibold ${className}`}>{children}</h3>;
-const CardContent = ({children}: {children: React.ReactNode}) => <div>{children}</div>;
