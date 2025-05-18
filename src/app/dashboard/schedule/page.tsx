@@ -3,16 +3,18 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import type { EnrichedBooking, UserProfile } from '@/lib/types';
+import type { EnrichedBooking, UserProfile, UserRole } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/core/user-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
-import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle } from 'lucide-react';
+import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 export default function SchedulePage() {
   const { user, getScheduledSessionsForCurrentUser } = useAuth();
@@ -20,6 +22,9 @@ export default function SchedulePage() {
   const [pastSessions, setPastSessions] = useState<EnrichedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isVideoCallModalOpen, setIsVideoCallModalOpen] = useState(false);
+  const [currentCallSession, setCurrentCallSession] = useState<EnrichedBooking | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -40,9 +45,14 @@ export default function SchedulePage() {
       };
       fetchSessions();
     } else {
-      setIsLoading(false); // Not logged in, so not loading sessions
+      setIsLoading(false); 
     }
   }, [user, getScheduledSessionsForCurrentUser]);
+
+  const handleJoinCall = (session: EnrichedBooking) => {
+    setCurrentCallSession(session);
+    setIsVideoCallModalOpen(true);
+  };
 
   if (isLoading) {
     return <SchedulePageSkeleton />;
@@ -69,6 +79,10 @@ export default function SchedulePage() {
         </Alert>
      );
   }
+
+  const otherParticipant = currentCallSession 
+    ? (user.role === 'mentor' ? currentCallSession.mentee : currentCallSession.mentor) 
+    : null;
 
 
   return (
@@ -100,7 +114,13 @@ export default function SchedulePage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {upcomingSessions.map(session => (
-                <SessionCard key={session.id} session={session} userRole={user.role!} isPastSession={false} />
+                <SessionCard 
+                  key={session.id} 
+                  session={session} 
+                  userRole={user.role!} 
+                  isPastSession={false}
+                  onJoinCall={() => handleJoinCall(session)}
+                />
               ))}
             </div>
           )}
@@ -112,23 +132,78 @@ export default function SchedulePage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {pastSessions.map(session => (
-                <SessionCard key={session.id} session={session} userRole={user.role!} isPastSession={true} />
+                <SessionCard 
+                  key={session.id} 
+                  session={session} 
+                  userRole={user.role!} 
+                  isPastSession={true} 
+                />
               ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      {currentCallSession && otherParticipant && (
+        <Dialog open={isVideoCallModalOpen} onOpenChange={setIsVideoCallModalOpen}>
+          <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0">
+            <DialogHeader className="p-4 border-b">
+              <DialogTitle className="text-lg">Video Call with {otherParticipant.name}</DialogTitle>
+              <DialogDescription>
+                Session: {format(parseISO(currentCallSession.startTime), "PPP 'at' p")}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-2 p-2 bg-muted/40 overflow-hidden">
+              {/* Other Participant's Video */}
+              <div className="relative bg-card rounded-md overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                <Image src={otherParticipant.profileImageUrl || "https://placehold.co/600x400.png"} alt={otherParticipant.name || "Participant"} layout="fill" objectFit="cover" data-ai-hint="person portrait" />
+                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                  {otherParticipant.name}
+                </div>
+              </div>
+              {/* User's Video (Placeholder) */}
+              <div className="relative bg-card rounded-md overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                 <Image src={user.profileImageUrl || "https://placehold.co/600x400.png"} alt={user.name || "You"} layout="fill" objectFit="cover" data-ai-hint="person looking at screen" />
+                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                  You
+                </div>
+                 <div className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full">
+                    <Mic className="h-4 w-4"/>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="p-4 border-t bg-background flex flex-row justify-center items-center space-x-3">
+              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Mute/Unmute Mic (Mock)">
+                <Mic className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Turn Camera On/Off (Mock)">
+                <VideoOff className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" size="icon" className="rounded-full h-12 w-12" title="Share Screen (Mock)">
+                <ScreenShare className="h-5 w-5" />
+              </Button>
+              <Button variant="destructive" size="icon" className="rounded-full h-12 w-12" title="End Call" onClick={() => setIsVideoCallModalOpen(false)}>
+                <PhoneOff className="h-5 w-5" />
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
     </div>
   );
 }
 
 interface SessionCardProps {
   session: EnrichedBooking;
-  userRole: 'mentor' | 'mentee';
+  userRole: UserRole;
   isPastSession: boolean;
+  onJoinCall?: () => void;
 }
 
-function SessionCard({ session, userRole, isPastSession }: SessionCardProps) {
+function SessionCard({ session, userRole, isPastSession, onJoinCall }: SessionCardProps) {
   const otherParticipant = userRole === 'mentor' ? session.mentee : session.mentor;
   const otherParticipantRole = userRole === 'mentor' ? 'Mentee' : 'Mentor';
 
@@ -158,7 +233,11 @@ function SessionCard({ session, userRole, isPastSession }: SessionCardProps) {
         )}
       </CardContent>
       <CardFooter>
-        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isPastSession && userRole === 'mentee'}>
+        <Button 
+          className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
+          disabled={isPastSession && userRole === 'mentee'}
+          onClick={!isPastSession ? onJoinCall : undefined}
+        >
           <Video className="mr-2 h-4 w-4" />
           {isPastSession ? "View Recording (Mock)" : "Join In-App Call (Mock)"}
         </Button>
@@ -174,11 +253,11 @@ function EmptyState({ userRole, sessionType }: { userRole: UserRole, sessionType
   
   const ctaText = userRole === 'mentee' 
     ? "Find a Mentor" 
-    : "Check Your Availability";
+    : (userRole === 'mentor' ? "Update Availability" : "Explore");
   
   const ctaLink = userRole === 'mentee' 
     ? "/dashboard/mentors" 
-    : "/dashboard/availability";
+    : (userRole === 'mentor' ? "/dashboard/availability" : "/dashboard");
 
   return (
     <Card className="col-span-full py-12 flex flex-col items-center justify-center text-center border-dashed">
@@ -245,5 +324,3 @@ function SchedulePageSkeleton() {
     </div>
   );
 }
-
-    

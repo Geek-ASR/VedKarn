@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -6,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase } from "lucide-react"; // Removed GraduationCap as it's not used
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, MessageSquare } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -16,8 +15,9 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const pathname = usePathname();
 
   const commonItems = [
-    { href: "/dashboard", label: "Home", icon: Home }, // Changed "Overview" to "Home"
+    { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/profile", label: "Profile", icon: User },
+    // { href: "/dashboard/messages", label: "Messages", icon: MessageSquare }, // Example for future
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
@@ -31,11 +31,11 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
   const mentorItems = [
     ...commonItems,
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarDays },
-    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase },
+    // { href: "/dashboard/schedule", label: "My Sessions", icon: CalendarDays }, // Mentors might also see their schedule
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Changed from UserPlus
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
-  // If role is null (e.g. during profile completion), show common items or minimal set
   const displayItems = user?.role ? items : commonItems;
 
 
