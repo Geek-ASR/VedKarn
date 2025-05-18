@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,6 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
 
+// This MOCK_MENTORS_DB_VIEW is for initial display and finding the mentor.
+// Actual booking updates will happen via context.
 const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
   .filter((mentor): mentor is MentorProfile => Boolean(mentor));
@@ -26,7 +29,7 @@ const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfile
 export default function MentorProfilePage() {
   const params = useParams();
   const mentorId = params.mentorId as string;
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, confirmBooking } = useAuth(); // Get confirmBooking from context
   const { toast } = useToast();
   const router = useRouter();
 
@@ -38,70 +41,69 @@ export default function MentorProfilePage() {
   useEffect(() => {
     if (mentorId) {
       setTimeout(() => {
+        // Fetch the mentor profile for display. For reactivity to bookings made by others,
+        // this might need to refetch from context or a real backend.
+        // For now, it finds from a snapshot.
         const foundMentor = MOCK_MENTORS_DB_VIEW.find(m => m.id === mentorId);
-        setMentor(foundMentor || null);
+        if (foundMentor && foundMentor.email && MOCK_USERS[foundMentor.email]) {
+           setMentor(MOCK_USERS[foundMentor.email] as MentorProfile); // Use the live data from context's MOCK_USERS
+        } else {
+           setMentor(null);
+        }
         setLoading(false);
       }, 500);
     }
-  }, [mentorId]);
+  }, [mentorId, currentUser]); // Add currentUser to dependencies to refetch if another user logs in
 
-  const handleBookSession = () => {
-    if (!currentUser || currentUser.role !== 'mentee' || !mentor || !selectedSlot) {
+  const handleBookSession = async () => {
+    if (!currentUser || currentUser.role !== 'mentee' || !mentor || !selectedSlot || !mentor.email) {
       toast({ title: "Booking Error", description: "Cannot complete booking. Ensure you're logged in as a mentee and selected a slot.", variant: "destructive" });
       return;
     }
     
-    // Mock booking creation
-    const newBooking: Booking = {
-      id: `booking-${Date.now()}`,
-      mentorId: mentor.id,
-      menteeId: currentUser.id,
-      slotId: selectedSlot.id,
-      startTime: selectedSlot.startTime,
-      endTime: selectedSlot.endTime,
-      status: 'confirmed',
-      meetingNotes: `Session with ${mentor.name} for ${currentUser.name}`
-    };
-    
-    const updatedMentorAvailability = mentor.availabilitySlots?.map(slot => 
-        slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id } : slot
-    );
-    
-    const updatedMentor = {
-        ...mentor,
-        availabilitySlots: updatedMentorAvailability
-    };
-    
-    setMentor(updatedMentor); 
+    try {
+      await confirmBooking(mentor.email, selectedSlot.id);
 
-    // Update the mock database (MOCK_MENTORS_DB_VIEW is a local copy, need to update the source if auth-context's MOCK_USERS is the true source)
-    const mentorIndex = MOCK_MENTORS_DB_VIEW.findIndex(m => m.id === mentor.id);
-    if(mentorIndex > -1) {
-      MOCK_MENTORS_DB_VIEW[mentorIndex] = updatedMentor;
+      // Update local mentor state for immediate UI feedback on this page
+      const updatedMentorAvailability = mentor.availabilitySlots?.map(slot => 
+          slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id } : slot
+      );
+      
+      const updatedMentorLocalUI = {
+          ...mentor,
+          availabilitySlots: updatedMentorAvailability
+      };
+      setMentor(updatedMentorLocalUI); 
+      setSelectedSlot(null);
+
+      // Generate Google Calendar Link
+      const bookingStartTime = parseISO(selectedSlot.startTime);
+      const bookingEndTime = parseISO(selectedSlot.endTime);
+      const calStartTime = format(bookingStartTime, "yyyyMMdd'T'HHmmss'Z'");
+      const calEndTime = format(bookingEndTime, "yyyyMMdd'T'HHmmss'Z'");
+      const eventTitle = encodeURIComponent(`VedKarn Session: ${currentUser.name} & ${mentor.name}`);
+      const eventDetails = encodeURIComponent(`Your mentorship session booked on VedKarn. Join via the in-app video call feature on the VedKarn platform at the scheduled time.\nMentor: ${mentor.name}\nMentee: ${currentUser.name}`);
+      const eventLocation = encodeURIComponent("VedKarn Platform (In-App Call)");
+      const googleCalendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${calStartTime}/${calEndTime}&details=${eventDetails}&location=${eventLocation}`;
+
+      toast({
+        title: "Session Booked!",
+        description: `Session with ${mentor.name} on ${format(bookingStartTime, "PPP 'at' p")} confirmed. Join via VedKarn's in-app call feature.`,
+        action: (
+          <ToastAction altText="Add to Google Calendar" asChild>
+            <a href={googleCalendarLink} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
+          </ToastAction>
+        ),
+        duration: 15000, 
+      });
+
+    } catch (error) {
+       toast({
+        title: "Booking Failed",
+        description: (error as Error).message || "Could not book the session.",
+        variant: "destructive",
+      });
     }
-    // Ideally, updateUserProfile or a specific booking function in auth-context should handle this DB update
-    // For now, this updates the local copy used by this page.
-
-    setSelectedSlot(null);
-
-    // Generate Google Calendar Link
-    const calStartTime = format(parseISO(newBooking.startTime), "yyyyMMdd'T'HHmmss'Z'");
-    const calEndTime = format(parseISO(newBooking.endTime), "yyyyMMdd'T'HHmmss'Z'");
-    const eventTitle = encodeURIComponent(`VedKarn Session: ${currentUser.name} & ${mentor.name}`);
-    const eventDetails = encodeURIComponent(`Your mentorship session booked on VedKarn. Join via the in-app video call feature on the VedKarn platform at the scheduled time.\nMentor: ${mentor.name}\nMentee: ${currentUser.name}`);
-    const eventLocation = encodeURIComponent("VedKarn Platform (In-App Call)");
-    const googleCalendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${calStartTime}/${calEndTime}&details=${eventDetails}&location=${eventLocation}`;
-
-    toast({
-      title: "Session Booked!",
-      description: `Session with ${mentor.name} on ${format(parseISO(newBooking.startTime), "PPP 'at' p")} confirmed. Join via VedKarn's in-app call feature.`,
-      action: (
-        <ToastAction altText="Add to Google Calendar" asChild>
-          <a href={googleCalendarLink} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
-        </ToastAction>
-      ),
-      duration: 15000, // Increased duration to allow clicking the link
-    });
   };
 
   if (loading) {
@@ -318,3 +320,9 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
+
+// Need to re-import MOCK_USERS here to make it available in this module's scope for initializing MOCK_MENTORS_DB_VIEW
+// This is a workaround due to the mock data structure. In a real app, data fetching would be centralized.
+import { MOCK_USERS } from "@/context/auth-context";
+
+    
