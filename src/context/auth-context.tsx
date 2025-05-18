@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem, GroupSession } from '@/lib/types';
+import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem, GroupSession, Webinar } from '@/lib/types';
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -11,7 +11,7 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1', 
+    hostId: 'mentor1',
     hostName: 'Dr. Code Alchemist',
     hostProfileImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 5th, 2024 at 4:00 PM PST',
@@ -41,7 +41,7 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     id: 'gs3',
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor2', 
+    hostId: 'mentor2',
     hostName: 'Desiree Design',
     hostProfileImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 19th, 2024 at 1:00 PM PST',
@@ -51,6 +51,46 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     maxParticipants: 20,
     price: 'Free',
     duration: "75 minutes"
+  }
+];
+
+// Initial Mock Webinars Data (adapted from suggest-webinars.ts)
+const INITIAL_MOCK_WEBINARS: Webinar[] = [
+  {
+    id: 'web1',
+    title: 'The Future of Generative AI',
+    description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
+    hostId: 'mentor1', // Example hostId
+    speakerName: 'Dr. Lex Futura',
+    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
+    date: 'November 8th, 2024 at 9:00 AM PST',
+    topic: 'Artificial Intelligence',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '90 minutes'
+  },
+  {
+    id: 'web2',
+    title: 'Effective Networking in the Tech Industry',
+    description: 'Learn strategies for building meaningful professional connections, both online and offline, to advance your career in tech.',
+    hostId: 'mentor2', // Example hostId
+    speakerName: 'Connector Carla',
+    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
+    date: 'November 15th, 2024 at 12:00 PM PST',
+    topic: 'Career Development',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '60 minutes'
+  },
+  {
+    id: 'web3',
+    title: 'Demystifying Cloud Computing',
+    description: 'A comprehensive overview of cloud computing concepts, services (AWS, Azure, GCP), and how to get started with cloud technologies.',
+    hostId: 'mentor1', // Example hostId
+    speakerName: 'Prof. Nimbus Stratos',
+    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
+    date: 'November 22nd, 2024 at 3:00 PM PST',
+    topic: 'Cloud Computing',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '75 minutes'
   }
 ];
 
@@ -136,6 +176,14 @@ interface AuthContextType {
   getGroupSessionDetails: (sessionId: string) => Promise<GroupSession | undefined>;
   deleteMentorGroupSession: (sessionId: string) => Promise<void>;
   getAllGroupSessions: () => Promise<GroupSession[]>;
+  // Webinar Management
+  masterWebinarsList: Webinar[];
+  webinarsVersion: number;
+  createWebinar: (webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }) => Promise<Webinar>;
+  getWebinarsByMentor: (mentorId: string) => Promise<Webinar[]>;
+  getWebinarDetails: (webinarId: string) => Promise<Webinar | undefined>;
+  deleteMentorWebinar: (webinarId: string) => Promise<void>;
+  getAllWebinars: () => Promise<Webinar[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,7 +193,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [bookingsVersion, setBookingsVersion] = useState(0);
   const [sessionsVersion, setSessionsVersion] = useState(0);
+  const [webinarsVersion, setWebinarsVersion] = useState(0);
   const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>([]);
+  const [masterWebinarsList, setMasterWebinarsList] = useState<Webinar[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -176,13 +226,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem('vedkarn-user');
       }
     }
+
     const storedSessions = localStorage.getItem('vedkarn-group-sessions');
     if (storedSessions) {
         try {
             const parsedSessions: GroupSession[] = JSON.parse(storedSessions);
-            // Ensure initial mock data is present if localStorage is empty or doesn't have them
             const initialSessionIds = new Set(INITIAL_MOCK_GROUP_SESSIONS.map(s => s.id));
-            const combinedSessions = [...parsedSessions.filter(s => !initialSessionIds.has(s.id)), ...INITIAL_MOCK_GROUP_SESSIONS];
+            const combinedSessions = [...INITIAL_MOCK_GROUP_SESSIONS.filter(s => !parsedSessions.find(ps => ps.id === s.id)), ...parsedSessions];
             setMasterGroupSessionsList(combinedSessions);
         } catch (e) {
             console.error("Failed to parse group sessions from localStorage", e);
@@ -194,14 +244,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
          localStorage.setItem('vedkarn-group-sessions', JSON.stringify(INITIAL_MOCK_GROUP_SESSIONS));
     }
 
+    const storedWebinars = localStorage.getItem('vedkarn-webinars');
+    if (storedWebinars) {
+        try {
+            const parsedWebinars: Webinar[] = JSON.parse(storedWebinars);
+            const initialWebinarIds = new Set(INITIAL_MOCK_WEBINARS.map(w => w.id));
+            const combinedWebinars = [...INITIAL_MOCK_WEBINARS.filter(w => !parsedWebinars.find(pw => pw.id === w.id)), ...parsedWebinars];
+            setMasterWebinarsList(combinedWebinars);
+        } catch (e) {
+            console.error("Failed to parse webinars from localStorage", e);
+            setMasterWebinarsList(INITIAL_MOCK_WEBINARS);
+            localStorage.setItem('vedkarn-webinars', JSON.stringify(INITIAL_MOCK_WEBINARS));
+        }
+    } else {
+         setMasterWebinarsList(INITIAL_MOCK_WEBINARS);
+         localStorage.setItem('vedkarn-webinars', JSON.stringify(INITIAL_MOCK_WEBINARS));
+    }
+
     setLoading(false);
   }, []);
 
    useEffect(() => {
-    if(!loading && masterGroupSessionsList.length > 0) { 
+    if(!loading && masterGroupSessionsList.length > 0) {
         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(masterGroupSessionsList));
     }
   }, [masterGroupSessionsList, loading]);
+
+  useEffect(() => {
+    if(!loading && masterWebinarsList.length > 0) {
+        localStorage.setItem('vedkarn-webinars', JSON.stringify(masterWebinarsList));
+    }
+  }, [masterWebinarsList, loading]);
 
 
   useEffect(() => {
@@ -336,13 +409,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
         );
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
-        
-        if (user && user.email === mentorEmail) { 
+
+        if (user && user.email === mentorEmail) {
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
             setUser(updatedCurrentUser);
             localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
         }
-        setBookingsVersion(v => v + 1); 
+        setBookingsVersion(v => v + 1);
         return;
       } else {
         throw new Error("Slot not found or already booked.");
@@ -353,7 +426,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const getScheduledSessionsForCurrentUser = useCallback(async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100)); 
+    await new Promise(resolve => setTimeout(resolve, 100));
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
@@ -367,9 +440,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (slot.isBooked && slot.bookedByMenteeId) {
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) { 
+                if (menteeProfile) {
                   scheduledSessions.push({
-                    id: `${mentorProfile.id}-${slot.id}`, 
+                    id: `${mentorProfile.id}-${slot.id}`,
                     mentorId: mentorProfile.id,
                     menteeId: menteeProfile.id,
                     startTime: slot.startTime,
@@ -396,7 +469,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const mentorEmail = Object.keys(MOCK_USERS).find(email => MOCK_USERS[email].id === mentorId);
     if (mentorEmail && MOCK_USERS[mentorEmail] && MOCK_USERS[mentorEmail].role === 'mentor') {
       (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = newSlots;
-      
+
       if (user && user.id === mentorId) {
         const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
         setUser(updatedCurrentUser);
@@ -410,7 +483,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Group Session Management Functions
   const createGroupSession = useCallback(async (
-    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'> & { duration?: string }
+    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }
   ): Promise<GroupSession> => {
     if (!user || user.role !== 'mentor') {
       throw new Error("Only mentors can create group sessions.");
@@ -419,15 +492,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...sessionData,
       id: `gs-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       hostId: user.id,
-      hostName: user.name, 
-      hostProfileImageUrl: user.profileImageUrl, 
+      hostName: user.name,
+      hostProfileImageUrl: user.profileImageUrl,
       participantCount: 0,
-      duration: sessionData.duration || "Not specified", // Ensure duration has a default
+      duration: sessionData.duration || "Not specified",
     };
     setMasterGroupSessionsList(prevSessions => [...prevSessions, newSession]);
     setSessionsVersion(v => v + 1);
     return newSession;
-  }, [user, setMasterGroupSessionsList, setSessionsVersion]);
+  }, [user]);
 
   const getGroupSessionsByMentor = useCallback(async (mentorId: string): Promise<GroupSession[]> => {
     return masterGroupSessionsList.filter(session => session.hostId === mentorId);
@@ -438,7 +511,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [masterGroupSessionsList]);
 
   const getAllGroupSessions = useCallback(async (): Promise<GroupSession[]> => {
-    return [...masterGroupSessionsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Example sort, adjust as needed
+    return [...masterGroupSessionsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [masterGroupSessionsList]);
 
   const deleteMentorGroupSession = useCallback(async (sessionId: string): Promise<void> => {
@@ -446,13 +519,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("User not authorized to delete sessions.");
     }
     const sessionToDelete = masterGroupSessionsList.find(s => s.id === sessionId);
-    if (sessionToDelete && sessionToDelete.hostId !== user.id) {
+    if (!sessionToDelete) {
+        throw new Error("Session not found.");
+    }
+    if (sessionToDelete.hostId !== user.id) {
       throw new Error("Mentor can only delete their own sessions.");
     }
 
     setMasterGroupSessionsList(prevSessions => prevSessions.filter(session => session.id !== sessionId));
     setSessionsVersion(v => v + 1);
-  }, [user, masterGroupSessionsList, setMasterGroupSessionsList, setSessionsVersion]);
+  }, [user, masterGroupSessionsList]);
+
+  // Webinar Management Functions
+  const createWebinar = useCallback(async (
+    webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }
+  ): Promise<Webinar> => {
+    if (!user || user.role !== 'mentor') {
+      throw new Error("Only mentors can create webinars.");
+    }
+    const newWebinar: Webinar = {
+      ...webinarData,
+      id: `web-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      hostId: user.id,
+      speakerName: webinarData.speakerName || user.name,
+      hostProfileImageUrl: user.profileImageUrl,
+    };
+    setMasterWebinarsList(prevWebinars => [...prevWebinars, newWebinar]);
+    setWebinarsVersion(v => v + 1);
+    return newWebinar;
+  }, [user]);
+
+  const getWebinarsByMentor = useCallback(async (mentorId: string): Promise<Webinar[]> => {
+    return masterWebinarsList.filter(webinar => webinar.hostId === mentorId);
+  }, [masterWebinarsList]);
+
+  const getWebinarDetails = useCallback(async (webinarId: string): Promise<Webinar | undefined> => {
+    return masterWebinarsList.find(webinar => webinar.id === webinarId);
+  }, [masterWebinarsList]);
+
+  const getAllWebinars = useCallback(async (): Promise<Webinar[]> => {
+    return [...masterWebinarsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [masterWebinarsList]);
+
+  const deleteMentorWebinar = useCallback(async (webinarId: string): Promise<void> => {
+    if (!user || user.role !== 'mentor') {
+      throw new Error("User not authorized to delete webinars.");
+    }
+    const webinarToDelete = masterWebinarsList.find(w => w.id === webinarId);
+     if (!webinarToDelete) {
+        throw new Error("Webinar not found.");
+    }
+    if (webinarToDelete.hostId !== user.id) {
+      throw new Error("Mentor can only delete their own webinars.");
+    }
+    setMasterWebinarsList(prevWebinars => prevWebinars.filter(webinar => webinar.id !== webinarId));
+    setWebinarsVersion(v => v + 1);
+  }, [user, masterWebinarsList]);
 
 
   return (
@@ -474,6 +596,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       getGroupSessionDetails,
       deleteMentorGroupSession,
       getAllGroupSessions,
+      masterWebinarsList,
+      webinarsVersion,
+      createWebinar,
+      getWebinarsByMentor,
+      getWebinarDetails,
+      deleteMentorWebinar,
+      getAllWebinars,
     }}>
       {children}
     </AuthContext.Provider>

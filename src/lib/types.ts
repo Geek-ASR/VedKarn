@@ -1,4 +1,3 @@
-
 export type UserRole = 'mentor' | 'mentee' | null;
 
 export interface User {
@@ -57,12 +56,11 @@ export interface Booking {
   endTime: string; // ISO DateTime string
   status: 'confirmed' | 'pending' | 'cancelled'; // status might be derived or fixed for mock
   meetingNotes?: string;
-  // Removed meetingLink, as per previous requests for in-app call simulation
 }
 
 // New type for the schedule page
 export interface EnrichedBooking extends Booking {
-  mentor: UserProfile; 
+  mentor: UserProfile;
   mentee: UserProfile;
   sessionTitle: string; // e.g., "Session with Mentor Name" or "Session with Mentee Name"
 }
@@ -79,24 +77,27 @@ export interface GroupSession {
   id:string;
   title: string;
   description: string;
+  hostId: string;
   hostName: string;
+  hostProfileImageUrl?: string;
   date: string; // Simple string for now, e.g., "October 26th, 2024 at 2:00 PM"
   tags: string[];
   imageUrl?: string; // Placeholder URL
   participantCount?: number;
   maxParticipants?: number;
   price?: string; // e.g., "Free", "$20"
+  duration?: string;
 }
 
 export interface Webinar {
   id: string;
   title: string;
   description: string;
-  speakerName: string;
+  hostId: string;
+  speakerName: string; // Can be the mentor's name by default
+  hostProfileImageUrl?: string;
   date: string; // Simple string for now
   topic: string;
   imageUrl?: string; // Placeholder URL
   duration?: string; // e.g., "60 minutes"
 }
-
-    

@@ -2,18 +2,19 @@
 'use server';
 /**
  * @fileOverview AI-powered webinar suggestion flow.
- *
+ * This file provides mock suggestions for webinars.
  * - suggestWebinars - A function that suggests webinars based on mentee profile.
  * - SuggestWebinarsInput - The input type for the suggestWebinars function.
  * - SuggestWebinarsOutput - The output type for the suggestWebinars function.
- * - Webinar - The type for a webinar.
+ * - Webinar - The type for a webinar (imported from lib/types).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { Webinar as WebinarType } from '@/lib/types';
+import type { Webinar as WebinarType } from '@/lib/types'; // Using WebinarType alias to avoid conflict
 
-const WebinarSchema = z.object({
+// Renamed to avoid conflict with exported Webinar type if any
+const WebinarOutputSchema = z.object({
   id: z.string(),
   title: z.string().describe('The title of the webinar.'),
   description: z.string().describe('A brief summary of the webinar content.'),
@@ -22,8 +23,8 @@ const WebinarSchema = z.object({
   topic: z.string().describe('The main topic or category of the webinar.'),
   imageUrl: z.string().optional().describe('A URL for a relevant image for the webinar card.'),
   duration: z.string().optional().describe('The duration of the webinar (e.g., "60 minutes", "1.5 hours").')
+  // hostId and hostProfileImageUrl are part of the full WebinarType, not directly suggested by AI here.
 });
-export type Webinar = z.infer<typeof WebinarSchema>;
 
 
 const SuggestWebinarsInputSchema = z.object({
@@ -31,17 +32,19 @@ const SuggestWebinarsInputSchema = z.object({
 });
 export type SuggestWebinarsInput = z.infer<typeof SuggestWebinarsInputSchema>;
 
-const SuggestWebinarsOutputSchema = z.array(WebinarSchema);
+// Output schema for AI uses the simplified WebinarOutputSchema
+const SuggestWebinarsOutputSchema = z.array(WebinarOutputSchema);
 export type SuggestWebinarsOutput = z.infer<typeof SuggestWebinarsOutputSchema>;
 
+// This function now returns data matching SuggestWebinarsOutput
 export async function suggestWebinars(input: SuggestWebinarsInput): Promise<SuggestWebinarsOutput> {
-  // Mock implementation
   console.log("Suggesting webinars for mentee:", input.menteeProfile.substring(0, 50) + "...");
   await new Promise(resolve => setTimeout(resolve, 600)); // Simulate network delay
 
-  const mockWebinars: Webinar[] = [
+  // These mock suggestions only include fields defined in WebinarOutputSchema
+  const mockAISuggestions: SuggestWebinarsOutput = [
     {
-      id: 'web1',
+      id: 'web1', // This ID will be used to fetch full details from AuthContext if needed by frontend
       title: 'The Future of Generative AI',
       description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
       speakerName: 'Dr. Lex Futura',
@@ -72,12 +75,12 @@ export async function suggestWebinars(input: SuggestWebinarsInput): Promise<Sugg
     }
   ];
    if (input.menteeProfile.toLowerCase().includes('ai') || input.menteeProfile.toLowerCase().includes('artificial intelligence')) {
-    return [mockWebinars[0]];
+    return [mockAISuggestions[0]];
   }
   if (input.menteeProfile.toLowerCase().includes('career') || input.menteeProfile.toLowerCase().includes('networking')) {
-    return [mockWebinars[1]];
+    return [mockAISuggestions[1]];
   }
-  return mockWebinars; // Return all as default
+  return mockAISuggestions; // Return all as default
 }
 
 // This flow is a mock and directly returns data.
@@ -91,3 +94,6 @@ const suggestWebinarsFlow = ai.defineFlow(
     return suggestWebinars(input);
   }
 );
+
+// getWebinarById is now handled by getWebinarDetails in AuthContext.
+// The MOCK_WEBINARS data is also now centralized in AuthContext.
