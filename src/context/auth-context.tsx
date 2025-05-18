@@ -59,6 +59,7 @@ interface AuthContextType {
   completeProfile: (profileData: Partial<UserProfile>, role: UserRole) => void;
   getScheduledSessionsForCurrentUser: () => Promise<EnrichedBooking[]>;
   confirmBooking: (mentorEmail: string, slotId: string) => Promise<void>;
+  bookingsVersion: number; // Added for triggering re-fetches
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +67,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bookingsVersion, setBookingsVersion] = useState(0); // State for bookings version
   const router = useRouter();
   const pathname = usePathname();
 
@@ -75,14 +77,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
-          // Sync with MOCK_USERS to get latest availability if it's a mentor
           if (MOCK_USERS[parsedUser.email]) {
-             // Ensure availabilitySlots are present for mentors from MOCK_USERS
             const mockUserData = MOCK_USERS[parsedUser.email];
             if (mockUserData.role === 'mentor' && !(mockUserData as MentorProfile).availabilitySlots) {
               (mockUserData as MentorProfile).availabilitySlots = [];
             }
-            setUser({ ...mockUserData, ...parsedUser }); // Prioritize localStorage for basic fields, but MOCK_USERS for slots
+            setUser({ ...mockUserData, ...parsedUser }); 
           } else {
             setUser(parsedUser); 
           }
@@ -126,7 +126,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         foundUser = { ...foundUser, name: email.split('@')[0]};
         MOCK_USERS[email] = foundUser;
       }
-      // Ensure availabilitySlots for mentors
       if (foundUser.role === 'mentor' && !(foundUser as MentorProfile).availabilitySlots) {
         (foundUser as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
       }
@@ -245,17 +244,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const slotIndex = mentorToUpdate.availabilitySlots.findIndex(s => s.id === slotId);
       if (slotIndex > -1 && !mentorToUpdate.availabilitySlots[slotIndex].isBooked) {
         
-        // Create new array for slots to ensure state update immutability if needed elsewhere
         const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) => 
           index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
         );
         
-        // Directly update the MOCK_USERS object
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
+        setBookingsVersion(v => v + 1); // Increment version
 
-        // If the current logged-in user *is* this mentor (for testing or other roles), update their context state
         if (user && user.email === mentorEmail) {
-          const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] }; // get the updated mentor profile
+          const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] }; 
           setUser(updatedCurrentUser);
           localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
         }
@@ -269,7 +266,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getScheduledSessionsForCurrentUser = async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async
+    await new Promise(resolve => setTimeout(resolve, 100)); 
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
@@ -296,7 +293,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     sessionTitle: user.role === 'mentor' 
                                   ? `Session with ${menteeProfile.name}` 
                                   : `Session with ${mentorProfile.name}`,
-                    meetingNotes: `Mentorship session between ${mentorProfile.name} and ${menteeProfile.name}. Topic: ${slot.id}` // Mock notes
+                    meetingNotes: `Mentorship session between ${mentorProfile.name} and ${menteeProfile.name}. Topic: ${slot.id}` 
                   });
                 }
               }
@@ -317,7 +314,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       updateUserProfile, 
       completeProfile, 
       getScheduledSessionsForCurrentUser,
-      confirmBooking 
+      confirmBooking,
+      bookingsVersion // Provide bookingsVersion
     }}>
       {children}
     </AuthContext.Provider>
@@ -346,7 +344,7 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
-    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; // Return from MOCK_USERS to ensure it's the shared ref
+    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined;
   }
   return undefined;
 };

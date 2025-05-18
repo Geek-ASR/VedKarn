@@ -17,7 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import Image from 'next/image';
 
 export default function SchedulePage() {
-  const { user, getScheduledSessionsForCurrentUser } = useAuth();
+  const auth = useAuth(); // Get the whole auth context
+  const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = auth; // Destructure needed parts
   const [upcomingSessions, setUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [pastSessions, setPastSessions] = useState<EnrichedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +48,7 @@ export default function SchedulePage() {
     } else {
       setIsLoading(false); 
     }
-  }, [user, getScheduledSessionsForCurrentUser]);
+  }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]); // Add bookingsVersion to dependency array
 
   const handleJoinCall = (session: EnrichedBooking) => {
     setCurrentCallSession(session);
@@ -324,3 +325,5 @@ function SchedulePageSkeleton() {
     </div>
   );
 }
+
+    
