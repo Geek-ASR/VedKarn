@@ -44,7 +44,7 @@ export default function MyGroupSessionsPage() {
     if (!user || user.role !== 'mentor') return;
     try {
       // The deleteMentorGroupSession in context already checks if currentMentorId matches session's hostId
-      await deleteMentorGroupSession(sessionId, user.id); 
+      await deleteMentorGroupSession(sessionId); 
       toast({ title: "Success", description: "Group session deleted successfully." });
       // The sessionsVersion change in AuthContext will trigger re-fetch via useEffect
     } catch (error) {
