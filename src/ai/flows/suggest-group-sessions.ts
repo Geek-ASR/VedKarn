@@ -6,21 +6,37 @@
  *
  * - suggestGroupSessions - A function that suggests group sessions based on mentee profile.
  * - SuggestGroupSessionsInput - The input type for the suggestGroupSessions function.
- * - SuggestGroupSessionsOutput - The output type for the suggestGroupSessions function.
+ * - SuggestGroupSessionsOutput - The return type for the suggestGroupSessions function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { GroupSession as FullGroupSessionType } from '@/lib/types'; // For fetching all sessions
-import { getAllGroupSessions } from '@/context/auth-context'; // To fetch all available sessions
+// No longer need FullGroupSessionType specifically here if GroupSessionZodSchema covers it
+import type { GroupSession } from '@/lib/types'; 
+import { getAllGroupSessions } from '@/context/auth-context'; 
 
 const SuggestGroupSessionsInputSchema = z.object({
   menteeProfile: z.string().describe('The profile of the mentee, including their background, interests, and goals.'),
 });
 export type SuggestGroupSessionsInput = z.infer<typeof SuggestGroupSessionsInputSchema>;
 
-// This schema defines what the AI is expected to output.
-// It should be a subset of FullGroupSessionType or reconstructable by the AI.
+// Define a Zod schema for the GroupSession type
+const GroupSessionZodSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  hostId: z.string(),
+  hostName: z.string(),
+  hostProfileImageUrl: z.string().optional().nullable(), // Match type
+  date: z.string(),
+  tags: z.array(z.string()),
+  imageUrl: z.string().optional().nullable(), // Match type
+  participantCount: z.number().optional().nullable(), // Match type
+  maxParticipants: z.number().optional().nullable(), // Match type
+  price: z.string().optional().nullable(), // Match type
+  duration: z.string().optional().nullable(), // Match type
+});
+
 const SuggestedSessionSchema = z.object({
     id: z.string().describe("The unique ID of the original group session."),
     title: z.string().describe('The title of the group session.'),
@@ -28,9 +44,8 @@ const SuggestedSessionSchema = z.object({
     hostName: z.string().describe('The name of the host or mentor leading the session.'),
     date: z.string().describe('The date and time of the session (e.g., "October 26th, 2024 at 2:00 PM").'),
     tags: z.array(z.string()).describe('Relevant tags or keywords for the session.'),
-    imageUrl: z.string().optional().describe('A URL for a relevant image for the session card.'),
-    price: z.string().optional().describe('Price of the session (e.g., "Free", "$20").'),
-    // reason: z.string().optional().describe("A brief explanation of why this session is recommended for the mentee.") // Optional: consider adding later
+    imageUrl: z.string().url().optional().nullable().describe('A URL for a relevant image for the session card.'),
+    price: z.string().optional().nullable().describe('Price of the session (e.g., "Free", "$20").'),
   });
 
 const SuggestGroupSessionsOutputSchema = z.array(SuggestedSessionSchema);
@@ -43,6 +58,8 @@ export async function suggestGroupSessions(input: SuggestGroupSessionsInput): Pr
     console.log("No group sessions available in the system to suggest from.");
     return [];
   }
+  // Validate or transform allSessions to ensure they match GroupSessionZodSchema if necessary,
+  // though for this example, we assume data from getAllGroupSessions is compatible.
   return suggestGroupSessionsFlow({ menteeProfile: input.menteeProfile, availableSessions: allSessions });
 }
 
@@ -51,7 +68,7 @@ const recommendationPrompt = ai.definePrompt({
   input: { 
     schema: z.object({
       menteeProfile: SuggestGroupSessionsInputSchema.shape.menteeProfile,
-      availableSessions: z.array(z.custom<FullGroupSessionType>()) // For prompt context
+      availableSessions: z.array(GroupSessionZodSchema) // Use the explicit Zod schema
     })
   },
   output: { schema: SuggestGroupSessionsOutputSchema },
@@ -86,23 +103,24 @@ Ensure your output strictly adheres to the requested JSON format. If no sessions
 const suggestGroupSessionsFlow = ai.defineFlow(
   {
     name: 'suggestGroupSessionsFlow',
-    inputSchema: z.object({ // Flow input includes mentee profile AND all sessions
+    inputSchema: z.object({ 
       menteeProfile: SuggestGroupSessionsInputSchema.shape.menteeProfile,
-      availableSessions: z.array(z.custom<FullGroupSessionType>()) 
+      availableSessions: z.array(GroupSessionZodSchema) // Use the explicit Zod schema
     }),
     outputSchema: SuggestGroupSessionsOutputSchema,
   },
   async ({ menteeProfile, availableSessions }) => {
-    if (availableSessions.length === 0) {
+    if (!availableSessions || availableSessions.length === 0) {
       return [];
     }
     
-    const { output } = await recommendationPrompt({ menteeProfile, availableSessions });
-    
-    // The LLM might not always include all fields, or might hallucinate.
-    // We should try to map the LLM output (which should contain IDs) back to the original sessions
-    // to ensure data integrity, especially for fields like hostName, imageUrl, price if the AI might alter them.
-    // For now, we trust the AI to reconstruct based on the prompt and its output schema.
-    return output || [];
+    try {
+        const { output } = await recommendationPrompt({ menteeProfile, availableSessions });
+        return output || [];
+    } catch (error) {
+        console.error("Error in recommendGroupSessionsPrompt:", error);
+        return []; // Return empty array on error to allow UI to settle
+    }
   }
 );
+
