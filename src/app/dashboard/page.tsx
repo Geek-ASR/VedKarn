@@ -135,7 +135,7 @@ export default function DashboardHomePage() {
   }, [suggestedMentorsData]);
 
   const handleScroll = (direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
-    const scrollAmount = 300; // Adjusted scroll amount
+    const scrollAmount = 280; 
     if (scrollContainerRef.current) {
         if (direction === 'left') {
             scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
@@ -151,15 +151,15 @@ export default function DashboardHomePage() {
   if (!user) return <div className="flex h-screen items-center justify-center"><p>Loading user data...</p></div>;
 
   return (
-    <div className="space-y-0"> {/* Reduced outer spacing for a more compact layout */}
+    <div className="space-y-0"> 
       {/* Welcome Banner */}
-      <section className="bg-primary text-primary-foreground py-10 md:py-12 text-center">
+      <section className="bg-primary text-primary-foreground py-8 md:py-10 text-center">
         <div className="container mx-auto px-4 sm:px-6">
-          <h1 className="text-3xl md:text-4xl font-bold">Welcome, {user.name || "User"}!</h1>
-          <p className="mt-2 text-md md:text-lg text-primary-foreground/80 max-w-xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold">Welcome, {user.name || "User"}!</h1>
+          <p className="mt-1.5 text-sm md:text-base text-primary-foreground/80 max-w-lg mx-auto">
             Start connecting with mentors and get ready to take your career to the next level!
           </p>
-          <Button asChild variant="secondary" size="lg" className="mt-6 bg-card text-card-foreground hover:bg-card/90 px-6">
+          <Button asChild variant="secondary" size="lg" className="mt-4 bg-card text-card-foreground hover:bg-card/90 px-5 py-2 text-sm">
             <Link href="/dashboard/mentors">Browse mentors</Link>
           </Button>
         </div>
@@ -167,113 +167,113 @@ export default function DashboardHomePage() {
 
       {/* Recommended for you Section */}
       {user.role === 'mentee' && (
-        <section className="py-8 md:py-10 bg-background">
-          <div className="container mx-auto px-4 sm:px-6 space-y-8">
+        <section className="py-6 md:py-8 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 space-y-6">
             {/* Recommended Mentors */}
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Mentors</h2>
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">Recommended Mentors</h2>
               {isLoadingMentors && (
-                <div className="flex space-x-4 overflow-hidden">
+                <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`mentor-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><MentorCardSkeleton /></div>
+                    <div key={`mentor-skeleton-${i}`} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0"><MentorCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingMentors && recommendedMentors && recommendedMentors.length > 0 && (
                 <div className="relative">
-                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
+                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {recommendedMentors.map((mentor) => (
-                         <div key={mentor.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
+                         <div key={mentor.id} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0">
                            <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
                          </div>
                       ))}
                   </div>
                   {recommendedMentors.length > 3 && ( 
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronLeft className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronLeft className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronRight className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronRight className="h-4 w-4" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingMentors && recommendedMentors && recommendedMentors.length === 0 && (
-                <p className="text-muted-foreground text-sm">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
+                <p className="text-muted-foreground text-xs">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
               )}
             </div>
 
             {/* Recommended Group Sessions */}
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Group Sessions</h2>
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">Recommended Group Sessions</h2>
               {isLoadingGroupSessions && (
-                <div className="flex space-x-4 overflow-hidden">
+                <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
+                    <div key={`gs-skeleton-${i}`} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length > 0 && (
                 <div className="relative">
-                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
+                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
+                         <div key={session.id} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0">
                            <GroupSessionCard session={session} />
                          </div>
                       ))}
                   </div>
                    {suggestedGroupSessionsData.length > 3 && (
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronLeft className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronLeft className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronRight className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronRight className="h-4 w-4" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length === 0 && (
-                <p className="text-muted-foreground text-sm">No group session recommendations for you right now. Check back later!</p>
+                <p className="text-muted-foreground text-xs">No group session recommendations for you right now. Check back later!</p>
               )}
             </div>
 
             {/* Recommended Webinars */}
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Webinars</h2>
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">Recommended Webinars</h2>
                {isLoadingWebinars && (
-                <div className="flex space-x-4 overflow-hidden">
+                <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`webinar-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><WebinarCardSkeleton /></div>
+                    <div key={`webinar-skeleton-${i}`} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0"><WebinarCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length > 0 && (
                 <div className="relative">
-                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
+                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {suggestedWebinarsData.map((webinar) => (
-                         <div key={webinar.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
+                         <div key={webinar.id} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0">
                            <WebinarCard webinar={webinar} />
                          </div>
                       ))}
                   </div>
                   {suggestedWebinarsData.length > 3 && (
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronLeft className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronLeft className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
-                              <ChevronRight className="h-5 w-5" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-7 w-7">
+                              <ChevronRight className="h-4 w-4" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length === 0 && (
-                <p className="text-muted-foreground text-sm">No webinar recommendations for you at this time. Explore upcoming events!</p>
+                <p className="text-muted-foreground text-xs">No webinar recommendations for you at this time. Explore upcoming events!</p>
               )}
             </div>
           </div>
@@ -281,19 +281,19 @@ export default function DashboardHomePage() {
       )}
 
       {/* Featured Sessions Section */}
-      <section className="py-8 md:py-10 bg-muted/40">
+      <section className="py-6 md:py-8 bg-muted/40">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">Featured Sessions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <h2 className="text-lg md:text-xl font-bold text-foreground mb-4">Featured Sessions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {featuredSessionsData.map((session) => (
-              <Card key={session.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg text-primary">{session.title}</CardTitle>
+              <Card key={session.title} className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
+                <CardHeader className="p-3">
+                  <CardTitle className="text-base text-primary">{session.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow p-4 pt-0">
-                  <p className="text-muted-foreground text-xs mb-2">{session.description}</p>
+                <CardContent className="flex-grow p-3 pt-0">
+                  <p className="text-muted-foreground text-xs line-clamp-2 mb-1.5">{session.description}</p>
                 </CardContent>
-                <CardFooter className="flex justify-between items-center text-xs border-t p-4 mt-auto">
+                <CardFooter className="flex justify-between items-center text-xs border-t p-3 mt-auto">
                   <span className="text-muted-foreground">{session.details}</span>
                   <span className="font-semibold text-primary">{session.price}</span>
                 </CardFooter>
@@ -304,23 +304,23 @@ export default function DashboardHomePage() {
       </section>
 
       {/* Frequently Asked Questions Section */}
-      <section className="py-8 md:py-12 bg-background">
+      <section className="py-8 md:py-10 bg-background">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-left">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full space-y-3">
+          <h2 className="text-lg md:text-xl font-bold text-foreground mb-4 text-left">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full space-y-2">
             {faqData.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="bg-muted/30 rounded-lg px-3 shadow-sm hover:shadow-md transition-shadow">
-                <AccordionTrigger className="text-left hover:no-underline text-sm font-semibold text-foreground py-3">
+              <AccordionItem key={index} value={`item-${index}`} className="bg-muted/30 rounded-md px-2.5 shadow-sm hover:shadow-md transition-shadow">
+                <AccordionTrigger className="text-left hover:no-underline text-xs font-semibold text-foreground py-2.5">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-xs pt-1 pb-3">
+                <AccordionContent className="text-muted-foreground text-xs pt-0.5 pb-2.5">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
-          <div className="text-center mt-8">
-            <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-6" asChild>
+          <div className="text-center mt-6">
+            <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm" asChild>
               <Link href="/how-it-works">Read more</Link>
             </Button>
           </div>
@@ -329,5 +329,3 @@ export default function DashboardHomePage() {
     </div>
   );
 }
-
-    
