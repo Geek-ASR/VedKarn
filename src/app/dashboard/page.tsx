@@ -135,7 +135,7 @@ export default function DashboardHomePage() {
   }, [suggestedMentorsData]);
 
   const handleScroll = (direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
-    const scrollAmount = 320; // Approximate width of a card + gap
+    const scrollAmount = 300; // Adjusted scroll amount
     if (scrollContainerRef.current) {
         if (direction === 'left') {
             scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
@@ -153,13 +153,13 @@ export default function DashboardHomePage() {
   return (
     <div className="space-y-0"> {/* Reduced outer spacing for a more compact layout */}
       {/* Welcome Banner */}
-      <section className="bg-primary text-primary-foreground py-12 md:py-16 text-center">
-        <div className="container mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-bold">Welcome, {user.name || "User"}!</h1>
-          <p className="mt-3 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+      <section className="bg-primary text-primary-foreground py-10 md:py-12 text-center">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h1 className="text-3xl md:text-4xl font-bold">Welcome, {user.name || "User"}!</h1>
+          <p className="mt-2 text-md md:text-lg text-primary-foreground/80 max-w-xl mx-auto">
             Start connecting with mentors and get ready to take your career to the next level!
           </p>
-          <Button asChild variant="secondary" size="lg" className="mt-8 bg-card text-card-foreground hover:bg-card/90 px-8">
+          <Button asChild variant="secondary" size="lg" className="mt-6 bg-card text-card-foreground hover:bg-card/90 px-6">
             <Link href="/dashboard/mentors">Browse mentors</Link>
           </Button>
         </div>
@@ -167,113 +167,113 @@ export default function DashboardHomePage() {
 
       {/* Recommended for you Section */}
       {user.role === 'mentee' && (
-        <section className="py-10 md:py-12 bg-background">
-          <div className="container mx-auto px-6 space-y-10">
+        <section className="py-8 md:py-10 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 space-y-8">
             {/* Recommended Mentors */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Mentors</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Mentors</h2>
               {isLoadingMentors && (
-                <div className="flex space-x-6 overflow-hidden">
+                <div className="flex space-x-4 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`mentor-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><MentorCardSkeleton /></div>
+                    <div key={`mentor-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><MentorCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingMentors && recommendedMentors && recommendedMentors.length > 0 && (
                 <div className="relative">
-                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
                       {recommendedMentors.map((mentor) => (
-                         <div key={mentor.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
+                         <div key={mentor.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
                            <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
                          </div>
                       ))}
                   </div>
-                  {recommendedMentors.length > 3 && ( // Show arrows if more than ~3 cards might be offscreen
+                  {recommendedMentors.length > 3 && ( 
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronLeft className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronLeft className="h-5 w-5" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronRight className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronRight className="h-5 w-5" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingMentors && recommendedMentors && recommendedMentors.length === 0 && (
-                <p className="text-muted-foreground">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
+                <p className="text-muted-foreground text-sm">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
               )}
             </div>
 
             {/* Recommended Group Sessions */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Group Sessions</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Group Sessions</h2>
               {isLoadingGroupSessions && (
-                <div className="flex space-x-6 overflow-hidden">
+                <div className="flex space-x-4 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
+                    <div key={`gs-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length > 0 && (
                 <div className="relative">
-                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
                       {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
+                         <div key={session.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
                            <GroupSessionCard session={session} />
                          </div>
                       ))}
                   </div>
                    {suggestedGroupSessionsData.length > 3 && (
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronLeft className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronLeft className="h-5 w-5" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronRight className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronRight className="h-5 w-5" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length === 0 && (
-                <p className="text-muted-foreground">No group session recommendations for you right now. Check back later!</p>
+                <p className="text-muted-foreground text-sm">No group session recommendations for you right now. Check back later!</p>
               )}
             </div>
 
             {/* Recommended Webinars */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Recommended Webinars</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">Recommended Webinars</h2>
                {isLoadingWebinars && (
-                <div className="flex space-x-6 overflow-hidden">
+                <div className="flex space-x-4 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`webinar-skeleton-${i}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0"><WebinarCardSkeleton /></div>
+                    <div key={`webinar-skeleton-${i}`} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0"><WebinarCardSkeleton /></div>
                   ))}
                 </div>
               )}
               {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length > 0 && (
                 <div className="relative">
-                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-6">
+                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-4 no-scrollbar flex space-x-4">
                       {suggestedWebinarsData.map((webinar) => (
-                         <div key={webinar.id} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] flex-shrink-0">
+                         <div key={webinar.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] flex-shrink-0">
                            <WebinarCard webinar={webinar} />
                          </div>
                       ))}
                   </div>
                   {suggestedWebinarsData.length > 3 && (
                       <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronLeft className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronLeft className="h-5 w-5" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex">
-                              <ChevronRight className="h-6 w-6" />
+                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-8 w-8">
+                              <ChevronRight className="h-5 w-5" />
                           </Button>
                       </>
                   )}
                 </div>
               )}
               {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length === 0 && (
-                <p className="text-muted-foreground">No webinar recommendations for you at this time. Explore upcoming events!</p>
+                <p className="text-muted-foreground text-sm">No webinar recommendations for you at this time. Explore upcoming events!</p>
               )}
             </div>
           </div>
@@ -281,19 +281,19 @@ export default function DashboardHomePage() {
       )}
 
       {/* Featured Sessions Section */}
-      <section className="py-10 md:py-12 bg-muted/40">
-        <div className="container mx-auto px-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">Featured Sessions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      <section className="py-8 md:py-10 bg-muted/40">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">Featured Sessions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {featuredSessionsData.map((session) => (
               <Card key={session.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-xl text-primary">{session.title}</CardTitle>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-lg text-primary">{session.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground text-sm mb-3">{session.description}</p>
+                <CardContent className="flex-grow p-4 pt-0">
+                  <p className="text-muted-foreground text-xs mb-2">{session.description}</p>
                 </CardContent>
-                <CardFooter className="flex justify-between items-center text-sm border-t pt-4 mt-auto">
+                <CardFooter className="flex justify-between items-center text-xs border-t p-4 mt-auto">
                   <span className="text-muted-foreground">{session.details}</span>
                   <span className="font-semibold text-primary">{session.price}</span>
                 </CardFooter>
@@ -304,23 +304,23 @@ export default function DashboardHomePage() {
       </section>
 
       {/* Frequently Asked Questions Section */}
-      <section className="py-10 md:py-16 bg-background">
-        <div className="container mx-auto px-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-left">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full space-y-4">
+      <section className="py-8 md:py-12 bg-background">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-left">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full space-y-3">
             {faqData.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="bg-muted/30 rounded-lg px-4 shadow-sm hover:shadow-md transition-shadow">
-                <AccordionTrigger className="text-left hover:no-underline text-md font-semibold text-foreground">
+              <AccordionItem key={index} value={`item-${index}`} className="bg-muted/30 rounded-lg px-3 shadow-sm hover:shadow-md transition-shadow">
+                <AccordionTrigger className="text-left hover:no-underline text-sm font-semibold text-foreground py-3">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-sm pt-2 pb-4">
+                <AccordionContent className="text-muted-foreground text-xs pt-1 pb-3">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
-          <div className="text-center mt-10">
-            <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8" asChild>
+          <div className="text-center mt-8">
+            <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-6" asChild>
               <Link href="/how-it-works">Read more</Link>
             </Button>
           </div>
@@ -330,37 +330,4 @@ export default function DashboardHomePage() {
   );
 }
 
-// MentorCardSkeleton uses the MentorCard's internal skeleton structure
-// No direct min-width change needed here as parent div controls it.
-// But we can update its internal padding to match the actual MentorCard.
-function MentorCardSkeletonPlaceholder() { // Renamed to avoid conflict if MentorCard exports its own skeleton
-  return (
-    <Card className="overflow-hidden shadow-lg flex flex-col h-full">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 sm:p-5">
-        <div className="flex items-start space-x-4">
-          <Skeleton className="h-20 w-20 rounded-full border-2 border-background shadow-md" />
-          <div className="flex-1 space-y-1">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-1/4 mt-1" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 sm:p-5 space-y-3 flex-grow">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <div>
-          <Skeleton className="h-3 w-1/4 mb-1.5" />
-          <div className="flex flex-wrap gap-1.5">
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-5 w-20 rounded-full" />
-            <Skeleton className="h-5 w-12 rounded-full" />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="p-4 sm:p-5 bg-muted/30 border-t mt-auto">
-        <Skeleton className="h-9 w-full rounded-md" />
-      </CardFooter>
-    </Card>
-  );
-}
+    
