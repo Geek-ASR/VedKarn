@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem } from '@/lib/types';
@@ -103,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             setUser(mergedUser);
           } else {
+            // If user from localStorage is not in MOCK_USERS, add them (handles users created in previous sessions)
             setUser(parsedUser);
             MOCK_USERS[parsedUser.email] = parsedUser;
           }
@@ -124,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isRootPage = pathname === '/';
     const isHowItWorksPage = pathname === '/how-it-works';
     const isApiRoute = pathname.startsWith('/api');
+
 
     if (!user && !isAuthPage && !isRootPage && !isHowItWorksPage && !isApiRoute) {
       router.push('/auth/signin');
@@ -209,8 +212,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (role === 'mentor') {
         const mentorSpecifics: Partial<MentorProfile> = {
           expertise: (profileData as Partial<MentorProfile>).expertise || (completedProfile as MentorProfile).expertise || [],
-          universities: (profileData as Partial<MentorProfile>).universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random()}`})) || (completedProfile as MentorProfile).universities || [],
-          companies: (profileData as Partial<MentorProfile>).companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random()}`})) || (completedProfile as MentorProfile).companies || [],
+          universities: (profileData as Partial<MentorProfile>).universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || (completedProfile as MentorProfile).universities || [],
+          companies: (profileData as Partial<MentorProfile>).companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || (completedProfile as MentorProfile).companies || [],
           availabilitySlots: (profileData as Partial<MentorProfile>).availabilitySlots || (completedProfile as MentorProfile).availabilitySlots || [],
           yearsOfExperience: (profileData as Partial<MentorProfile>).yearsOfExperience ?? (completedProfile as MentorProfile).yearsOfExperience ?? 0,
         };
@@ -248,13 +251,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
         );
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
-        setBookingsVersion(v => v + 1); 
-
-        if (user.email === mentorEmail) {
+        
+        if (user.email === mentorEmail) { // This case is unlikely if mentee is booking, but good for self-updates
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
             setUser(updatedCurrentUser);
             localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
         }
+        setBookingsVersion(v => v + 1); 
         return;
       } else {
         throw new Error("Slot not found or already booked.");
@@ -310,7 +313,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = newSlots;
       
       if (user && user.id === mentorId) {
-        const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
+        const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] }; // Ensure to get the full updated mentor profile
         setUser(updatedCurrentUser);
         localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
       }
