@@ -8,12 +8,11 @@
  * - SuggestGroupSessionsOutput - The output type for the suggestGroupSessions function.
  * - GroupSession - The type for a group session.
  * - getGroupSessionById - Fetches a single group session by its ID.
- * - MOCK_GROUP_SESSIONS - Exported array of mock group sessions.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { GroupSession as GroupSessionType } from '@/lib/types';
+// Removed type import for GroupSessionType as GroupSession is defined and exported from this file.
 
 const GroupSessionSchema = z.object({
   id: z.string(),
@@ -39,7 +38,7 @@ export type SuggestGroupSessionsInput = z.infer<typeof SuggestGroupSessionsInput
 const SuggestGroupSessionsOutputSchema = z.array(GroupSessionSchema);
 export type SuggestGroupSessionsOutput = z.infer<typeof SuggestGroupSessionsOutputSchema>;
 
-export const MOCK_GROUP_SESSIONS: GroupSession[] = [
+const MOCK_GROUP_SESSIONS: GroupSession[] = [ // Removed 'export'
   {
     id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
