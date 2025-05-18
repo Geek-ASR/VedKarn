@@ -24,21 +24,21 @@ const featuredSessionsData = [
     title: "Intro Call",
     description: "If you're looking for a mentor, and you're just not sure about how this all works - this should be for you.",
     details: "Approx. 30 minutes",
-    price: "Rs. 1000", // Updated price
+    price: "Rs. 1000",
     href: "#intro-call"
   },
   {
     title: "Work Review",
     description: "In this session, a mentor will sit down with you, and give you some inputs to make your work better, be it a review, inputs on your design, or some inspiration.",
     details: "Approx. 45 minutes",
-    price: "Rs. 2000", // Updated price
+    price: "Rs. 2000",
     href: "#work-review"
   },
   {
     title: "Interview Preparation",
     description: "Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer and ask you some standard hiring questions.",
     details: "Approx. 60 minutes",
-    price: "Rs. 2500", // Updated price
+    price: "Rs. 2500",
     href: "#interview-prep"
   }
 ];
@@ -175,7 +175,7 @@ export default function DashboardHomePage() {
               {isLoadingMentors && (
                 <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`mentor-skeleton-${i}`} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0"><MentorCardSkeleton /></div>
+                    <div key={`mentor-skeleton-${i}`} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0"><MentorCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -183,7 +183,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {recommendedMentors.map((mentor) => (
-                         <div key={mentor.id} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0">
+                         <div key={mentor.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
                            <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
                          </div>
                       ))}
@@ -211,7 +211,7 @@ export default function DashboardHomePage() {
               {isLoadingGroupSessions && (
                 <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
+                    <div key={`gs-skeleton-${i}`} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -219,7 +219,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0">
+                         <div key={session.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
                            <GroupSessionCard session={session} />
                          </div>
                       ))}
@@ -247,7 +247,7 @@ export default function DashboardHomePage() {
                {isLoadingWebinars && (
                 <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`webinar-skeleton-${i}`} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0"><WebinarCardSkeleton /></div>
+                    <div key={`webinar-skeleton-${i}`} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0"><WebinarCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -255,7 +255,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {suggestedWebinarsData.map((webinar) => (
-                         <div key={webinar.id} className="w-[180px] sm:w-[200px] md:w-[220px] flex-shrink-0">
+                         <div key={webinar.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
                            <WebinarCard webinar={webinar} />
                          </div>
                       ))}
@@ -329,3 +329,4 @@ export default function DashboardHomePage() {
     </div>
   );
 }
+
