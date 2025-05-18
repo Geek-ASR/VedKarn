@@ -6,50 +6,50 @@
  * - suggestGroupSessions - A function that suggests group sessions based on mentee profile.
  * - SuggestGroupSessionsInput - The input type for the suggestGroupSessions function.
  * - SuggestGroupSessionsOutput - The output type for the suggestGroupSessions function.
- * - GroupSession - The type for a group session.
- * - getGroupSessionById - Fetches a single group session by its ID.
+ * - GroupSession - The type for a group session (imported from lib/types).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-// Removed type import for GroupSessionType as GroupSession is defined and exported from this file.
+import type { GroupSession } from '@/lib/types'; // GroupSession type is now primarily managed in lib/types and context
 
-const GroupSessionSchema = z.object({
-  id: z.string(),
-  title: z.string().describe('The title of the group session.'),
-  description: z.string().describe('A brief description of what the group session is about.'),
-  hostName: z.string().describe('The name of the host or mentor leading the session.'),
-  hostImageUrl: z.string().optional().describe('URL for the host\'s profile image.'),
-  date: z.string().describe('The date and time of the session (e.g., "October 26th, 2024 at 2:00 PM").'),
-  tags: z.array(z.string()).describe('Relevant tags or keywords for the session.'),
-  imageUrl: z.string().optional().describe('A URL for a relevant image for the session card.'),
-  participantCount: z.number().optional().describe('Current number of participants.'),
-  maxParticipants: z.number().optional().describe('Maximum number of participants allowed.'),
-  price: z.string().optional().describe('Price of the session (e.g., "Free", "$20").')
-});
-export type GroupSession = z.infer<typeof GroupSessionSchema>;
-
+// MOCK_GROUP_SESSIONS is now initialized and managed in AuthContext.
+// getGroupSessionById is now getGroupSessionDetails in AuthContext.
 
 const SuggestGroupSessionsInputSchema = z.object({
   menteeProfile: z.string().describe('The profile of the mentee, including their background, interests, and goals.'),
 });
 export type SuggestGroupSessionsInput = z.infer<typeof SuggestGroupSessionsInputSchema>;
 
-const SuggestGroupSessionsOutputSchema = z.array(GroupSessionSchema);
+const SuggestGroupSessionsOutputSchema = z.array(
+  z.object({ // Re-defining schema for AI output, as GroupSession type is richer.
+    id: z.string(),
+    title: z.string().describe('The title of the group session.'),
+    description: z.string().describe('A brief description of what the group session is about.'),
+    hostName: z.string().describe('The name of the host or mentor leading the session.'),
+    date: z.string().describe('The date and time of the session (e.g., "October 26th, 2024 at 2:00 PM").'),
+    tags: z.array(z.string()).describe('Relevant tags or keywords for the session.'),
+    imageUrl: z.string().optional().describe('A URL for a relevant image for the session card.'),
+    price: z.string().optional().describe('Price of the session (e.g., "Free", "$20").')
+    // participantCount, maxParticipants, hostId, hostProfileImageUrl are part of the full GroupSession type
+    // but might not be directly part of the AI's initial suggestion schema unless specifically prompted.
+    // The AI will suggest based on the fields it is prompted with.
+  })
+);
 export type SuggestGroupSessionsOutput = z.infer<typeof SuggestGroupSessionsOutputSchema>;
 
-const MOCK_GROUP_SESSIONS: GroupSession[] = [ // Removed 'export'
+
+// This mock suggestion function now returns data that fits SuggestGroupSessionsOutputSchema.
+// For actual display, the frontend will use getGroupSessionDetails from AuthContext to get the full session object.
+const MOCK_SUGGESTIONS_FOR_AI_FLOW: SuggestGroupSessionsOutput = [
   {
     id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
     hostName: 'Dr. Code Alchemist',
-    hostImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 5th, 2024 at 4:00 PM PST',
     tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
     imageUrl: 'https://placehold.co/600x400.png',
-    maxParticipants: 15,
-    participantCount: 8,
     price: '$25'
   },
   {
@@ -57,12 +57,9 @@ const MOCK_GROUP_SESSIONS: GroupSession[] = [ // Removed 'export'
     title: 'Startup Pitch Practice & Feedback',
     description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
     hostName: 'Valerie Venture',
-    hostImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 12th, 2024 at 10:00 AM PST',
     tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
     imageUrl: 'https://placehold.co/600x400.png',
-    maxParticipants: 10,
-    participantCount: 5,
     price: '$20'
   },
   {
@@ -70,21 +67,12 @@ const MOCK_GROUP_SESSIONS: GroupSession[] = [ // Removed 'export'
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
     hostName: 'Desiree Design',
-    hostImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 19th, 2024 at 1:00 PM PST',
     tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
     imageUrl: 'https://placehold.co/600x400.png',
-    maxParticipants: 20,
-    participantCount: 12,
     price: 'Free'
   }
 ];
-
-export async function getGroupSessionById(sessionId: string): Promise<GroupSession | undefined> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return MOCK_GROUP_SESSIONS.find(session => session.id === sessionId);
-}
 
 
 export async function suggestGroupSessions(input: SuggestGroupSessionsInput): Promise<SuggestGroupSessionsOutput> {
@@ -94,12 +82,12 @@ export async function suggestGroupSessions(input: SuggestGroupSessionsInput): Pr
 
   // Simulate some basic matching based on mentee profile string
   if (input.menteeProfile.toLowerCase().includes('data science') || input.menteeProfile.toLowerCase().includes('algorithms')) {
-    return [MOCK_GROUP_SESSIONS[0]];
+    return [MOCK_SUGGESTIONS_FOR_AI_FLOW[0]];
   }
   if (input.menteeProfile.toLowerCase().includes('startup') || input.menteeProfile.toLowerCase().includes('entrepreneur')) {
-    return [MOCK_GROUP_SESSIONS[1]];
+    return [MOCK_SUGGESTIONS_FOR_AI_FLOW[1]];
   }
-  return MOCK_GROUP_SESSIONS; // Return all if no specific match or just as a default
+  return MOCK_SUGGESTIONS_FOR_AI_FLOW; // Return all if no specific match or just as a default
 }
 
 // This flow is a mock and directly returns data, so no LLM prompt is defined.
@@ -115,3 +103,5 @@ const suggestGroupSessionsFlow = ai.defineFlow(
   }
 );
 
+// getGroupSessionById has been moved to AuthContext as getGroupSessionDetails for a centralized data source.
+// The MOCK_GROUP_SESSIONS data is also now centralized in AuthContext.
