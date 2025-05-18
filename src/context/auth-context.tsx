@@ -5,14 +5,13 @@ import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooki
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
-// Initial Mock Group Sessions Data (moved from suggest-group-sessions.ts)
-// Adding dummy hostId and hostProfileImageUrl for initial mock data
+// Initial Mock Group Sessions Data
 const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
   {
     id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1', // Assigning a default mentor host
+    hostId: 'mentor1', 
     hostName: 'Dr. Code Alchemist',
     hostProfileImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 5th, 2024 at 4:00 PM PST',
@@ -20,13 +19,14 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     participantCount: 8,
     maxParticipants: 15,
-    price: '$25'
+    price: '$25',
+    duration: "90 minutes"
   },
   {
     id: 'gs2',
     title: 'Startup Pitch Practice & Feedback',
     description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
-    hostId: 'mentor1', // Assigning a default mentor host
+    hostId: 'mentor1',
     hostName: 'Valerie Venture',
     hostProfileImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 12th, 2024 at 10:00 AM PST',
@@ -34,13 +34,14 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     participantCount: 5,
     maxParticipants: 10,
-    price: '$20'
+    price: '$20',
+    duration: "2 hours"
   },
   {
     id: 'gs3',
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor1', // Assigning a default mentor host
+    hostId: 'mentor2', 
     hostName: 'Desiree Design',
     hostProfileImageUrl: 'https://placehold.co/100x100.png',
     date: 'November 19th, 2024 at 1:00 PM PST',
@@ -48,7 +49,8 @@ const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     participantCount: 12,
     maxParticipants: 20,
-    price: 'Free'
+    price: 'Free',
+    duration: "75 minutes"
   }
 ];
 
@@ -129,10 +131,11 @@ interface AuthContextType {
   // Group Session Management
   masterGroupSessionsList: GroupSession[];
   sessionsVersion: number;
-  createGroupSession: (sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'>) => Promise<GroupSession>;
+  createGroupSession: (sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }) => Promise<GroupSession>;
   getGroupSessionsByMentor: (mentorId: string) => Promise<GroupSession[]>;
   getGroupSessionDetails: (sessionId: string) => Promise<GroupSession | undefined>;
   deleteMentorGroupSession: (sessionId: string) => Promise<void>;
+  getAllGroupSessions: () => Promise<GroupSession[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -142,7 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [bookingsVersion, setBookingsVersion] = useState(0);
   const [sessionsVersion, setSessionsVersion] = useState(0);
-  const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>(INITIAL_MOCK_GROUP_SESSIONS);
+  const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -176,13 +179,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedSessions = localStorage.getItem('vedkarn-group-sessions');
     if (storedSessions) {
         try {
-            setMasterGroupSessionsList(JSON.parse(storedSessions));
+            const parsedSessions: GroupSession[] = JSON.parse(storedSessions);
+            // Ensure initial mock data is present if localStorage is empty or doesn't have them
+            const initialSessionIds = new Set(INITIAL_MOCK_GROUP_SESSIONS.map(s => s.id));
+            const combinedSessions = [...parsedSessions.filter(s => !initialSessionIds.has(s.id)), ...INITIAL_MOCK_GROUP_SESSIONS];
+            setMasterGroupSessionsList(combinedSessions);
         } catch (e) {
             console.error("Failed to parse group sessions from localStorage", e);
             setMasterGroupSessionsList(INITIAL_MOCK_GROUP_SESSIONS);
             localStorage.setItem('vedkarn-group-sessions', JSON.stringify(INITIAL_MOCK_GROUP_SESSIONS));
         }
     } else {
+         setMasterGroupSessionsList(INITIAL_MOCK_GROUP_SESSIONS);
          localStorage.setItem('vedkarn-group-sessions', JSON.stringify(INITIAL_MOCK_GROUP_SESSIONS));
     }
 
@@ -190,8 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
    useEffect(() => {
-    // Persist masterGroupSessionsList to localStorage whenever it changes
-    if(!loading) { // Avoid writing initial empty list if still loading
+    if(!loading && masterGroupSessionsList.length > 0) { 
         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(masterGroupSessionsList));
     }
   }, [masterGroupSessionsList, loading]);
@@ -303,7 +310,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           desiredJobRoles: (profileData as Partial<MenteeProfile>).desiredJobRoles || (completedProfile as MenteeProfile).desiredJobRoles || [],
           desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || (completedProfile as MenteeProfile).desiredCompanies || [],
         };
-        completedProfile = { ...completedProfile, ...mentorSpecifics, role: 'mentee' };
+        completedProfile = { ...completedProfile, ...menteeSpecifics, role: 'mentee' };
       } else {
         completedProfile.role = null;
       }
@@ -330,7 +337,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
         
-        if (user.email === mentorEmail) { 
+        if (user && user.email === mentorEmail) { 
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
             setUser(updatedCurrentUser);
             localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
@@ -403,7 +410,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Group Session Management Functions
   const createGroupSession = useCallback(async (
-    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'>
+    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'> & { duration?: string }
   ): Promise<GroupSession> => {
     if (!user || user.role !== 'mentor') {
       throw new Error("Only mentors can create group sessions.");
@@ -412,14 +419,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...sessionData,
       id: `gs-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       hostId: user.id,
-      hostName: user.name, // Automatically set from current mentor
-      hostProfileImageUrl: user.profileImageUrl, // Automatically set
+      hostName: user.name, 
+      hostProfileImageUrl: user.profileImageUrl, 
       participantCount: 0,
+      duration: sessionData.duration || "Not specified", // Ensure duration has a default
     };
     setMasterGroupSessionsList(prevSessions => [...prevSessions, newSession]);
     setSessionsVersion(v => v + 1);
     return newSession;
-  }, [user]);
+  }, [user, setMasterGroupSessionsList, setSessionsVersion]);
 
   const getGroupSessionsByMentor = useCallback(async (mentorId: string): Promise<GroupSession[]> => {
     return masterGroupSessionsList.filter(session => session.hostId === mentorId);
@@ -427,6 +435,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getGroupSessionDetails = useCallback(async (sessionId: string): Promise<GroupSession | undefined> => {
     return masterGroupSessionsList.find(session => session.id === sessionId);
+  }, [masterGroupSessionsList]);
+
+  const getAllGroupSessions = useCallback(async (): Promise<GroupSession[]> => {
+    return [...masterGroupSessionsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Example sort, adjust as needed
   }, [masterGroupSessionsList]);
 
   const deleteMentorGroupSession = useCallback(async (sessionId: string): Promise<void> => {
@@ -440,7 +452,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setMasterGroupSessionsList(prevSessions => prevSessions.filter(session => session.id !== sessionId));
     setSessionsVersion(v => v + 1);
-  }, [user, masterGroupSessionsList]);
+  }, [user, masterGroupSessionsList, setMasterGroupSessionsList, setSessionsVersion]);
 
 
   return (
@@ -461,6 +473,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       getGroupSessionsByMentor,
       getGroupSessionDetails,
       deleteMentorGroupSession,
+      getAllGroupSessions,
     }}>
       {children}
     </AuthContext.Provider>
@@ -495,4 +508,3 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   }
   return undefined;
 };
-

@@ -26,6 +26,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
     { href: "/dashboard/mentors", label: "Find Mentors", icon: Users },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/recommendations", label: "AI Suggestions", icon: Brain },
+    { href: "/dashboard/group-sessions", label: "Browse Group Sessions", icon: Presentation },
   ];
 
   const mentorItems = [
@@ -33,7 +34,7 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
     { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
     { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 },
-    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Assuming this page exists or will be created
+    { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, 
   ];
 
   const items = user?.role === "mentor" ? mentorItems : menteeItems;
