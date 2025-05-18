@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { Users, CalendarDays, Tag, Users2, DollarSign } from "lucide-react"; // Removed Clock as it's not used
+import { Users, CalendarDays, Tag, Users2, DollarSign } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
@@ -27,13 +27,13 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
           />
         </div>
       )}
-      <CardHeader className="px-3 pt-2.5 pb-0.5">
+      <CardHeader className="px-3 pt-2.5 pb-0.5 sm:px-4 sm:pt-3 sm:pb-1">
         <CardTitle className="text-sm font-semibold text-primary line-clamp-1">{session.title}</CardTitle>
         <CardDescription className="text-xs text-muted-foreground pt-0.5 flex items-center">
           <Users className="h-3 w-3 mr-1" /> Hosted by {session.hostName}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5 text-xs">
+      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5 sm:px-4 sm:pb-3 sm:pt-2 text-xs">
         <p className="text-muted-foreground line-clamp-2 text-xs">{session.description}</p>
         <div className="flex items-center text-xs text-muted-foreground">
           <CalendarDays className="h-3 w-3 mr-1 text-accent" /> {session.date}
@@ -61,12 +61,12 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
             )}
         </div>
       </CardContent>
-      <CardFooter className="px-3 pt-2 pb-2.5 mt-auto">
-        <Link href={`/dashboard/sessions/${session.id}`} asChild>
-          <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs">
-            Learn More & Join
-          </Button>
-        </Link>
+      <CardFooter className="px-3 pt-2 pb-2.5 sm:px-4 sm:pb-3 mt-auto">
+        <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs" asChild>
+          <Link href={`/dashboard/sessions/${session.id}`}>
+            <span>Learn More & Join</span>
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );
@@ -76,11 +76,11 @@ export function GroupSessionCardSkeleton() {
   return (
     <Card className="overflow-hidden shadow-lg flex flex-col h-full">
       <Skeleton className="relative aspect-[16/9] w-full" />
-      <CardHeader className="px-3 pt-2.5 pb-0.5">
+      <CardHeader className="px-3 pt-2.5 pb-0.5 sm:px-4 sm:pt-3 sm:pb-1">
         <Skeleton className="h-4 w-3/4 mb-0.5" />
         <Skeleton className="h-3 w-1/2" />
       </CardHeader>
-      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5">
+      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5 sm:px-4 sm:pb-3 sm:pt-2">
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-5/6" />
         <Skeleton className="h-3 w-1/2" />
@@ -93,7 +93,7 @@ export function GroupSessionCardSkeleton() {
             <Skeleton className="h-3 w-1/4" />
         </div>
       </CardContent>
-      <CardFooter className="px-3 pt-2 pb-2.5 mt-auto">
+      <CardFooter className="px-3 pt-2 pb-2.5 sm:px-4 sm:pb-3 mt-auto">
         <Skeleton className="h-8 w-full rounded-md" />
       </CardFooter>
     </Card>
