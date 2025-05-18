@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem } from '@/lib/types';
@@ -26,10 +25,10 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 10,
     availabilitySlots: [
-      { id: 'slot1', startTime: new Date(Date.now() + 1 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (1 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false},
-      { id: 'slot2', startTime: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (2 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
-      { id: 'slot3', startTime: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (3 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
-      { id: 'slot-past-booked', startTime: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() - (24 - 1) * 3600 * 1000).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
+      { id: 'slot1', startTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false},
+      { id: 'slot2', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
+      { id: 'slot3', startTime: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 3)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
+      { id: 'slot-past-booked', startTime: new Date(new Date().setDate(new Date().getDate() -1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() -1)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
     ]
   } as MentorProfile,
   'mentee@example.com': {
@@ -61,8 +60,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 12,
     availabilitySlots: [
-      { id: 'slot4', startTime: new Date(Date.now() + 1.5 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (1.5 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
-      { id: 'slot5', startTime: new Date(Date.now() + 2.5 * 24 * 3600 * 1000).toISOString(), endTime: new Date(Date.now() + (2.5 * 24 + 1) * 3600 * 1000).toISOString(), isBooked: false },
+      { id: 'slot4', startTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
+      { id: 'slot5', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
     ]
   } as MentorProfile,
 };
@@ -76,6 +75,7 @@ interface AuthContextType {
   completeProfile: (profileData: Partial<UserProfile>, role: UserRole) => void;
   getScheduledSessionsForCurrentUser: () => Promise<EnrichedBooking[]>;
   confirmBooking: (mentorEmail: string, slotId: string) => Promise<void>;
+  updateMentorAvailability: (mentorId: string, newSlots: AvailabilitySlot[]) => Promise<void>;
   bookingsVersion: number;
 }
 
@@ -96,7 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
           if (MOCK_USERS[parsedUser.email]) {
             const mockUserDataFromDB = MOCK_USERS[parsedUser.email];
-             // Merge, ensuring role and other core fields from parsedUser are kept if they were partially completed
             const mergedUser = { ...mockUserDataFromDB, ...parsedUser };
 
             if (mergedUser.role === 'mentor' && !(mergedUser as MentorProfile).availabilitySlots) {
@@ -104,9 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             setUser(mergedUser);
           } else {
-             // User from localStorage not in MOCK_USERS (e.g. newly created then page refreshed)
             setUser(parsedUser);
-            MOCK_USERS[parsedUser.email] = parsedUser; // Add to in-memory MOCK_USERS
+            MOCK_USERS[parsedUser.email] = parsedUser;
           }
         } else {
           localStorage.removeItem('vedkarn-user');
@@ -152,7 +150,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
       }
     } else {
-      // New user
       const newUserProfile: UserProfile = {
         id: `user-${Date.now()}-${Math.random().toString(36).substring(7)}`,
         email,
@@ -190,13 +187,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   };
 
-  const profileIsConsideredComplete = (profile: UserProfile, role: UserRole): boolean => {
-    if (!role) return false;
-    if (role === 'mentor' && (!(profile as MentorProfile).expertise || (profile as MentorProfile).expertise!.length === 0)) return false;
-    if (role === 'mentee' && !(profile as MenteeProfile).learningGoals) return false;
-    return true;
-  }
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('vedkarn-user');
@@ -204,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUserProfile = (profileData: Partial<UserProfile>) => {
-    if (user) {
+    if (user && user.email && MOCK_USERS[user.email]) {
       const updatedUser = { ...MOCK_USERS[user.email], ...profileData };
       MOCK_USERS[user.email] = updatedUser;
       setUser(updatedUser);
@@ -213,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const completeProfile = (profileData: Partial<UserProfile>, role: UserRole) => {
-    if (user) {
+    if (user && user.email && MOCK_USERS[user.email]) {
       let completedProfile: UserProfile = { ...MOCK_USERS[user.email], ...profileData, role };
 
       if (role === 'mentor') {
@@ -257,18 +247,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) =>
           index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
         );
-        // Directly mutate the MOCK_USERS object for this mock setup
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
-        setBookingsVersion(v => v + 1); // Increment version to trigger re-fetches
+        setBookingsVersion(v => v + 1); 
 
-        // If current user IS the mentor (e.g., for testing/dev scenarios), update their local state.
-        // This specific block might be less relevant if mentors cannot book their own slots.
         if (user.email === mentorEmail) {
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
             setUser(updatedCurrentUser);
             localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
         }
-        return; // Resolve promise
+        return;
       } else {
         throw new Error("Slot not found or already booked.");
       }
@@ -278,7 +265,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const getScheduledSessionsForCurrentUser = useCallback(async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100)); 
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
@@ -290,12 +277,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mentorProfile.availabilitySlots) {
           for (const slot of mentorProfile.availabilitySlots) {
             if (slot.isBooked && slot.bookedByMenteeId) {
-              // Check if the current user is either the mentor of this slot OR the mentee who booked it
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) { // Ensure mentee profile exists
+                if (menteeProfile) { 
                   scheduledSessions.push({
-                    id: `${mentorProfile.id}-${slot.id}`, // Ensure unique ID for bookings
+                    id: `${mentorProfile.id}-${slot.id}`, 
                     mentorId: mentorProfile.id,
                     menteeId: menteeProfile.id,
                     startTime: slot.startTime,
@@ -316,7 +302,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return scheduledSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  }, [user]); // Dependency on user, so it gets the latest user.id
+  }, [user]);
+
+  const updateMentorAvailability = useCallback(async (mentorId: string, newSlots: AvailabilitySlot[]): Promise<void> => {
+    const mentorEmail = Object.keys(MOCK_USERS).find(email => MOCK_USERS[email].id === mentorId);
+    if (mentorEmail && MOCK_USERS[mentorEmail] && MOCK_USERS[mentorEmail].role === 'mentor') {
+      (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = newSlots;
+      
+      if (user && user.id === mentorId) {
+        const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
+        setUser(updatedCurrentUser);
+        localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
+      }
+      setBookingsVersion(v => v + 1); // Increment version to trigger UI updates
+      return;
+    }
+    throw new Error("Mentor not found or invalid ID for updating availability.");
+  }, [user]);
+
 
   return (
     <AuthContext.Provider value={{
@@ -328,6 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       completeProfile,
       getScheduledSessionsForCurrentUser,
       confirmBooking,
+      updateMentorAvailability,
       bookingsVersion
     }}>
       {children}
@@ -343,7 +347,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Helper functions to get mock data, ensuring they use the single MOCK_USERS source
 export const getMockMentorProfiles = (): string[] => {
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
@@ -364,5 +367,3 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   }
   return undefined;
 };
-
-    
