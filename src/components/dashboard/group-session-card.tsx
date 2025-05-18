@@ -62,11 +62,11 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
         </div>
       </CardContent>
       <CardFooter className="px-2.5 py-2 mt-auto">
-        <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-7 text-[11px] leading-tight">
-          <Link href={`/dashboard/sessions/${session.id}`}>
-            <span>Learn More & Join</span>
-          </Link>
-        </Button>
+        <Link href={`/dashboard/sessions/${session.id}`} passHref legacyBehavior>
+          <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-7 text-[11px] leading-tight">
+            <a>Learn More & Join</a>
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

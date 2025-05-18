@@ -211,7 +211,7 @@ export default function DashboardHomePage() {
               {isLoadingGroupSessions && (
                 <div className="flex space-x-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
+                    <div key={`gs-skeleton-${i}`} className="min-w-[200px] sm:min-w-[220px] md:min-w-[240px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
                   ))}
                 </div>
               )}
@@ -219,7 +219,7 @@ export default function DashboardHomePage() {
                 <div className="relative">
                   <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-3 no-scrollbar flex space-x-3">
                       {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="min-w-[220px] sm:min-w-[240px] md:min-w-[260px] flex-shrink-0">
+                         <div key={session.id} className="min-w-[200px] sm:min-w-[220px] md:min-w-[240px] flex-shrink-0">
                            <GroupSessionCard session={session} />
                          </div>
                       ))}
@@ -329,3 +329,4 @@ export default function DashboardHomePage() {
     </div>
   );
 }
+
