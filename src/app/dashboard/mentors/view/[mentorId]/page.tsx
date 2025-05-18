@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,13 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addHours } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
 
-
-const MOCK_MENTORS_DB: MentorProfile[] = Object.values(getMockMentorProfiles())
+const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
   .filter((mentor): mentor is MentorProfile => Boolean(mentor));
 
@@ -40,7 +38,7 @@ export default function MentorProfilePage() {
   useEffect(() => {
     if (mentorId) {
       setTimeout(() => {
-        const foundMentor = MOCK_MENTORS_DB.find(m => m.id === mentorId);
+        const foundMentor = MOCK_MENTORS_DB_VIEW.find(m => m.id === mentorId);
         setMentor(foundMentor || null);
         setLoading(false);
       }, 500);
@@ -53,6 +51,7 @@ export default function MentorProfilePage() {
       return;
     }
     
+    // Mock booking creation
     const newBooking: Booking = {
       id: `booking-${Date.now()}`,
       mentorId: mentor.id,
@@ -75,22 +74,33 @@ export default function MentorProfilePage() {
     
     setMentor(updatedMentor); 
 
-    const mentorIndex = MOCK_MENTORS_DB.findIndex(m => m.id === mentor.id);
+    // Update the mock database (MOCK_MENTORS_DB_VIEW is a local copy, need to update the source if auth-context's MOCK_USERS is the true source)
+    const mentorIndex = MOCK_MENTORS_DB_VIEW.findIndex(m => m.id === mentor.id);
     if(mentorIndex > -1) {
-      MOCK_MENTORS_DB[mentorIndex] = updatedMentor;
+      MOCK_MENTORS_DB_VIEW[mentorIndex] = updatedMentor;
     }
+    // Ideally, updateUserProfile or a specific booking function in auth-context should handle this DB update
+    // For now, this updates the local copy used by this page.
 
     setSelectedSlot(null);
 
+    // Generate Google Calendar Link
+    const calStartTime = format(parseISO(newBooking.startTime), "yyyyMMdd'T'HHmmss'Z'");
+    const calEndTime = format(parseISO(newBooking.endTime), "yyyyMMdd'T'HHmmss'Z'");
+    const eventTitle = encodeURIComponent(`VedKarn Session: ${currentUser.name} & ${mentor.name}`);
+    const eventDetails = encodeURIComponent(`Your mentorship session booked on VedKarn. Join via the in-app video call feature on the VedKarn platform at the scheduled time.\nMentor: ${mentor.name}\nMentee: ${currentUser.name}`);
+    const eventLocation = encodeURIComponent("VedKarn Platform (In-App Call)");
+    const googleCalendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${calStartTime}/${calEndTime}&details=${eventDetails}&location=${eventLocation}`;
+
     toast({
       title: "Session Booked!",
-      description: `Your session with ${mentor.name} on ${format(parseISO(selectedSlot.startTime), "PPP 'at' p")} is confirmed. You'll be able to join via an in-app video call from your schedule closer to the time.`,
+      description: `Session with ${mentor.name} on ${format(parseISO(newBooking.startTime), "PPP 'at' p")} confirmed. Join via VedKarn's in-app call feature.`,
       action: (
-        <ToastAction altText="View Schedule" asChild>
-          <Link href="/dashboard/schedule">View Schedule</Link>
+        <ToastAction altText="Add to Google Calendar" asChild>
+          <a href={googleCalendarLink} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
         </ToastAction>
       ),
-      duration: 10000,
+      duration: 15000, // Increased duration to allow clicking the link
     });
   };
 
@@ -184,15 +194,14 @@ export default function MentorProfilePage() {
                 </ul>
               </section>
             )}
-            
           </div>
           
           <div className="md:col-span-1 space-y-6 sticky top-24 self-start">
              <Alert className="bg-blue-50 border-blue-200 text-blue-700 mb-6">
                 <Info className="h-5 w-5 text-blue-500" />
-                <AlertTitle className="font-semibold">Note on In-App Sessions</AlertTitle>
+                <AlertTitle className="font-semibold">Session & Calendar Note</AlertTitle>
                 <AlertDescription>
-                    Booking a session confirms your slot. In a full version of VedKarn, you would join your session via a secure, built-in video call feature directly on our platform. For this demo, the booking is confirmed, and you can imagine accessing the video call from your schedule page.
+                    Booking confirms your session on VedKarn, to be joined via our in-app call feature. You can also add this session to your personal Google Calendar using the link provided in the confirmation.
                 </AlertDescription>
             </Alert>
             <Card className="shadow-lg rounded-lg">
@@ -309,4 +318,3 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
-

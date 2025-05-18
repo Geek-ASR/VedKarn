@@ -47,20 +47,26 @@ export interface AvailabilitySlot {
   endTime: string; // ISO DateTime string
   isBooked: boolean;
   bookedByMenteeId?: string;
-  // meetingLink?: string; // Removed as we are simulating in-app call
 }
 
 export interface Booking {
-  id: string;
+  id: string; // Can be slotId for uniqueness in mock
   mentorId: string;
   menteeId: string;
-  slotId: string;
   startTime: string; // ISO DateTime string
   endTime: string; // ISO DateTime string
-  status: 'confirmed' | 'pending' | 'cancelled';
-  // meetingLink?: string; // Removed
+  status: 'confirmed' | 'pending' | 'cancelled'; // status might be derived or fixed for mock
   meetingNotes?: string;
+  // Removed meetingLink, as per previous requests for in-app call simulation
 }
+
+// New type for the schedule page
+export interface EnrichedBooking extends Booking {
+  mentor: UserProfile; 
+  mentee: UserProfile;
+  sessionTitle: string; // e.g., "Session with Mentor Name" or "Session with Mentee Name"
+}
+
 
 export interface MentorSearchFilters {
   university?: string;
@@ -70,7 +76,7 @@ export interface MentorSearchFilters {
 }
 
 export interface GroupSession {
-  id: string;
+  id:string;
   title: string;
   description: string;
   hostName: string;
@@ -92,3 +98,5 @@ export interface Webinar {
   imageUrl?: string; // Placeholder URL
   duration?: string; // e.g., "60 minutes"
 }
+
+    
