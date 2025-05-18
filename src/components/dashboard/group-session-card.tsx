@@ -33,7 +33,7 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
           <Users className="h-3 w-3 mr-1" /> Hosted by {session.hostName}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow space-y-1 px-3 pb-2.5 pt-1.5 text-xs"> {/* Reduced padding & spacing */}
+      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5 text-xs"> {/* Reduced padding & spacing */}
         <p className="text-muted-foreground line-clamp-2 text-xs">{session.description}</p>
         <div className="flex items-center text-xs text-muted-foreground">
           <CalendarDays className="h-3 w-3 mr-1 text-accent" /> {session.date}
@@ -63,7 +63,9 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
       </CardContent>
       <CardFooter className="px-3 pt-2 pb-2.5 mt-auto"> {/* Reduced padding */}
         <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs"> {/* Smaller button */}
-          <Link href={`/dashboard/sessions/${session.id}`}>Learn More & Join</Link>
+          <Link href={`/dashboard/sessions/${session.id}`}>
+            <span>Learn More & Join</span>
+          </Link>
         </Button>
       </CardFooter>
     </Card>
@@ -78,13 +80,17 @@ export function GroupSessionCardSkeleton() {
         <Skeleton className="h-4 w-3/4 mb-0.5" /> {/* Reduced height */}
         <Skeleton className="h-3 w-1/2" />
       </CardHeader>
-      <CardContent className="flex-grow space-y-1 px-3 pb-2.5 pt-1.5">
+      <CardContent className="flex-grow space-y-1.5 px-3 pb-2.5 pt-1.5"> {/* Adjusted space-y */}
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-5/6" />
         <Skeleton className="h-3 w-1/2" />
         <div className="flex flex-wrap gap-1 pt-0.5">
             <Skeleton className="h-3.5 w-10 rounded-full" /> {/* Reduced height */}
             <Skeleton className="h-3.5 w-14 rounded-full" /> {/* Reduced height */}
+        </div>
+         <div className="flex justify-between items-center text-xs pt-1">
+            <Skeleton className="h-3 w-1/3" />
+            <Skeleton className="h-3 w-1/4" />
         </div>
       </CardContent>
       <CardFooter className="px-3 pt-2 pb-2.5 mt-auto">
@@ -93,5 +99,3 @@ export function GroupSessionCardSkeleton() {
     </Card>
   );
 }
-
-    
