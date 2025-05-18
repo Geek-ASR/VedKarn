@@ -62,7 +62,7 @@ export function GroupSessionCard({ session }: GroupSessionCardProps) {
         </div>
       </CardContent>
       <CardFooter className="px-3 pt-2 pb-2.5 sm:px-4 sm:pb-3 mt-auto">
-        <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs" asChild>
+        <Button asChild size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs">
           <Link href={`/dashboard/sessions/${session.id}`}>
             <span>Learn More & Join</span>
           </Link>
@@ -99,3 +99,4 @@ export function GroupSessionCardSkeleton() {
     </Card>
   );
 }
+
