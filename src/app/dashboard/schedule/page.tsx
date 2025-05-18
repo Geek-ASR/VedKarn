@@ -10,11 +10,12 @@ import { UserAvatar } from '@/components/core/user-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isFuture, isPast, intervalToDuration, formatDuration } from 'date-fns';
-import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle, MicOff } from 'lucide-react';
+import { CalendarClock, CheckCircle, History, Users, Video, Info, AlertCircle, X, Mic, VideoOff, ScreenShare, PhoneOff, MessageCircle, MicOff, CameraOff } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SchedulePage() {
   const auth = useAuth(); 
@@ -27,13 +28,16 @@ export default function SchedulePage() {
   const [isVideoCallModalOpen, setIsVideoCallModalOpen] = useState(false);
   const [currentCallSession, setCurrentCallSession] = useState<EnrichedBooking | null>(null);
   
-  // States for mock call features
   const [isMicMuted, setIsMicMuted] = useState(false);
-  const [isCameraOff, setIsCameraOff] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(true); // Start with camera off conceptually
   const [callStartTime, setCallStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState("00:00");
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -77,16 +81,47 @@ export default function SchedulePage() {
     };
   }, [isVideoCallModalOpen, callStartTime]);
 
-  const handleJoinCall = (session: EnrichedBooking) => {
+  const startLocalMedia = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      setHasCameraPermission(true);
+      setIsCameraOff(false); // Turn camera on by default if permission granted
+      setIsMicMuted(false); // Mic on by default
+    } catch (err) {
+      console.error("Error accessing media devices.", err);
+      setHasCameraPermission(false);
+      toast({
+        variant: 'destructive',
+        title: 'Media Access Denied',
+        description: 'Please enable camera and microphone permissions in your browser settings to use video call.',
+      });
+    }
+  };
+
+  const stopLocalMedia = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+  };
+
+  const handleJoinCall = async (session: EnrichedBooking) => {
     setCurrentCallSession(session);
-    setIsMicMuted(false);
-    setIsCameraOff(false);
     setCallStartTime(new Date());
     setElapsedTime("00:00");
     setIsVideoCallModalOpen(true);
+    await startLocalMedia();
   };
 
   const handleEndCall = () => {
+    stopLocalMedia();
     setIsVideoCallModalOpen(false);
     setCurrentCallSession(null);
     if (timerIntervalRef.current) {
@@ -94,10 +129,30 @@ export default function SchedulePage() {
     }
     setCallStartTime(null);
     setElapsedTime("00:00");
+    setHasCameraPermission(null); // Reset permission status for next call
+    setIsCameraOff(true); // Reset camera state
+    setIsMicMuted(false); // Reset mic state
   };
 
-  const toggleMic = () => setIsMicMuted(prev => !prev);
-  const toggleCamera = () => setIsCameraOff(prev => !prev);
+  const toggleMic = () => {
+    if (localStreamRef.current) {
+      const audioTracks = localStreamRef.current.getAudioTracks();
+      if (audioTracks.length > 0) {
+        audioTracks[0].enabled = !audioTracks[0].enabled;
+        setIsMicMuted(!audioTracks[0].enabled);
+      }
+    }
+  };
+  
+  const toggleCamera = () => {
+    if (localStreamRef.current) {
+      const videoTracks = localStreamRef.current.getVideoTracks();
+      if (videoTracks.length > 0) {
+        videoTracks[0].enabled = !videoTracks[0].enabled;
+        setIsCameraOff(!videoTracks[0].enabled);
+      }
+    }
+  };
 
   if (isLoading) {
     return <SchedulePageSkeleton />;
@@ -189,7 +244,7 @@ export default function SchedulePage() {
       </Tabs>
 
       {currentCallSession && otherParticipant && user && (
-        <Dialog open={isVideoCallModalOpen} onOpenChange={setIsVideoCallModalOpen}>
+        <Dialog open={isVideoCallModalOpen} onOpenChange={(isOpen) => { if (!isOpen) handleEndCall(); setIsVideoCallModalOpen(isOpen); }}>
           <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 sm:p-0">
             <DialogHeader className="p-4 border-b flex flex-row justify-between items-center">
               <div>
@@ -202,7 +257,7 @@ export default function SchedulePage() {
             </DialogHeader>
             
             <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-1 p-1 bg-black overflow-hidden">
-              {/* Other Participant's Video Panel */}
+              {/* Other Participant's Video Panel (Still Mocked) */}
               <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
                 <Image 
                   src={otherParticipant.profileImageUrl || `https://placehold.co/800x600.png`} 
@@ -220,45 +275,46 @@ export default function SchedulePage() {
                 <UserAvatar user={otherParticipant} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 opacity-50 text-4xl pointer-events-none" />
               </div>
               
-              {/* User's Video Panel */}
+              {/* User's Video Panel (Live if permission granted) */}
               <div className="relative bg-muted rounded-sm overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                 {isCameraOff ? (
-                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
-                        <UserAvatar user={user} className="h-24 w-24 text-4xl opacity-80" />
-                        <VideoOff className="h-10 w-10 text-white mt-4" />
+                 <video ref={localVideoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                 {(isCameraOff || hasCameraPermission === false) && (
+                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
+                        <UserAvatar user={user} className="h-24 w-24 text-4xl opacity-80 mb-2" />
+                        {hasCameraPermission === false && <p className="text-sm">Camera access denied</p>}
+                        {isCameraOff && hasCameraPermission && <p className="text-sm">Camera is off</p>}
+                        {!hasCameraPermission && hasCameraPermission !== false && <p className="text-sm">Attempting to start camera...</p>}
+                         <CameraOff className="h-10 w-10 text-white mt-4" />
                     </div>
-                 ) : (
-                    <Image 
-                        src={user.profileImageUrl || `https://placehold.co/800x600.png`} 
-                        alt="Your video feed" 
-                        fill={true}
-                        style={{objectFit: 'cover'}}
-                        data-ai-hint="user looking at screen"
-                        className="opacity-80"
-                    />
                  )}
                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
                   {isMicMuted ? <MicOff className="h-3 w-3 mr-1.5 text-red-400" /> : <Mic className="h-3 w-3 mr-1.5 text-green-400" />}
                   You
                 </div>
-                <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full" title="Mock Camera Status">
-                    {isCameraOff ? <VideoOff className="h-4 w-4 text-red-400"/> : <Video className="h-4 w-4 text-green-400"/>}
-                </div>
               </div>
             </div>
+             {hasCameraPermission === false && (
+              <Alert variant="destructive" className="m-2 rounded-md">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Camera/Mic Access Denied</AlertTitle>
+                <AlertDescription>
+                  To participate in video calls, please enable camera and microphone permissions in your browser settings and refresh the page.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <DialogFooter className="p-3 sm:p-4 border-t bg-background flex flex-row justify-center items-center space-x-2 sm:space-x-3">
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isMicMuted ? "Unmute Mic" : "Mute Mic"} onClick={toggleMic}>
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isMicMuted ? "Unmute Mic" : "Mute Mic"} onClick={toggleMic} disabled={hasCameraPermission === false}>
                 {isMicMuted ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isCameraOff ? "Turn Camera On" : "Turn Camera Off"} onClick={toggleCamera}>
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title={isCameraOff ? "Turn Camera On" : "Turn Camera Off"} onClick={toggleCamera} disabled={hasCameraPermission === false}>
                 {isCameraOff ? <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Video className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Share Screen (Mock)">
+              <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="Share Screen (Mock)" disabled>
                 <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-                <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12 md:hidden" title="Chat (Mock)">
+                <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12 md:hidden" title="Chat (Mock)" disabled>
                 <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
               <Button variant="destructive" size="icon" className="rounded-full h-10 w-10 sm:h-12 sm:w-12" title="End Call" onClick={handleEndCall}>
@@ -312,11 +368,11 @@ function SessionCard({ session, userRole, isPastSession, onJoinCall }: SessionCa
       <CardFooter>
         <Button 
           className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
-          disabled={isPastSession && userRole === 'mentee'}
+          disabled={(isPastSession && userRole === 'mentee') || (isPastSession && userRole === 'mentor')} // Mentors also can't join past calls
           onClick={!isPastSession ? onJoinCall : undefined}
         >
           <Video className="mr-2 h-4 w-4" />
-          {isPastSession ? "View Recording (Mock)" : "Join In-App Call (Mock)"}
+          {isPastSession ? "View Recording (Mock)" : "Join In-App Call"}
         </Button>
       </CardFooter>
     </Card>
@@ -402,4 +458,4 @@ function SchedulePageSkeleton() {
   );
 }
 
-
+    
