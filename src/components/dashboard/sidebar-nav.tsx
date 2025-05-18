@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/lib/types";
-import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, CalendarClock } from "lucide-react";
+import { Home, User, Users, CalendarDays, Settings, Brain, Briefcase, CalendarClock, Users2, Presentation } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   user: UserProfile | null;
@@ -30,8 +30,9 @@ export function SidebarNav({ className, user, ...props }: SidebarNavProps) {
 
   const mentorItems = [
     ...commonItems,
-    { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock }, // Ensured icon is distinct if needed
+    { href: "/dashboard/availability", label: "Set Availability", icon: CalendarClock },
     { href: "/dashboard/schedule", label: "My Schedule", icon: CalendarDays },
+    { href: "/dashboard/my-group-sessions", label: "My Group Sessions", icon: Users2 }, // Added link
     { href: "/dashboard/mentees", label: "My Mentees", icon: Briefcase }, // Assuming this page exists or will be created
   ];
 
