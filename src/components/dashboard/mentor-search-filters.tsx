@@ -21,10 +21,10 @@ export function MentorSearchFiltersComponent({ onSearch, initialFilters }: Mento
   });
 
   const onSubmit = (data: MentorSearchFilters) => {
-    // Ensure empty string for mentorshipFocus is treated as undefined (no filter)
+    // Ensure the form's undefined mentorshipFocus translates correctly to the search function
     const filtersToSubmit = {
       ...data,
-      mentorshipFocus: data.mentorshipFocus === "" ? undefined : data.mentorshipFocus,
+      mentorshipFocus: data.mentorshipFocus || undefined, // If empty string or null from form, make it undefined
     };
     onSearch(filtersToSubmit);
   };
@@ -77,12 +77,15 @@ export function MentorSearchFiltersComponent({ onSearch, initialFilters }: Mento
                     name="mentorshipFocus"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <Select 
+                            onValueChange={(value) => field.onChange(value as MentorshipFocusType | undefined)} 
+                            value={field.value || ""} // Empty string will show placeholder
+                        >
                             <SelectTrigger id="mentorshipFocus">
-                                <SelectValue placeholder="Select focus..." />
+                                <SelectValue placeholder="All Focus Areas" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Focus Areas</SelectItem>
+                                {/* Item for "All Focus Areas" is removed. Placeholder handles this. */}
                                 <SelectItem value="career">
                                     <div className="flex items-center"><Briefcase className="mr-2 h-4 w-4 text-muted-foreground"/> Career Advice</div>
                                 </SelectItem>
@@ -96,9 +99,13 @@ export function MentorSearchFiltersComponent({ onSearch, initialFilters }: Mento
             </div>
             <div className="flex justify-end space-x-2">
                  <Button type="button" variant="ghost" size="sm" onClick={handleReset} className={!hasActiveFilters ? 'hidden' : ''}>
-                    <X className="mr-1 h-3 w-3" /> Clear
+                    <X className="mr-1 h-3 w-3" /> Clear All Filters
                 </Button>
-                <Button type="submit" size="sm">Apply Filters</Button>
+                {/* Apply Filters button is now part of the main form submission within Popover, 
+                    so an explicit "Apply Filters" button here can be removed if main form submit is preferred. 
+                    If not, this button in PopoverContent should also trigger form submit.
+                    For simplicity, user will click outside or the main Search button.
+                */}
             </div>
           </PopoverContent>
         </Popover>
