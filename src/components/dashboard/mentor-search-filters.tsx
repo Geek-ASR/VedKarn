@@ -1,12 +1,14 @@
+
 "use client";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { Filter, Search, X } from "lucide-react";
-import type { MentorSearchFilters } from "@/lib/types";
-import { useForm } from "react-hook-form";
+import { Filter, Search, X, Briefcase, GraduationCap } from "lucide-react";
+import type { MentorSearchFilters, MentorshipFocusType } from "@/lib/types";
+import { useForm, Controller } from "react-hook-form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MentorSearchFiltersProps {
   onSearch: (filters: MentorSearchFilters) => void;
@@ -14,20 +16,26 @@ interface MentorSearchFiltersProps {
 }
 
 export function MentorSearchFiltersComponent({ onSearch, initialFilters }: MentorSearchFiltersProps) {
-  const { register, handleSubmit, reset, watch } = useForm<MentorSearchFilters>({
-    defaultValues: initialFilters || { query: "", university: "", jobRole: "", company: "" },
+  const { control, register, handleSubmit, reset, watch, setValue } = useForm<MentorSearchFilters>({
+    defaultValues: initialFilters || { query: "", university: "", jobRole: "", company: "", mentorshipFocus: undefined },
   });
 
   const onSubmit = (data: MentorSearchFilters) => {
-    onSearch(data);
+    // Ensure empty string for mentorshipFocus is treated as undefined (no filter)
+    const filtersToSubmit = {
+      ...data,
+      mentorshipFocus: data.mentorshipFocus === "" ? undefined : data.mentorshipFocus,
+    };
+    onSearch(filtersToSubmit);
   };
   
   const handleReset = () => {
-    reset({ query: "", university: "", jobRole: "", company: "" });
+    reset({ query: "", university: "", jobRole: "", company: "", mentorshipFocus: undefined });
     onSearch({}); // Trigger search with empty filters
   };
 
-  const hasActiveFilters = Object.values(watch()).some(value => !!value && value !== "");
+  const activeFilters = watch();
+  const hasActiveFilters = Object.values(activeFilters).some(value => !!value && value !== "");
 
 
   return (
@@ -62,6 +70,29 @@ export function MentorSearchFiltersComponent({ onSearch, initialFilters }: Mento
             <div>
               <Label htmlFor="company" className="text-sm font-medium">Company</Label>
               <Input id="company" placeholder="e.g., Google" {...register("company")} />
+            </div>
+            <div>
+                <Label htmlFor="mentorshipFocus" className="text-sm font-medium">Mentorship Focus</Label>
+                <Controller
+                    name="mentorshipFocus"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <SelectTrigger id="mentorshipFocus">
+                                <SelectValue placeholder="Select focus..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="">All Focus Areas</SelectItem>
+                                <SelectItem value="career">
+                                    <div className="flex items-center"><Briefcase className="mr-2 h-4 w-4 text-muted-foreground"/> Career Advice</div>
+                                </SelectItem>
+                                <SelectItem value="university">
+                                    <div className="flex items-center"><GraduationCap className="mr-2 h-4 w-4 text-muted-foreground"/> University Guidance</div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
             </div>
             <div className="flex justify-end space-x-2">
                  <Button type="button" variant="ghost" size="sm" onClick={handleReset} className={!hasActiveFilters ? 'hidden' : ''}>

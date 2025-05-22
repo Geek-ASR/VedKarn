@@ -17,15 +17,19 @@ import Link from "next/link";
 
 const MOCK_MENTORS_DB: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
-  .filter(Boolean) as MentorProfile[];
+  .filter((mentor): mentor is MentorProfile => Boolean(mentor));
 
 
 // Mock API call to fetch mentors
 async function fetchMentors(filters: MentorSearchFilters): Promise<MentorProfile[]> {
   console.log("Fetching mentors with filters:", filters);
   await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+  
+  const allMentorsFromContext = Object.values(getMockMentorProfiles())
+    .map(profileString => getMentorByProfileString(profileString))
+    .filter((mentor): mentor is MentorProfile => Boolean(mentor));
 
-  return MOCK_MENTORS_DB.filter(mentor => {
+  return allMentorsFromContext.filter(mentor => {
     const queryMatch = filters.query
       ? mentor.name.toLowerCase().includes(filters.query.toLowerCase()) ||
         mentor.bio?.toLowerCase().includes(filters.query.toLowerCase()) ||
@@ -41,7 +45,11 @@ async function fetchMentors(filters: MentorSearchFilters): Promise<MentorProfile
     const companyMatch = filters.company
       ? mentor.companies?.some(c => c.institutionName.toLowerCase().includes(filters.company!.toLowerCase()))
       : true;
-    return queryMatch && universityMatch && jobRoleMatch && companyMatch;
+    const mentorshipFocusMatch = filters.mentorshipFocus
+      ? mentor.mentorshipFocus?.includes(filters.mentorshipFocus)
+      : true;
+      
+    return queryMatch && universityMatch && jobRoleMatch && companyMatch && mentorshipFocusMatch;
   });
 }
 
@@ -58,7 +66,7 @@ export default function MentorDiscoveryPage() {
   const menteeProfileForAI = useMemo(() => {
     if (!menteeUser || menteeUser.role !== 'mentee') return "Generic student interested in learning.";
     const mentee = menteeUser;
-    return `Name: ${mentee.name}, Bio: ${mentee.bio}, Learning Goals: ${mentee.learningGoals}, Desired Universities: ${mentee.desiredUniversities?.join(', ')}, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ')}, Desired Companies: ${mentee.desiredCompanies?.join(', ')}`;
+    return `Name: ${mentee.name}, Bio: ${mentee.bio}, Learning Goals: ${mentee.learningGoals}, Desired Universities: ${mentee.desiredUniversities?.join(', ')}, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ')}, Desired Companies: ${mentee.desiredCompanies?.join(', ')}, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ')}`;
   }, [menteeUser]);
 
   const { data: suggestedMentorsData, isLoading: isLoadingSuggestions } = useQuery<SuggestMentorsOutput, Error>({
@@ -67,11 +75,11 @@ export default function MentorDiscoveryPage() {
       if (!menteeUser || menteeUser.role !== 'mentee') return [];
       const input: SuggestMentorsInput = {
         menteeProfile: menteeProfileForAI,
-        mentorProfiles: getMockMentorProfiles(), // Fetch all mentor profiles for AI to evaluate
+        mentorProfiles: getMockMentorProfiles(), 
       };
       return suggestMentors(input);
     },
-    enabled: !!menteeUser && menteeUser.role === 'mentee', // Only run if user is a mentee
+    enabled: !!menteeUser && menteeUser.role === 'mentee', 
   });
 
   const handleSearch = (newFilters: MentorSearchFilters) => {
@@ -88,7 +96,7 @@ export default function MentorDiscoveryPage() {
         }
         return null;
       })
-      .filter(Boolean) as (MentorProfile & { relevanceScore: number; reason: string })[];
+      .filter((mentor): mentor is MentorProfile & { relevanceScore: number; reason: string } => Boolean(mentor));
   }, [suggestedMentorsData]);
 
 
@@ -103,8 +111,7 @@ export default function MentorDiscoveryPage() {
 
       <MentorSearchFiltersComponent onSearch={handleSearch} initialFilters={filters} />
       
-      {/* AI Suggested Mentors Section - only shows on the mentors/ page if not explicitly filtered */}
-      {!Object.values(filters).some(f => f) && suggestedMentorProfiles && suggestedMentorProfiles.length > 0 && (
+      {!Object.values(filters).some(f => !!f) && suggestedMentorProfiles && suggestedMentorProfiles.length > 0 && (
         <section className="space-y-4 p-4 bg-primary/5 rounded-lg">
           <div className="flex items-center space-x-2">
             <Brain className="h-6 w-6 text-primary" />
@@ -118,7 +125,7 @@ export default function MentorDiscoveryPage() {
           )}
           {!isLoadingSuggestions && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {suggestedMentorProfiles.slice(0,3).map((mentor) => ( // Show top 3 suggestions
+              {suggestedMentorProfiles.slice(0,3).map((mentor) => (
                 <MentorCard key={mentor.id} mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
               ))}
             </div>
@@ -129,7 +136,7 @@ export default function MentorDiscoveryPage() {
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">
-          {Object.values(filters).some(f => f) ? 'Search Results' : 'All Mentors'}
+          {Object.values(filters).some(f => !!f) ? 'Search Results' : 'All Mentors'}
         </h2>
         {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -172,22 +179,28 @@ export default function MentorDiscoveryPage() {
 
 function MentorCardSkeleton() {
   return (
-    <div className="bg-card p-6 rounded-lg shadow space-y-4">
-      <div className="flex items-center space-x-4">
-        <Skeleton className="h-20 w-20 rounded-full" />
-        <div className="space-y-2 flex-1">
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+    <div className="bg-card p-4 sm:p-5 rounded-lg shadow space-y-3">
+      <div className="flex items-start space-x-3">
+        <Skeleton className="h-12 w-12 rounded-full border-2 border-background shadow-md" />
+        <div className="flex-1 space-y-1">
+          <Skeleton className="h-4 w-3/4" /> 
+          <Skeleton className="h-3 w-1/2" /> 
+          <Skeleton className="h-3 w-1/4 mt-1" /> 
         </div>
       </div>
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-      <div className="flex flex-wrap gap-2">
-        <Skeleton className="h-6 w-20 rounded-md" />
-        <Skeleton className="h-6 w-24 rounded-md" />
-        <Skeleton className="h-6 w-16 rounded-md" />
+      <Skeleton className="h-3 w-full" /> 
+      <Skeleton className="h-3 w-5/6" /> 
+      <div>
+        <Skeleton className="h-2.5 w-1/4 mb-1" /> 
+        <div className="flex flex-wrap gap-1">
+          <Skeleton className="h-3 w-10 rounded-full" /> 
+          <Skeleton className="h-3 w-14 rounded-full" /> 
+        </div>
       </div>
-      <Skeleton className="h-10 w-full rounded-md mt-4" />
+       <div className="pt-1">
+        <Skeleton className="h-8 w-full rounded-md" /> 
+      </div>
     </div>
   );
 }
+

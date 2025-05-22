@@ -9,7 +9,7 @@ import { UserAvatar } from "@/components/core/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Briefcase, GraduationCap, Star, Clock, CheckCircle, ExternalLink, Info, Frown } from "lucide-react";
+import { Calendar as CalendarIcon, Briefcase, GraduationCap, Star, Clock, CheckCircle, ExternalLink, Info, Frown, BookOpen, Target, University } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
@@ -19,8 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
 
-// This MOCK_MENTORS_DB_VIEW is for initial display and finding the mentor.
-// Actual booking updates will happen via context.
+
 const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfiles())
   .map(profileString => getMentorByProfileString(profileString))
   .filter((mentor): mentor is MentorProfile => Boolean(mentor));
@@ -29,7 +28,7 @@ const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfile
 export default function MentorProfilePage() {
   const params = useParams();
   const mentorId = params.mentorId as string;
-  const { user: currentUser, confirmBooking } = useAuth(); // Get confirmBooking from context
+  const { user: currentUser, confirmBooking, MOCK_USERS_INSTANCE } = useAuth(); 
   const { toast } = useToast();
   const router = useRouter();
 
@@ -41,19 +40,12 @@ export default function MentorProfilePage() {
   useEffect(() => {
     if (mentorId) {
       setTimeout(() => {
-        // Fetch the mentor profile for display. For reactivity to bookings made by others,
-        // this might need to refetch from context or a real backend.
-        // For now, it finds from a snapshot.
-        const foundMentor = MOCK_MENTORS_DB_VIEW.find(m => m.id === mentorId);
-        if (foundMentor && foundMentor.email && MOCK_USERS[foundMentor.email]) {
-           setMentor(MOCK_USERS[foundMentor.email] as MentorProfile); // Use the live data from context's MOCK_USERS
-        } else {
-           setMentor(null);
-        }
+        const foundMentorByEmail = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
+        setMentor(foundMentorByEmail || null);
         setLoading(false);
-      }, 500);
+      }, 300); // Reduced delay
     }
-  }, [mentorId, currentUser]); // Add currentUser to dependencies to refetch if another user logs in
+  }, [mentorId, MOCK_USERS_INSTANCE]); // Depend on MOCK_USERS_INSTANCE from context
 
   const handleBookSession = async () => {
     if (!currentUser || currentUser.role !== 'mentee' || !mentor || !selectedSlot || !mentor.email) {
@@ -65,18 +57,13 @@ export default function MentorProfilePage() {
       await confirmBooking(mentor.email, selectedSlot.id);
 
       // Update local mentor state for immediate UI feedback on this page
-      const updatedMentorAvailability = mentor.availabilitySlots?.map(slot => 
-          slot.id === selectedSlot.id ? { ...slot, isBooked: true, bookedByMenteeId: currentUser.id } : slot
-      );
-      
-      const updatedMentorLocalUI = {
-          ...mentor,
-          availabilitySlots: updatedMentorAvailability
-      };
-      setMentor(updatedMentorLocalUI); 
+      // Find the mentor from the MOCK_USERS_INSTANCE to get the freshest data
+       const freshMentorData = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
+       if (freshMentorData) {
+         setMentor(freshMentorData);
+       }
       setSelectedSlot(null);
 
-      // Generate Google Calendar Link
       const bookingStartTime = parseISO(selectedSlot.startTime);
       const bookingEndTime = parseISO(selectedSlot.endTime);
       const calStartTime = format(bookingStartTime, "yyyyMMdd'T'HHmmss'Z'");
@@ -125,6 +112,9 @@ export default function MentorProfilePage() {
     !slot.isBooked && selectedDate && format(parseISO(slot.startTime), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
   ) || [];
 
+  const hasCareerFocus = mentor.mentorshipFocus?.includes('career');
+  const hasUniversityFocus = mentor.mentorshipFocus?.includes('university');
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
       <Card className="overflow-hidden shadow-xl rounded-lg">
@@ -136,11 +126,23 @@ export default function MentorProfilePage() {
               <CardDescription className="text-md md:text-lg text-muted-foreground mb-2">
                 {mentor.companies?.[0]?.roleOrDegree || mentor.universities?.[0]?.roleOrDegree || 'Experienced Professional'}
               </CardDescription>
-              {mentor.yearsOfExperience !== undefined && (
-                <Badge variant="secondary" className="text-sm py-1 px-3 shadow-sm">
-                  <Star className="h-4 w-4 mr-1.5 text-amber-500 fill-amber-500" /> {mentor.yearsOfExperience} Years of Experience
-                </Badge>
-              )}
+              <div className="flex flex-wrap gap-2 items-center">
+                {mentor.yearsOfExperience !== undefined && (
+                    <Badge variant="secondary" className="text-sm py-1 px-3 shadow-sm">
+                    <Star className="h-4 w-4 mr-1.5 text-amber-500 fill-amber-500" /> {mentor.yearsOfExperience} Years of Experience
+                    </Badge>
+                )}
+                {hasCareerFocus && (
+                    <Badge variant="outline" className="border-blue-500 bg-blue-50 text-blue-700 py-1 px-3 text-sm">
+                        <Briefcase className="h-4 w-4 mr-1.5" /> Career Advice
+                    </Badge>
+                )}
+                {hasUniversityFocus && (
+                     <Badge variant="outline" className="border-green-500 bg-green-50 text-green-700 py-1 px-3 text-sm">
+                        <GraduationCap className="h-4 w-4 mr-1.5" /> University Guidance
+                    </Badge>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -152,9 +154,9 @@ export default function MentorProfilePage() {
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{mentor.bio || "No detailed bio provided."}</p>
             </section>
 
-            {mentor.expertise && mentor.expertise.length > 0 && (
+            {mentor.expertise && mentor.expertise.length > 0 && hasCareerFocus && (
               <section>
-                <h3 className="text-xl font-semibold text-foreground mb-3 border-b pb-1">Areas of Expertise</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-3 border-b pb-1 flex items-center"><Briefcase className="h-5 w-5 mr-2 text-primary" /> Career Expertise</h3>
                 <div className="flex flex-wrap gap-2">
                   {mentor.expertise.map((skill) => (
                     <Badge key={skill} variant="outline" className="py-1 px-3 text-sm bg-accent/10 text-accent-foreground border-accent/30">{skill}</Badge>
@@ -162,6 +164,37 @@ export default function MentorProfilePage() {
                 </div>
               </section>
             )}
+
+            {hasUniversityFocus && (
+                <section>
+                    <h3 className="text-xl font-semibold text-foreground mb-3 border-b pb-1 flex items-center"><GraduationCap className="h-5 w-5 mr-2 text-primary" /> University Admissions Guidance</h3>
+                    <div className="space-y-3">
+                        {mentor.targetDegreeLevels && mentor.targetDegreeLevels.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-medium text-muted-foreground flex items-center"><Target className="h-4 w-4 mr-1.5 text-accent"/> Target Degree Levels</h4>
+                                <p className="text-foreground">{mentor.targetDegreeLevels.join(', ')}</p>
+                            </div>
+                        )}
+                        {mentor.guidedUniversities && mentor.guidedUniversities.length > 0 && (
+                             <div>
+                                <h4 className="text-sm font-medium text-muted-foreground flex items-center"><University className="h-4 w-4 mr-1.5 text-accent"/> Experienced With Admissions For</h4>
+                                <p className="text-foreground">{mentor.guidedUniversities.join(', ')}</p>
+                            </div>
+                        )}
+                        {mentor.applicationExpertise && mentor.applicationExpertise.length > 0 && (
+                             <div>
+                                <h4 className="text-sm font-medium text-muted-foreground flex items-center"><BookOpen className="h-4 w-4 mr-1.5 text-accent"/> Application Expertise</h4>
+                                 <div className="flex flex-wrap gap-1 mt-1">
+                                    {mentor.applicationExpertise.map(area => (
+                                        <Badge key={area} variant="secondary" className="text-xs">{area}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
+
 
             {mentor.companies && mentor.companies.length > 0 && (
               <section>
@@ -323,6 +356,6 @@ function MentorProfileSkeleton() {
 
 // Need to re-import MOCK_USERS here to make it available in this module's scope for initializing MOCK_MENTORS_DB_VIEW
 // This is a workaround due to the mock data structure. In a real app, data fetching would be centralized.
-import { MOCK_USERS } from "@/context/auth-context";
+import { MOCK_USERS as CONTEXT_MOCK_USERS } from "@/context/auth-context"; // Renamed to avoid conflict
+const MOCK_USERS = CONTEXT_MOCK_USERS; // Assign to local MOCK_USERS
 
-    

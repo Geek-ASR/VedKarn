@@ -70,6 +70,7 @@ export interface Booking {
   id: string;
   mentorId: string;
   menteeId: string;
+  slotId: string; // Added to link booking to a specific slot
   startTime: string; // ISO DateTime string
   endTime: string; // ISO DateTime string
   status: 'confirmed' | 'pending' | 'cancelled';
@@ -98,7 +99,7 @@ export interface GroupSession {
   hostId: string;
   hostName: string;
   hostProfileImageUrl?: string;
-  date: string;
+  date: string; // e.g., "November 5th, 2024 at 4:00 PM PST"
   tags: string[];
   imageUrl?: string;
   participantCount?: number;
@@ -115,9 +116,10 @@ export interface Webinar {
   hostId: string;
   speakerName: string;
   hostProfileImageUrl?: string;
-  date: string;
+  date: string; // e.g., "November 10th, 2024 at 11:00 AM PST"
   topic: string;
   imageUrl?: string;
   duration?: string;
   // focus?: 'career' | 'university' | 'general'; // Future consideration
 }
+
