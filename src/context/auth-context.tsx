@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem, GroupSession, Webinar } from '@/lib/types';
+import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooking, AvailabilitySlot, Booking, ExperienceItem, GroupSession, Webinar, MentorshipFocusType, DegreeLevelType } from '@/lib/types';
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -13,9 +13,9 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     name: 'Dr. Eleanor Vance',
     role: 'mentor',
     profileImageUrl: 'https://placehold.co/100x100.png',
-    bio: 'Experienced AI researcher with a passion for guiding students. Specializing in Machine Learning and Natural Language Processing.',
+    bio: 'Experienced AI researcher with a passion for guiding students. Specializing in Machine Learning and Natural Language Processing for both career and academic pursuits.',
     interests: ['AI Ethics', 'Deep Learning', 'Academic Research'],
-    expertise: ['Machine Learning', 'NLP', 'Computer Vision'],
+    expertise: ['Machine Learning', 'NLP', 'Computer Vision', 'PhD Applications'],
     universities: [
       { id: 'uni1-mv', institutionName: 'Stanford University', roleOrDegree: 'PhD in AI', startDate: '2010-09-01', endDate: '2014-06-01', description: 'Focused on novel neural network architectures.' },
       { id: 'uni2-mv', institutionName: 'MIT', roleOrDegree: 'M.S. Computer Science', startDate: '2008-09-01', endDate: '2010-06-01' },
@@ -30,7 +30,11 @@ export const MOCK_USERS: Record<string, UserProfile> = {
       { id: 'slot2', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
       { id: 'slot3', startTime: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 3)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
       { id: 'slot-past-booked', startTime: new Date(new Date().setDate(new Date().getDate() -1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() -1)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
-    ]
+    ],
+    mentorshipFocus: ['career', 'university'],
+    targetDegreeLevels: ['Masters', 'PhD'],
+    guidedUniversities: ['Stanford University', 'MIT', 'UC Berkeley'],
+    applicationExpertise: ['SOP Crafting', 'Research Proposals', 'PhD Interview Prep'],
   } as MentorProfile,
   'mentee@example.com': {
     id: 'mentee1',
@@ -44,6 +48,10 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     desiredUniversities: ['Stanford University', 'Carnegie Mellon University'],
     desiredJobRoles: ['Data Scientist', 'Machine Learning Engineer'],
     desiredCompanies: ['Google', 'Meta', 'Netflix'],
+    seekingMentorshipFor: ['university', 'career'],
+    currentEducationLevel: 'Undergraduate Senior',
+    targetDegreeLevel: 'Masters',
+    targetFieldsOfStudy: ['Data Science', 'Computer Science'],
   } as MenteeProfile,
    'mentor2@example.com': {
     id: 'mentor2',
@@ -51,9 +59,9 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     name: 'Dr. Ben Carter',
     role: 'mentor',
     profileImageUrl: 'https://placehold.co/100x100.png',
-    bio: 'Product Management expert with 12+ years in tech. Passionate about building great products and mentoring future leaders.',
+    bio: 'Product Management expert with 12+ years in tech. Passionate about building great products and mentoring future leaders for career growth.',
     interests: ['Product Strategy', 'User Experience', 'Startups'],
-    expertise: ['Product Management', 'Agile Development', 'Market Analysis', 'UX Strategy'],
+    expertise: ['Product Management', 'Agile Development', 'Market Analysis', 'UX Strategy', 'Career Transitions'],
     universities: [{ id: 'uni1-bc', institutionName: 'UC Berkeley', roleOrDegree: 'MBA', startDate: '2006-08-01', endDate: '2008-05-01', description: 'Emphasis on Technology Management.' }],
     companies: [
         { id: 'comp1-bc', institutionName: 'Salesforce', roleOrDegree: 'Director of Product', startDate: '2015-03-01', description: 'Led product strategy for key cloud services.' },
@@ -63,51 +71,49 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     availabilitySlots: [
       { id: 'slot4', startTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
       { id: 'slot5', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
-    ]
+    ],
+    mentorshipFocus: ['career'],
   } as MentorProfile,
 };
 
 
-const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount'>[] = [
+const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount' | 'duration'>[] = [
   {
     id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1',
+    hostId: 'mentor1', // Dr. Eleanor Vance
     date: 'November 5th, 2024 at 4:00 PM PST',
     tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
     imageUrl: 'https://placehold.co/600x400.png',
     maxParticipants: 15,
     price: '$25',
-    duration: "90 minutes"
   },
   {
     id: 'gs2',
     title: 'Startup Pitch Practice & Feedback',
     description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
-    hostId: 'mentor1',
+    hostId: 'mentor1', // Dr. Eleanor Vance
     date: 'November 12th, 2024 at 10:00 AM PST',
     tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
     imageUrl: 'https://placehold.co/600x400.png',
     maxParticipants: 10,
     price: '$20',
-    duration: "2 hours"
   },
   {
     id: 'gs3',
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor2',
+    hostId: 'mentor2', // Dr. Ben Carter
     date: 'November 19th, 2024 at 1:00 PM PST',
     tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
     imageUrl: 'https://placehold.co/600x400.png',
     maxParticipants: 20,
     price: 'Free',
-    duration: "75 minutes"
   }
 ];
 
-const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImageUrl'>[] = [
+const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImageUrl' | 'duration'>[] = [
   {
     id: 'web1',
     title: 'The Future of Generative AI',
@@ -116,7 +122,6 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
     date: 'November 8th, 2024 at 9:00 AM PST',
     topic: 'Artificial Intelligence',
     imageUrl: 'https://placehold.co/400x250.png',
-    duration: '90 minutes'
   },
   {
     id: 'web2',
@@ -126,7 +131,6 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
     date: 'November 15th, 2024 at 12:00 PM PST',
     topic: 'Career Development',
     imageUrl: 'https://placehold.co/400x250.png',
-    duration: '60 minutes'
   },
   {
     id: 'web3',
@@ -136,17 +140,16 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
     date: 'November 22nd, 2024 at 3:00 PM PST',
     topic: 'Cloud Computing',
     imageUrl: 'https://placehold.co/400x250.png',
-    duration: '75 minutes'
   }
 ];
 
-function enrichInitialData<T extends { hostId: string }, R extends T & { hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount?: number }>(
+function enrichInitialData<T extends { hostId: string }, R extends T & { hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount?: number; duration?: string }>(
   rawData: T[],
   mockUsersData: Record<string, UserProfile>,
   type: 'groupSession' | 'webinar'
 ): R[] {
   return rawData.map(item => {
-    const host = mockUsersData[Object.keys(mockUsersData).find(key => mockUsersData[key].id === item.hostId) || ''];
+    const host = Object.values(mockUsersData).find(u => u.id === item.hostId);
     const enrichedItem: R = { ...item } as R;
     if (host) {
       if (type === 'groupSession') {
@@ -157,7 +160,10 @@ function enrichInitialData<T extends { hostId: string }, R extends T & { hostNam
       enrichedItem.hostProfileImageUrl = host.profileImageUrl;
     }
     if (type === 'groupSession') {
-      enrichedItem.participantCount = (item as any).participantCount || 0; // Ensure participantCount
+      enrichedItem.participantCount = (item as any).participantCount || 0;
+      enrichedItem.duration = (item as any).duration || 'Not specified';
+    } else if (type === 'webinar') {
+       enrichedItem.duration = (item as any).duration || 'Not specified';
     }
     return enrichedItem;
   });
@@ -169,22 +175,23 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, role?: UserRole) => Promise<void>;
   logout: () => void;
-  updateUserProfile: (profileData: Partial<UserProfile>) => void;
-  completeProfile: (profileData: Partial<UserProfile>, role: UserRole) => void;
+  updateUserProfile: (profileData: Partial<UserProfile>) => Promise<void>;
+  completeProfile: (profileData: Partial<UserProfile>, role: UserRole) => Promise<void>;
   getScheduledSessionsForCurrentUser: () => Promise<EnrichedBooking[]>;
   confirmBooking: (mentorEmail: string, slotId: string) => Promise<void>;
   updateMentorAvailability: (mentorId: string, newSlots: AvailabilitySlot[]) => Promise<void>;
   bookingsVersion: number;
   masterGroupSessionsList: GroupSession[];
   sessionsVersion: number;
-  createGroupSession: (sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }) => Promise<GroupSession>;
+  createGroupSession: (sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'>) => Promise<GroupSession>;
   getGroupSessionsByMentor: (mentorId: string) => Promise<GroupSession[]>;
   getGroupSessionDetails: (sessionId: string) => Promise<GroupSession | undefined>;
   deleteMentorGroupSession: (sessionId: string) => Promise<void>;
+  updateMentorGroupSession: (sessionId: string, sessionData: Partial<Omit<GroupSession, 'id' | 'hostId' | 'hostName' | 'hostProfileImageUrl' | 'participantCount'>>) => Promise<GroupSession | undefined>;
   getAllGroupSessions: () => Promise<GroupSession[]>;
   masterWebinarsList: Webinar[];
   webinarsVersion: number;
-  createWebinar: (webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }) => Promise<Webinar>;
+  createWebinar: (webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl'>) => Promise<Webinar>;
   getWebinarsByMentor: (mentorId: string) => Promise<Webinar[]>;
   getWebinarDetails: (webinarId: string) => Promise<Webinar | undefined>;
   deleteMentorWebinar: (webinarId: string) => Promise<void>;
@@ -205,8 +212,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedSessions = localStorage.getItem('vedkarn-group-sessions');
       if (storedSessions) {
         try {
-          // Ensure data loaded from localStorage is also enriched if it's missing derived fields
           const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
+          // Ensure data loaded from localStorage is also enriched if it's missing derived fields
           return enrichInitialData(parsedSessions, MOCK_USERS, 'groupSession');
         } catch (e) {
           console.error("Failed to parse group sessions from localStorage", e);
@@ -241,15 +248,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
-          if (MOCK_USERS[parsedUser.email]) {
-            const mockUserDataFromDB = MOCK_USERS[parsedUser.email];
+          const mockUserDataFromDB = MOCK_USERS[parsedUser.email];
+           if (mockUserDataFromDB) { // User exists in our mock DB
             const mergedUser = { ...mockUserDataFromDB, ...parsedUser };
-
-            if (mergedUser.role === 'mentor' && !(mergedUser as MentorProfile).availabilitySlots) {
-              (mergedUser as MentorProfile).availabilitySlots = (mockUserDataFromDB as MentorProfile)?.availabilitySlots || [];
+            // Ensure role-specific fields are present and correctly typed
+            if (mergedUser.role === 'mentor') {
+              if (!(mergedUser as MentorProfile).availabilitySlots) {
+                (mergedUser as MentorProfile).availabilitySlots = (mockUserDataFromDB as MentorProfile)?.availabilitySlots || [];
+              }
+               (mergedUser as MentorProfile).mentorshipFocus = (mergedUser as MentorProfile).mentorshipFocus || (mockUserDataFromDB as MentorProfile).mentorshipFocus || [];
+            } else if (mergedUser.role === 'mentee') {
+               (mergedUser as MenteeProfile).seekingMentorshipFor = (mergedUser as MenteeProfile).seekingMentorshipFor || (mockUserDataFromDB as MenteeProfile).seekingMentorshipFor || [];
             }
             setUser(mergedUser);
-          } else {
+          } else { // New user not in MOCK_USERS, store as is for profile completion
             setUser(parsedUser);
             MOCK_USERS[parsedUser.email] = parsedUser;
           }
@@ -265,13 +277,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
    useEffect(() => {
-    if(!loading && masterGroupSessionsList.length > 0) {
+    if(!loading) { // Only save to localStorage after initial loading is done
         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(masterGroupSessionsList));
     }
   }, [masterGroupSessionsList, loading]);
 
   useEffect(() => {
-    if(!loading && masterWebinarsList.length > 0) {
+    if(!loading) { // Only save to localStorage after initial loading is done
         localStorage.setItem('vedkarn-webinars', JSON.stringify(masterWebinarsList));
     }
   }, [masterWebinarsList, loading]);
@@ -283,28 +295,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
     const isHowItWorksPage = pathname === '/how-it-works';
-    const isApiRoute = pathname.startsWith('/api'); // Assuming API routes don't need auth redirection
+    const isApiRoute = pathname.startsWith('/api');
 
     if (!user) {
-      // If not logged in, allow access only to root, /how-it-works, auth pages, and API routes
       if (!isRootPage && !isHowItWorksPage && !isAuthPage && !isApiRoute) {
         router.push('/auth/signin');
       }
     } else {
-      // If logged in
       if (!user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
-        // If role not complete, redirect to complete-profile (unless already there or an API route)
         router.push('/auth/complete-profile');
       } else if (user.role && isAuthPage) {
-        // If role IS complete and user tries to access an auth page, redirect to dashboard
         router.push('/dashboard');
+      } else if (user.role && isRootPage) {
+        // Allow logged-in users to see the root page if explicitly navigated to
+        // No redirect here by default to allow viewing landing page
       }
-      // If user.role IS complete and they are on root, /how-it-works, or dashboard, let them stay.
-      // No redirection from root or /how-it-works to dashboard for logged-in users if we want them to see these pages.
-      // If you want to redirect logged-in users from root/how-it-works to dashboard, add:
-      // else if (user.role && (isRootPage || isHowItWorksPage)) {
-      //   router.push('/dashboard');
-      // }
     }
   }, [user, loading, router, pathname]);
 
@@ -317,14 +322,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (userToLogin) {
       if (initialRole && userToLogin.role !== initialRole) {
         userToLogin = { ...userToLogin, role: initialRole, name: userToLogin.name || email.split('@')[0] };
-        MOCK_USERS[email] = userToLogin;
       } else if (!userToLogin.name && email) {
         userToLogin = { ...userToLogin, name: email.split('@')[0]};
-        MOCK_USERS[email] = userToLogin;
       }
-      if (userToLogin.role === 'mentor' && !(userToLogin as MentorProfile).availabilitySlots) {
-        (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
+      
+      // Ensure role-specific fields are correctly set up or defaulted from MOCK_USERS
+      if (userToLogin.role === 'mentor') {
+        userToLogin = {
+            ...MOCK_USERS[email] as MentorProfile, // Start with DB version to get all default mentor fields
+            ...userToLogin // Override with any existing login-time changes
+        };
+        if (!(userToLogin as MentorProfile).availabilitySlots) {
+          (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
+        }
+      } else if (userToLogin.role === 'mentee') {
+         userToLogin = {
+            ...MOCK_USERS[email] as MenteeProfile,
+            ...userToLogin
+        };
       }
+      MOCK_USERS[email] = userToLogin;
+
     } else {
       const newUserProfile: UserProfile = {
         id: `user-${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -342,11 +360,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         (newUserProfile as Partial<MentorProfile>).companies = [];
         (newUserProfile as Partial<MentorProfile>).availabilitySlots = [];
         (newUserProfile as Partial<MentorProfile>).yearsOfExperience = 0;
+        (newUserProfile as Partial<MentorProfile>).mentorshipFocus = [];
       } else if (initialRole === 'mentee') {
         (newUserProfile as Partial<MenteeProfile>).learningGoals = '';
         (newUserProfile as Partial<MenteeProfile>).desiredUniversities = [];
         (newUserProfile as Partial<MenteeProfile>).desiredJobRoles = [];
         (newUserProfile as Partial<MenteeProfile>).desiredCompanies = [];
+        (newUserProfile as Partial<MenteeProfile>).seekingMentorshipFor = [];
       }
       MOCK_USERS[email] = newUserProfile;
       userToLogin = newUserProfile;
@@ -369,36 +389,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/auth/signin');
   };
 
-  const updateUserProfile = (profileData: Partial<UserProfile>) => {
+  const updateUserProfile = useCallback(async (profileData: Partial<UserProfile>) => {
     if (user && user.email && MOCK_USERS[user.email]) {
       const updatedUser = { ...MOCK_USERS[user.email], ...profileData };
       MOCK_USERS[user.email] = updatedUser;
       setUser(updatedUser);
       localStorage.setItem('vedkarn-user', JSON.stringify(updatedUser));
+    } else {
+        throw new Error("User not found or not logged in for profile update.");
     }
-  };
+  }, [user]);
 
-  const completeProfile = (profileData: Partial<UserProfile>, role: UserRole) => {
+
+  const completeProfile = useCallback(async (profileData: Partial<UserProfile>, role: UserRole) => {
     if (user && user.email && MOCK_USERS[user.email]) {
       let completedProfile: UserProfile = { ...MOCK_USERS[user.email], ...profileData, role };
 
       if (role === 'mentor') {
-        const mentorSpecifics: Partial<MentorProfile> = {
-          expertise: (profileData as Partial<MentorProfile>).expertise || (completedProfile as MentorProfile).expertise || [],
-          universities: (profileData as Partial<MentorProfile>).universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || (completedProfile as MentorProfile).universities || [],
-          companies: (profileData as Partial<MentorProfile>).companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || (completedProfile as MentorProfile).companies || [],
-          availabilitySlots: (profileData as Partial<MentorProfile>).availabilitySlots || (completedProfile as MentorProfile).availabilitySlots || [],
-          yearsOfExperience: (profileData as Partial<MentorProfile>).yearsOfExperience ?? (completedProfile as MentorProfile).yearsOfExperience ?? 0,
+        const mentorData = profileData as Partial<MentorProfile>;
+        const existingMentorData = MOCK_USERS[user.email] as MentorProfile;
+        completedProfile = {
+          ...existingMentorData, // Start with existing or default mentor structure
+          ...completedProfile, // Apply common updates
+          expertise: mentorData.expertise || existingMentorData.expertise || [],
+          universities: mentorData.universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || existingMentorData.universities || [],
+          companies: mentorData.companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || existingMentorData.companies || [],
+          availabilitySlots: mentorData.availabilitySlots || existingMentorData.availabilitySlots || [],
+          yearsOfExperience: mentorData.yearsOfExperience ?? existingMentorData.yearsOfExperience ?? 0,
+          mentorshipFocus: mentorData.mentorshipFocus || existingMentorData.mentorshipFocus || [],
+          targetDegreeLevels: mentorData.targetDegreeLevels || existingMentorData.targetDegreeLevels || [],
+          guidedUniversities: mentorData.guidedUniversities || existingMentorData.guidedUniversities || [],
+          applicationExpertise: mentorData.applicationExpertise || existingMentorData.applicationExpertise || [],
+          role: 'mentor',
         };
-        completedProfile = { ...completedProfile, ...mentorSpecifics, role: 'mentor' };
       } else if (role === 'mentee') {
-        const menteeSpecifics: Partial<MenteeProfile> = {
-          learningGoals: (profileData as Partial<MenteeProfile>).learningGoals || (completedProfile as MenteeProfile).learningGoals || '',
-          desiredUniversities: (profileData as Partial<MenteeProfile>).desiredUniversities || (completedProfile as MenteeProfile).desiredUniversities || [],
-          desiredJobRoles: (profileData as Partial<MenteeProfile>).desiredJobRoles || (completedProfile as MenteeProfile).desiredJobRoles || [],
-          desiredCompanies: (profileData as Partial<MenteeProfile>).desiredCompanies || (completedProfile as MenteeProfile).desiredCompanies || [],
+         const menteeData = profileData as Partial<MenteeProfile>;
+         const existingMenteeData = MOCK_USERS[user.email] as MenteeProfile;
+        completedProfile = {
+          ...existingMenteeData,
+          ...completedProfile,
+          learningGoals: menteeData.learningGoals || existingMenteeData.learningGoals || '',
+          desiredUniversities: menteeData.desiredUniversities || existingMenteeData.desiredUniversities || [],
+          desiredJobRoles: menteeData.desiredJobRoles || existingMenteeData.desiredJobRoles || [],
+          desiredCompanies: menteeData.desiredCompanies || existingMenteeData.desiredCompanies || [],
+          seekingMentorshipFor: menteeData.seekingMentorshipFor || existingMenteeData.seekingMentorshipFor || [],
+          currentEducationLevel: menteeData.currentEducationLevel || existingMenteeData.currentEducationLevel,
+          targetDegreeLevel: menteeData.targetDegreeLevel || existingMenteeData.targetDegreeLevel,
+          targetFieldsOfStudy: menteeData.targetFieldsOfStudy || existingMenteeData.targetFieldsOfStudy || [],
+          role: 'mentee',
         };
-        completedProfile = { ...completedProfile, ...menteeSpecifics, role: 'mentee' };
       } else {
         completedProfile.role = null;
       }
@@ -407,8 +446,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(completedProfile);
       localStorage.setItem('vedkarn-user', JSON.stringify(completedProfile));
       router.push('/dashboard');
+    } else {
+        throw new Error("User not found or not logged in for profile completion.");
     }
-  };
+  }, [user, router]);
+
 
   const confirmBooking = useCallback(async (mentorEmail: string, slotId: string): Promise<void> => {
     if (!user || user.role !== 'mentee') {
@@ -425,12 +467,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
 
-        if (user && user.email === mentorEmail) { // This condition might be rare unless a mentor is booking themselves
+        if (user && user.email === mentorEmail) { 
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
-            setUser(updatedCurrentUser); // Update context user state
-            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser)); // Persist change
+            setUser(updatedCurrentUser); 
+            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser)); 
         }
-        setBookingsVersion(v => v + 1); // Increment version to trigger re-renders
+        setBookingsVersion(v => v + 1); 
         return;
       } else {
         throw new Error("Slot not found or already booked.");
@@ -453,17 +495,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mentorProfile.availabilitySlots) {
           for (const slot of mentorProfile.availabilitySlots) {
             if (slot.isBooked && slot.bookedByMenteeId) {
-              // Check if the current user is either the mentor or the mentee for this booking
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) { // Ensure mentee profile exists
+                if (menteeProfile) { 
                   scheduledSessions.push({
-                    id: `${mentorProfile.id}-${slot.id}`, // Unique booking ID
+                    id: `${mentorProfile.id}-${slot.id}`,
                     mentorId: mentorProfile.id,
                     menteeId: menteeProfile.id,
                     startTime: slot.startTime,
                     endTime: slot.endTime,
-                    status: 'confirmed', // Assuming all booked slots are confirmed for mock
+                    status: 'confirmed',
                     mentor: mentorProfile,
                     mentee: menteeProfile,
                     sessionTitle: user.role === 'mentor'
@@ -491,14 +532,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(updatedCurrentUser);
         localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
       }
-      setBookingsVersion(v => v + 1); // Increment version
+      setBookingsVersion(v => v + 1); 
       return;
     }
     throw new Error("Mentor not found or invalid ID for updating availability.");
   }, [user]);
 
   const createGroupSession = useCallback(async (
-    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }
+    sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl'>
   ): Promise<GroupSession> => {
     if (!user || user.role !== 'mentor') {
       throw new Error("Only mentors can create group sessions.");
@@ -545,8 +586,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSessionsVersion(v => v + 1);
   }, [user, masterGroupSessionsList]);
 
+  const updateMentorGroupSession = useCallback(async (
+    sessionId: string, 
+    sessionData: Partial<Omit<GroupSession, 'id' | 'hostId' | 'hostName' | 'hostProfileImageUrl' | 'participantCount'>>
+  ): Promise<GroupSession | undefined> => {
+    if (!user || user.role !== 'mentor') {
+      throw new Error("Only mentors can update group sessions.");
+    }
+    let updatedSession: GroupSession | undefined;
+    setMasterGroupSessionsList(prevSessions => 
+      prevSessions.map(session => {
+        if (session.id === sessionId) {
+          if (session.hostId !== user.id) {
+            throw new Error("Mentor can only update their own sessions.");
+          }
+          updatedSession = { ...session, ...sessionData };
+          return updatedSession;
+        }
+        return session;
+      })
+    );
+    if (updatedSession) {
+        setSessionsVersion(v => v + 1);
+    } else {
+        throw new Error("Session not found or update failed.");
+    }
+    return updatedSession;
+  }, [user]);
+
+
   const createWebinar = useCallback(async (
-    webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }
+    webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl'>
   ): Promise<Webinar> => {
     if (!user || user.role !== 'mentor') {
       throw new Error("Only mentors can create webinars.");
@@ -555,8 +625,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...webinarData,
       id: `web-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       hostId: user.id,
-      speakerName: webinarData.speakerName || user.name, // Default speaker to current mentor's name
+      speakerName: webinarData.speakerName || user.name, 
       hostProfileImageUrl: user.profileImageUrl,
+      duration: webinarData.duration || "Not specified",
     };
     setMasterWebinarsList(prevWebinars => [...prevWebinars, newWebinar]);
     setWebinarsVersion(v => v + 1);
@@ -609,6 +680,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       getGroupSessionsByMentor,
       getGroupSessionDetails,
       deleteMentorGroupSession,
+      updateMentorGroupSession,
       getAllGroupSessions,
       masterWebinarsList,
       webinarsVersion,
@@ -638,20 +710,16 @@ export const getMockMentorProfiles = (): string[] => {
       const m = userProfile as MentorProfile;
       const universities = m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A';
       const companies = m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A';
-      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${universities}, Companies: ${companies}, Years of Exp: ${m.yearsOfExperience || 0}`;
+      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${universities}, Companies: ${companies}, Years of Exp: ${m.yearsOfExperience || 0}, Mentorship Focus: ${m.mentorshipFocus?.join(', ') || 'N/A'}`;
     });
 };
 
 export const getMentorByProfileString = (profileString: string): MentorProfile | undefined => {
-  // This function tries to find a mentor from MOCK_USERS based on a profile string.
-  // It assumes the "Name: " part of the string is unique and correctly formatted.
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
-    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; // Return the full profile from MOCK_USERS
+    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; 
   }
   return undefined;
 };
-
-  
