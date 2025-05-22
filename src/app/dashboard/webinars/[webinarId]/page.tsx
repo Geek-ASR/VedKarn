@@ -13,11 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2, BellRing, Loader2 } from "lucide-react"; // Added Loader2
+import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2, BellRing, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "@/components/core/user-avatar";
-import { requestWebinarReminder } from "@/app/actions/notifyActions"; // Import the server action
-import { useFormState, useFormStatus } from "react-dom"; // For Server Action form handling
+import { requestWebinarReminder } from "@/app/actions/notifyActions";
+import { useActionState } from "react"; // Updated import
+import { useFormStatus } from "react-dom";
+
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -43,9 +45,9 @@ export default function WebinarDetailPage() {
   const [showNotifyInput, setShowNotifyInput] = useState(false);
   const [reminderSet, setReminderSet] = useState(false);
 
-  // useFormState for the reminder action
+  // useActionState for the reminder action
   const initialState = { success: false, message: "", error: undefined };
-  const [formState, formAction] = useFormState(requestWebinarReminder, initialState);
+  const [formState, formAction] = useActionState(requestWebinarReminder, initialState); // Updated hook name
   
   const [isPending, startTransition] = useTransition();
 
@@ -318,3 +320,4 @@ function WebinarDetailSkeleton() {
     </div>
   );
 }
+
