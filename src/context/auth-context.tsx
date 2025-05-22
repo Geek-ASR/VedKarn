@@ -5,96 +5,6 @@ import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooki
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
-// Initial Mock Group Sessions Data
-const INITIAL_MOCK_GROUP_SESSIONS: GroupSession[] = [
-  {
-    id: 'gs1',
-    title: 'Mastering Data Structures & Algorithms',
-    description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1',
-    hostName: 'Dr. Code Alchemist',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png',
-    date: 'November 5th, 2024 at 4:00 PM PST',
-    tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
-    imageUrl: 'https://placehold.co/600x400.png',
-    participantCount: 8,
-    maxParticipants: 15,
-    price: '$25',
-    duration: "90 minutes"
-  },
-  {
-    id: 'gs2',
-    title: 'Startup Pitch Practice & Feedback',
-    description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
-    hostId: 'mentor1',
-    hostName: 'Valerie Venture',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png',
-    date: 'November 12th, 2024 at 10:00 AM PST',
-    tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
-    imageUrl: 'https://placehold.co/600x400.png',
-    participantCount: 5,
-    maxParticipants: 10,
-    price: '$20',
-    duration: "2 hours"
-  },
-  {
-    id: 'gs3',
-    title: 'Intro to UX Design Principles',
-    description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor2',
-    hostName: 'Desiree Design',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png',
-    date: 'November 19th, 2024 at 1:00 PM PST',
-    tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
-    imageUrl: 'https://placehold.co/600x400.png',
-    participantCount: 12,
-    maxParticipants: 20,
-    price: 'Free',
-    duration: "75 minutes"
-  }
-];
-
-// Initial Mock Webinars Data (adapted from suggest-webinars.ts)
-const INITIAL_MOCK_WEBINARS: Webinar[] = [
-  {
-    id: 'web1',
-    title: 'The Future of Generative AI',
-    description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
-    hostId: 'mentor1', // Example hostId
-    speakerName: 'Dr. Lex Futura',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
-    date: 'November 8th, 2024 at 9:00 AM PST',
-    topic: 'Artificial Intelligence',
-    imageUrl: 'https://placehold.co/400x250.png',
-    duration: '90 minutes'
-  },
-  {
-    id: 'web2',
-    title: 'Effective Networking in the Tech Industry',
-    description: 'Learn strategies for building meaningful professional connections, both online and offline, to advance your career in tech.',
-    hostId: 'mentor2', // Example hostId
-    speakerName: 'Connector Carla',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
-    date: 'November 15th, 2024 at 12:00 PM PST',
-    topic: 'Career Development',
-    imageUrl: 'https://placehold.co/400x250.png',
-    duration: '60 minutes'
-  },
-  {
-    id: 'web3',
-    title: 'Demystifying Cloud Computing',
-    description: 'A comprehensive overview of cloud computing concepts, services (AWS, Azure, GCP), and how to get started with cloud technologies.',
-    hostId: 'mentor1', // Example hostId
-    speakerName: 'Prof. Nimbus Stratos',
-    hostProfileImageUrl: 'https://placehold.co/100x100.png', // Example image
-    date: 'November 22nd, 2024 at 3:00 PM PST',
-    topic: 'Cloud Computing',
-    imageUrl: 'https://placehold.co/400x250.png',
-    duration: '75 minutes'
-  }
-];
-
-
 // Mock user data (replace with actual API calls)
 export const MOCK_USERS: Record<string, UserProfile> = {
   'mentor@example.com': {
@@ -157,6 +67,103 @@ export const MOCK_USERS: Record<string, UserProfile> = {
   } as MentorProfile,
 };
 
+
+const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount'>[] = [
+  {
+    id: 'gs1',
+    title: 'Mastering Data Structures & Algorithms',
+    description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
+    hostId: 'mentor1',
+    date: 'November 5th, 2024 at 4:00 PM PST',
+    tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
+    imageUrl: 'https://placehold.co/600x400.png',
+    maxParticipants: 15,
+    price: '$25',
+    duration: "90 minutes"
+  },
+  {
+    id: 'gs2',
+    title: 'Startup Pitch Practice & Feedback',
+    description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
+    hostId: 'mentor1',
+    date: 'November 12th, 2024 at 10:00 AM PST',
+    tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
+    imageUrl: 'https://placehold.co/600x400.png',
+    maxParticipants: 10,
+    price: '$20',
+    duration: "2 hours"
+  },
+  {
+    id: 'gs3',
+    title: 'Intro to UX Design Principles',
+    description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
+    hostId: 'mentor2',
+    date: 'November 19th, 2024 at 1:00 PM PST',
+    tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
+    imageUrl: 'https://placehold.co/600x400.png',
+    maxParticipants: 20,
+    price: 'Free',
+    duration: "75 minutes"
+  }
+];
+
+const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImageUrl'>[] = [
+  {
+    id: 'web1',
+    title: 'The Future of Generative AI',
+    description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
+    hostId: 'mentor1',
+    date: 'November 8th, 2024 at 9:00 AM PST',
+    topic: 'Artificial Intelligence',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '90 minutes'
+  },
+  {
+    id: 'web2',
+    title: 'Effective Networking in the Tech Industry',
+    description: 'Learn strategies for building meaningful professional connections, both online and offline, to advance your career in tech.',
+    hostId: 'mentor2',
+    date: 'November 15th, 2024 at 12:00 PM PST',
+    topic: 'Career Development',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '60 minutes'
+  },
+  {
+    id: 'web3',
+    title: 'Demystifying Cloud Computing',
+    description: 'A comprehensive overview of cloud computing concepts, services (AWS, Azure, GCP), and how to get started with cloud technologies.',
+    hostId: 'mentor1',
+    date: 'November 22nd, 2024 at 3:00 PM PST',
+    topic: 'Cloud Computing',
+    imageUrl: 'https://placehold.co/400x250.png',
+    duration: '75 minutes'
+  }
+];
+
+function enrichInitialData<T extends { hostId: string }, R extends T & { hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount?: number }>(
+  rawData: T[],
+  mockUsersData: Record<string, UserProfile>,
+  type: 'groupSession' | 'webinar'
+): R[] {
+  return rawData.map(item => {
+    const host = mockUsersData[Object.keys(mockUsersData).find(key => mockUsersData[key].id === item.hostId) || ''];
+    const enrichedItem: R = { ...item } as R;
+    if (host) {
+      if (type === 'groupSession') {
+        enrichedItem.hostName = host.name;
+      } else if (type === 'webinar') {
+        enrichedItem.speakerName = host.name; // Default speaker to host
+      }
+      enrichedItem.hostProfileImageUrl = host.profileImageUrl;
+    }
+    if (type === 'groupSession') {
+      enrichedItem.participantCount = (item as any).participantCount || 0; // Ensure participantCount
+    }
+    return enrichedItem;
+  });
+}
+
+
 interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
@@ -168,7 +175,6 @@ interface AuthContextType {
   confirmBooking: (mentorEmail: string, slotId: string) => Promise<void>;
   updateMentorAvailability: (mentorId: string, newSlots: AvailabilitySlot[]) => Promise<void>;
   bookingsVersion: number;
-  // Group Session Management
   masterGroupSessionsList: GroupSession[];
   sessionsVersion: number;
   createGroupSession: (sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }) => Promise<GroupSession>;
@@ -176,7 +182,6 @@ interface AuthContextType {
   getGroupSessionDetails: (sessionId: string) => Promise<GroupSession | undefined>;
   deleteMentorGroupSession: (sessionId: string) => Promise<void>;
   getAllGroupSessions: () => Promise<GroupSession[]>;
-  // Webinar Management
   masterWebinarsList: Webinar[];
   webinarsVersion: number;
   createWebinar: (webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }) => Promise<Webinar>;
@@ -194,8 +199,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [bookingsVersion, setBookingsVersion] = useState(0);
   const [sessionsVersion, setSessionsVersion] = useState(0);
   const [webinarsVersion, setWebinarsVersion] = useState(0);
-  const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>([]);
-  const [masterWebinarsList, setMasterWebinarsList] = useState<Webinar[]>([]);
+
+  const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedSessions = localStorage.getItem('vedkarn-group-sessions');
+      if (storedSessions) {
+        try {
+          // Ensure data loaded from localStorage is also enriched if it's missing derived fields
+          const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
+          return enrichInitialData(parsedSessions, MOCK_USERS, 'groupSession');
+        } catch (e) {
+          console.error("Failed to parse group sessions from localStorage", e);
+        }
+      }
+    }
+    return enrichInitialData(INITIAL_MOCK_GROUP_SESSIONS_RAW, MOCK_USERS, 'groupSession');
+  });
+
+  const [masterWebinarsList, setMasterWebinarsList] = useState<Webinar[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedWebinars = localStorage.getItem('vedkarn-webinars');
+      if (storedWebinars) {
+        try {
+           // Ensure data loaded from localStorage is also enriched
+          const parsedWebinars = JSON.parse(storedWebinars) as Webinar[];
+          return enrichInitialData(parsedWebinars, MOCK_USERS, 'webinar');
+        } catch (e) {
+          console.error("Failed to parse webinars from localStorage", e);
+        }
+      }
+    }
+    return enrichInitialData(INITIAL_MOCK_WEBINARS_RAW, MOCK_USERS, 'webinar');
+  });
 
   const router = useRouter();
   const pathname = usePathname();
@@ -226,41 +261,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem('vedkarn-user');
       }
     }
-
-    const storedSessions = localStorage.getItem('vedkarn-group-sessions');
-    if (storedSessions) {
-        try {
-            const parsedSessions: GroupSession[] = JSON.parse(storedSessions);
-            const initialSessionIds = new Set(INITIAL_MOCK_GROUP_SESSIONS.map(s => s.id));
-            const combinedSessions = [...INITIAL_MOCK_GROUP_SESSIONS.filter(s => !parsedSessions.find(ps => ps.id === s.id)), ...parsedSessions];
-            setMasterGroupSessionsList(combinedSessions);
-        } catch (e) {
-            console.error("Failed to parse group sessions from localStorage", e);
-            setMasterGroupSessionsList(INITIAL_MOCK_GROUP_SESSIONS);
-            localStorage.setItem('vedkarn-group-sessions', JSON.stringify(INITIAL_MOCK_GROUP_SESSIONS));
-        }
-    } else {
-         setMasterGroupSessionsList(INITIAL_MOCK_GROUP_SESSIONS);
-         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(INITIAL_MOCK_GROUP_SESSIONS));
-    }
-
-    const storedWebinars = localStorage.getItem('vedkarn-webinars');
-    if (storedWebinars) {
-        try {
-            const parsedWebinars: Webinar[] = JSON.parse(storedWebinars);
-            const initialWebinarIds = new Set(INITIAL_MOCK_WEBINARS.map(w => w.id));
-            const combinedWebinars = [...INITIAL_MOCK_WEBINARS.filter(w => !parsedWebinars.find(pw => pw.id === w.id)), ...parsedWebinars];
-            setMasterWebinarsList(combinedWebinars);
-        } catch (e) {
-            console.error("Failed to parse webinars from localStorage", e);
-            setMasterWebinarsList(INITIAL_MOCK_WEBINARS);
-            localStorage.setItem('vedkarn-webinars', JSON.stringify(INITIAL_MOCK_WEBINARS));
-        }
-    } else {
-         setMasterWebinarsList(INITIAL_MOCK_WEBINARS);
-         localStorage.setItem('vedkarn-webinars', JSON.stringify(INITIAL_MOCK_WEBINARS));
-    }
-
     setLoading(false);
   }, []);
 
@@ -283,13 +283,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
     const isHowItWorksPage = pathname === '/how-it-works';
-    const isApiRoute = pathname.startsWith('/api');
+    const isApiRoute = pathname.startsWith('/api'); // Assuming API routes don't need auth redirection
 
-
-    if (!user && !isAuthPage && !isRootPage && !isHowItWorksPage && !isApiRoute) {
-      router.push('/auth/signin');
-    } else if (user && !user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
-       router.push('/auth/complete-profile');
+    if (!user) {
+      // If not logged in, allow access only to root, /how-it-works, auth pages, and API routes
+      if (!isRootPage && !isHowItWorksPage && !isAuthPage && !isApiRoute) {
+        router.push('/auth/signin');
+      }
+    } else {
+      // If logged in
+      if (!user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
+        // If role not complete, redirect to complete-profile (unless already there or an API route)
+        router.push('/auth/complete-profile');
+      } else if (user.role && isAuthPage) {
+        // If role IS complete and user tries to access an auth page, redirect to dashboard
+        router.push('/dashboard');
+      }
+      // If user.role IS complete and they are on root, /how-it-works, or dashboard, let them stay.
+      // No redirection from root or /how-it-works to dashboard for logged-in users if we want them to see these pages.
+      // If you want to redirect logged-in users from root/how-it-works to dashboard, add:
+      // else if (user.role && (isRootPage || isHowItWorksPage)) {
+      //   router.push('/dashboard');
+      // }
     }
   }, [user, loading, router, pathname]);
 
@@ -410,12 +425,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
         (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
 
-        if (user && user.email === mentorEmail) {
+        if (user && user.email === mentorEmail) { // This condition might be rare unless a mentor is booking themselves
             const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
-            setUser(updatedCurrentUser);
-            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
+            setUser(updatedCurrentUser); // Update context user state
+            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser)); // Persist change
         }
-        setBookingsVersion(v => v + 1);
+        setBookingsVersion(v => v + 1); // Increment version to trigger re-renders
         return;
       } else {
         throw new Error("Slot not found or already booked.");
@@ -426,7 +441,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const getScheduledSessionsForCurrentUser = useCallback(async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
@@ -438,16 +453,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mentorProfile.availabilitySlots) {
           for (const slot of mentorProfile.availabilitySlots) {
             if (slot.isBooked && slot.bookedByMenteeId) {
+              // Check if the current user is either the mentor or the mentee for this booking
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) {
+                if (menteeProfile) { // Ensure mentee profile exists
                   scheduledSessions.push({
-                    id: `${mentorProfile.id}-${slot.id}`,
+                    id: `${mentorProfile.id}-${slot.id}`, // Unique booking ID
                     mentorId: mentorProfile.id,
                     menteeId: menteeProfile.id,
                     startTime: slot.startTime,
                     endTime: slot.endTime,
-                    status: 'confirmed',
+                    status: 'confirmed', // Assuming all booked slots are confirmed for mock
                     mentor: mentorProfile,
                     mentee: menteeProfile,
                     sessionTitle: user.role === 'mentor'
@@ -475,13 +491,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(updatedCurrentUser);
         localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
       }
-      setBookingsVersion(v => v + 1);
+      setBookingsVersion(v => v + 1); // Increment version
       return;
     }
     throw new Error("Mentor not found or invalid ID for updating availability.");
   }, [user]);
 
-  // Group Session Management Functions
   const createGroupSession = useCallback(async (
     sessionData: Omit<GroupSession, 'id' | 'hostId' | 'participantCount' | 'hostName' | 'hostProfileImageUrl' | 'duration'> & { duration?: string }
   ): Promise<GroupSession> => {
@@ -530,7 +545,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSessionsVersion(v => v + 1);
   }, [user, masterGroupSessionsList]);
 
-  // Webinar Management Functions
   const createWebinar = useCallback(async (
     webinarData: Omit<Webinar, 'id' | 'hostId' | 'hostProfileImageUrl' | 'speakerName'> & { speakerName?: string }
   ): Promise<Webinar> => {
@@ -541,7 +555,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...webinarData,
       id: `web-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       hostId: user.id,
-      speakerName: webinarData.speakerName || user.name,
+      speakerName: webinarData.speakerName || user.name, // Default speaker to current mentor's name
       hostProfileImageUrl: user.profileImageUrl,
     };
     setMasterWebinarsList(prevWebinars => [...prevWebinars, newWebinar]);
@@ -629,11 +643,15 @@ export const getMockMentorProfiles = (): string[] => {
 };
 
 export const getMentorByProfileString = (profileString: string): MentorProfile | undefined => {
+  // This function tries to find a mentor from MOCK_USERS based on a profile string.
+  // It assumes the "Name: " part of the string is unique and correctly formatted.
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
-    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined;
+    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; // Return the full profile from MOCK_USERS
   }
   return undefined;
 };
+
+  
