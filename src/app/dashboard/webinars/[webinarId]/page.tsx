@@ -6,18 +6,20 @@ import { useParams, useRouter } from "next/navigation";
 import type { Webinar } from "@/lib/types";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2 } from "lucide-react";
+import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2, BellRing } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "@/components/core/user-avatar";
 
 export default function WebinarDetailPage() {
   const params = useParams();
-  const webinarId = params.webinarId as string;
+  const webinarId = params.sessionId || params.webinarId as string; // Handle both potential param names
   const router = useRouter();
   const { user, getWebinarDetails } = useAuth();
   const { toast } = useToast();
@@ -26,6 +28,9 @@ export default function WebinarDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [showNotifyInput, setShowNotifyInput] = useState(false);
+  const [notificationContact, setNotificationContact] = useState("");
+  const [reminderSet, setReminderSet] = useState(false);
 
   useEffect(() => {
     if (webinarId) {
@@ -50,6 +55,30 @@ export default function WebinarDetailPage() {
       title: "Successfully Registered!",
       description: `You've registered for the webinar: "${webinar.title}". A confirmation email would be sent (mock).`,
     });
+  };
+
+  const handleNotifyMeClick = () => {
+    setShowNotifyInput(true);
+  };
+
+  const handleSendMockReminder = () => {
+    if (!notificationContact.trim()) {
+      toast({
+        title: "Input Required",
+        description: "Please enter your phone number or email.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!webinar) return;
+
+    toast({
+      title: "Reminder Set (Mock)",
+      description: `A reminder will be (mock) sent to ${notificationContact} for the webinar "${webinar.title}".`,
+    });
+    setReminderSet(true);
+    setShowNotifyInput(false);
+    setNotificationContact("");
   };
 
   if (isLoading) {
@@ -125,9 +154,9 @@ export default function WebinarDetailPage() {
             )}
              <Alert className="bg-primary/5 border-primary/20 text-primary mt-6">
                 <Info className="h-5 w-5 text-primary" />
-                <AlertTitle className="font-semibold">Note on Registration</AlertTitle>
+                <AlertTitle className="font-semibold">Note on Registration & Reminders</AlertTitle>
                 <AlertDescription>
-                    Registering for this webinar is a mock action. In a real application, this might involve calendar invites and email confirmations.
+                    Registering for this webinar and setting reminders are mock actions. In a real application, this might involve calendar invites and email/SMS confirmations.
                 </AlertDescription>
             </Alert>
           </div>
@@ -149,7 +178,7 @@ export default function WebinarDetailPage() {
                         </div>
                     )}
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex flex-col space-y-3">
                     {user ? (
                         <Button
                             className="w-full text-lg py-6"
@@ -165,8 +194,49 @@ export default function WebinarDetailPage() {
                     ) : (
                         <p className="text-xs text-muted-foreground w-full text-center">Sign in to register for webinars.</p>
                     )}
+
+                    {!reminderSet && !showNotifyInput && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={handleNotifyMeClick}
+                      >
+                        <BellRing className="mr-2 h-4 w-4" /> Notify Me
+                      </Button>
+                    )}
+                    {reminderSet && (
+                       <Button
+                        variant="outline"
+                        className="w-full"
+                        disabled
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" /> Reminder Set
+                      </Button>
+                    )}
+                    
                 </CardFooter>
             </Card>
+            {showNotifyInput && !reminderSet && (
+              <Card className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-lg">Set Reminder</CardTitle>
+                  <CardDescription className="text-xs">Enter your phone or email.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Label htmlFor="notify-contact" className="sr-only">Phone or Email</Label>
+                  <Input 
+                    id="notify-contact"
+                    placeholder="Phone number or email"
+                    value={notificationContact}
+                    onChange={(e) => setNotificationContact(e.target.value)}
+                  />
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                   <Button variant="outline" size="sm" onClick={() => setShowNotifyInput(false)}>Cancel</Button>
+                   <Button size="sm" className="flex-1" onClick={handleSendMockReminder}>Send Mock Reminder</Button>
+                </CardFooter>
+              </Card>
+            )}
           </aside>
         </div>
       </Card>
@@ -208,8 +278,9 @@ function WebinarDetailSkeleton() {
                 <Skeleton className="h-5 w-full" />
                 <Skeleton className="h-5 w-3/4" />
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col space-y-3">
                 <Skeleton className="h-12 w-full text-lg py-6" /> {/* Button */}
+                <Skeleton className="h-10 w-full" /> {/* Notify Me Button */}
               </CardFooter>
             </Card>
           </aside>
@@ -218,3 +289,5 @@ function WebinarDetailSkeleton() {
     </div>
   );
 }
+
+    
