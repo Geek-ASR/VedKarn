@@ -1,3 +1,4 @@
+
 export type UserRole = 'mentor' | 'mentee' | null;
 
 export interface User {
@@ -19,22 +20,39 @@ export interface ExperienceItem {
   description?: string;
 }
 
+export type MentorshipFocusType = 'career' | 'university';
+export type DegreeLevelType = 'Bachelors' | 'Masters' | 'PhD';
+
 export interface MentorProfile extends User {
   role: 'mentor';
-  expertise?: string[]; // Specific areas of expertise
+  expertise?: string[]; // Specific areas of expertise for career
   universities: ExperienceItem[];
   companies: ExperienceItem[];
   availabilitySlots?: AvailabilitySlot[];
-  hourlyRate?: number;
+  hourlyRate?: number; // Example, not currently used in forms
   yearsOfExperience?: number;
+
+  // New fields for mentorship focus
+  mentorshipFocus?: MentorshipFocusType[]; // Can be one or both
+  // Fields specific to university mentorship
+  targetDegreeLevels?: DegreeLevelType[]; // e.g., ["Masters", "PhD"]
+  guidedUniversities?: string[]; // Universities they have experience guiding for
+  applicationExpertise?: string[]; // e.g., ["Essay Review", "SOP Crafting", "LOR Advice"]
 }
 
 export interface MenteeProfile extends User {
   role: 'mentee';
-  learningGoals?: string;
-  desiredUniversities?: string[];
-  desiredJobRoles?: string[];
-  desiredCompanies?: string[];
+  learningGoals?: string; // General learning goals
+  desiredJobRoles?: string[]; // For career focus
+  desiredCompanies?: string[]; // For career focus
+
+  // New fields for mentorship seeking focus
+  seekingMentorshipFor?: MentorshipFocusType[]; // What the mentee is looking for
+  // Fields specific to university seeking mentees
+  currentEducationLevel?: string; // e.g., "High School Senior", "Undergraduate Junior"
+  targetDegreeLevel?: DegreeLevelType;
+  targetFieldsOfStudy?: string[];
+  desiredUniversities?: string[]; // Already exists, very relevant here
 }
 
 export type UserProfile = MentorProfile | MenteeProfile | User;
@@ -49,20 +67,19 @@ export interface AvailabilitySlot {
 }
 
 export interface Booking {
-  id: string; // Can be slotId for uniqueness in mock
+  id: string;
   mentorId: string;
   menteeId: string;
   startTime: string; // ISO DateTime string
   endTime: string; // ISO DateTime string
-  status: 'confirmed' | 'pending' | 'cancelled'; // status might be derived or fixed for mock
+  status: 'confirmed' | 'pending' | 'cancelled';
   meetingNotes?: string;
 }
 
-// New type for the schedule page
 export interface EnrichedBooking extends Booking {
-  mentor: UserProfile;
-  mentee: UserProfile;
-  sessionTitle: string; // e.g., "Session with Mentor Name" or "Session with Mentee Name"
+  mentor: UserProfile; // Should ideally be MentorProfile
+  mentee: UserProfile; // Should ideally be MenteeProfile
+  sessionTitle: string;
 }
 
 
@@ -71,6 +88,7 @@ export interface MentorSearchFilters {
   jobRole?: string;
   company?: string;
   query?: string;
+  mentorshipFocus?: MentorshipFocusType; // New filter
 }
 
 export interface GroupSession {
@@ -80,13 +98,14 @@ export interface GroupSession {
   hostId: string;
   hostName: string;
   hostProfileImageUrl?: string;
-  date: string; // Simple string for now, e.g., "October 26th, 2024 at 2:00 PM"
+  date: string;
   tags: string[];
-  imageUrl?: string; // Placeholder URL
+  imageUrl?: string;
   participantCount?: number;
   maxParticipants?: number;
-  price?: string; // e.g., "Free", "$20"
+  price?: string;
   duration?: string;
+  // focus?: 'career' | 'university' | 'general'; // Future consideration
 }
 
 export interface Webinar {
@@ -94,10 +113,11 @@ export interface Webinar {
   title: string;
   description: string;
   hostId: string;
-  speakerName: string; // Can be the mentor's name by default
+  speakerName: string;
   hostProfileImageUrl?: string;
-  date: string; // Simple string for now
+  date: string;
   topic: string;
-  imageUrl?: string; // Placeholder URL
-  duration?: string; // e.g., "60 minutes"
+  imageUrl?: string;
+  duration?: string;
+  // focus?: 'career' | 'university' | 'general'; // Future consideration
 }
