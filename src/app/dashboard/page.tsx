@@ -113,7 +113,6 @@ export default function DashboardHomePage() {
   const sessionScrollContainerRef = useRef<HTMLDivElement>(null);
   const webinarScrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // For Mentor's Upcoming Sessions Preview
   const [mentorUpcomingSessions, setMentorUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [isLoadingMentorSchedule, setIsLoadingMentorSchedule] = useState(true);
 
@@ -125,7 +124,7 @@ export default function DashboardHomePage() {
           const upcoming = sessions
             .filter(s => parseISO(s.startTime) > new Date())
             .sort((a, b) => parseISO(a.startTime).getTime() - parseISO(b.startTime).getTime())
-            .slice(0, 3); // Get first 3 upcoming
+            .slice(0, 3); 
           setMentorUpcomingSessions(upcoming);
         })
         .finally(() => setIsLoadingMentorSchedule(false));
@@ -136,17 +135,26 @@ export default function DashboardHomePage() {
   const menteeProfileForAI = useMemo(() => {
     if (!user || user.role !== 'mentee') return "Generic student interested in learning.";
     const mentee = user as MenteeProfile;
-    return "Name: " + mentee.name +
-           ", Bio: " + (mentee.bio || 'N/A') +
-           ", Learning Goals: " + (mentee.learningGoals || 'N/A') +
-           ", Desired Universities: " + (mentee.desiredUniversities?.join(', ') || 'N/A') +
-           ", Desired Job Roles: " + (mentee.desiredJobRoles?.join(', ') || 'N/A') +
-           ", Desired Companies: " + (mentee.desiredCompanies?.join(', ') || 'N/A') +
-           ", Interests: " + (mentee.interests?.join(', ') || 'N/A');
+    let profileString = `Name: ${mentee.name}`;
+    profileString += `, Bio: ${mentee.bio || 'N/A'}`;
+    profileString += `, Interests: ${mentee.interests?.join(', ') || 'N/A'}`;
+    profileString += `, Learning Goals: ${mentee.learningGoals || 'N/A'}`;
+    profileString += `, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ') || 'General Advice'}`;
+    if (mentee.seekingMentorshipFor?.includes('university')) {
+        profileString += `, Current Education Level: ${mentee.currentEducationLevel || 'N/A'}`;
+        profileString += `, Target Degree Level: ${mentee.targetDegreeLevel || 'N/A'}`;
+        profileString += `, Target Fields of Study: ${mentee.targetFieldsOfStudy?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Universities: ${mentee.desiredUniversities?.join(', ') || 'N/A'}`;
+    }
+    if (mentee.seekingMentorshipFor?.includes('career')) {
+        profileString += `, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Companies: ${mentee.desiredCompanies?.join(', ') || 'N/A'}`;
+    }
+    return profileString;
   }, [user]);
 
   const { data: suggestedMentorsData, isLoading: isLoadingMentors } = useQuery<SuggestMentorsOutput, Error>({
-    queryKey: ['dashboardRecommendedMentors', user?.id],
+    queryKey: ['dashboardRecommendedMentors', user?.id, menteeProfileForAI], // Include menteeProfileForAI in queryKey
     queryFn: async () => {
       if (!user || user.role !== 'mentee') return [];
       const input: SuggestMentorsInput = {
@@ -159,7 +167,7 @@ export default function DashboardHomePage() {
   });
 
   const { data: suggestedGroupSessionsData, isLoading: isLoadingGroupSessions } = useQuery<SuggestGroupSessionsOutput, Error>({
-    queryKey: ['dashboardRecommendedGroupSessions', user?.id],
+    queryKey: ['dashboardRecommendedGroupSessions', user?.id, menteeProfileForAI], // Include menteeProfileForAI
     queryFn: async () => {
       if (!user || user.role !== 'mentee') return [];
       const input: SuggestGroupSessionsInput = { menteeProfile: menteeProfileForAI };
@@ -169,7 +177,7 @@ export default function DashboardHomePage() {
   });
 
   const { data: suggestedWebinarsData, isLoading: isLoadingWebinars } = useQuery<SuggestWebinarsOutput, Error>({
-    queryKey: ['dashboardRecommendedWebinars', user?.id],
+    queryKey: ['dashboardRecommendedWebinars', user?.id, menteeProfileForAI], // Include menteeProfileForAI
     queryFn: async () => {
       if (!user || user.role !== 'mentee') return [];
       const input: SuggestWebinarsInput = { menteeProfile: menteeProfileForAI };
@@ -254,12 +262,12 @@ export default function DashboardHomePage() {
             icon={Users2}
             actionText="Manage Group Sessions"
           />
-          <ActionCard
-            title="My Mentees"
-            description="View profiles of mentees you're connected with."
-            href="/dashboard/mentees" // Placeholder, page doesn't exist yet
-            icon={Briefcase}
-            actionText="View Mentees (Soon)"
+           <ActionCard
+            title="My Webinars"
+            description="Create and manage your webinars."
+            href="/dashboard/my-webinars"
+            icon={Tv2}
+            actionText="Manage Webinars"
           />
         </div>
         
@@ -301,6 +309,11 @@ export default function DashboardHomePage() {
               </ul>
             )}
           </CardContent>
+           <CardFooter>
+                <Button variant="link" asChild>
+                    <Link href="/dashboard/schedule">View Full Schedule <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+            </CardFooter>
         </Card>
 
         <Card className="bg-accent/10 border-accent/30">
@@ -353,13 +366,13 @@ export default function DashboardHomePage() {
               {!isLoadingMentors && recommendedMentors && recommendedMentors.length > 0 && (
                 <div className="relative">
                   <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-2 no-scrollbar flex space-x-3">
-                      {recommendedMentors.map((mentor) => (
+                      {recommendedMentors.slice(0,5).map((mentor) => ( // Show top 5 mentor suggestions
                          <div key={mentor.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
                            <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
                          </div>
                       ))}
                   </div>
-                  {recommendedMentors.length > 1 && ( 
+                  {recommendedMentors.length > 2 && ( 
                       <>
                           <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
                               <ChevronLeft className="h-3 w-3" />
@@ -504,3 +517,4 @@ export default function DashboardHomePage() {
     </div>
   );
 }
+

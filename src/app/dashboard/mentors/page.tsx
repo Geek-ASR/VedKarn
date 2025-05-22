@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MentorCard } from "@/components/dashboard/mentor-card";
 import { MentorSearchFiltersComponent } from "@/components/dashboard/mentor-search-filters";
-import type { MentorProfile, MentorSearchFilters } from "@/lib/types";
+import type { MentorProfile, MenteeProfile, MentorSearchFilters } from "@/lib/types"; // Added MenteeProfile
 import { getMockMentorProfiles, getMentorByProfileString, useAuth } from "@/context/auth-context";
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -65,12 +65,27 @@ export default function MentorDiscoveryPage() {
 
   const menteeProfileForAI = useMemo(() => {
     if (!menteeUser || menteeUser.role !== 'mentee') return "Generic student interested in learning.";
-    const mentee = menteeUser;
-    return `Name: ${mentee.name}, Bio: ${mentee.bio}, Learning Goals: ${mentee.learningGoals}, Desired Universities: ${mentee.desiredUniversities?.join(', ')}, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ')}, Desired Companies: ${mentee.desiredCompanies?.join(', ')}, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ')}`;
+    const mentee = menteeUser as MenteeProfile; // Cast to MenteeProfile
+    let profileString = `Name: ${mentee.name}`;
+    profileString += `, Bio: ${mentee.bio || 'N/A'}`;
+    profileString += `, Interests: ${mentee.interests?.join(', ') || 'N/A'}`;
+    profileString += `, Learning Goals: ${mentee.learningGoals || 'N/A'}`;
+    profileString += `, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ') || 'General Advice'}`;
+    if (mentee.seekingMentorshipFor?.includes('university')) {
+        profileString += `, Current Education Level: ${mentee.currentEducationLevel || 'N/A'}`;
+        profileString += `, Target Degree Level: ${mentee.targetDegreeLevel || 'N/A'}`;
+        profileString += `, Target Fields of Study: ${mentee.targetFieldsOfStudy?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Universities: ${mentee.desiredUniversities?.join(', ') || 'N/A'}`;
+    }
+    if (mentee.seekingMentorshipFor?.includes('career')) {
+        profileString += `, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Companies: ${mentee.desiredCompanies?.join(', ') || 'N/A'}`;
+    }
+    return profileString;
   }, [menteeUser]);
 
   const { data: suggestedMentorsData, isLoading: isLoadingSuggestions } = useQuery<SuggestMentorsOutput, Error>({
-    queryKey: ['suggestedMentors', menteeUser?.id],
+    queryKey: ['suggestedMentors', menteeUser?.id, menteeProfileForAI], // Include menteeProfileForAI
     queryFn: async () => {
       if (!menteeUser || menteeUser.role !== 'mentee') return [];
       const input: SuggestMentorsInput = {
@@ -125,7 +140,7 @@ export default function MentorDiscoveryPage() {
           )}
           {!isLoadingSuggestions && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {suggestedMentorProfiles.slice(0,3).map((mentor) => (
+              {suggestedMentorProfiles.slice(0,3).map((mentor) => ( // Show top 3 suggestions
                 <MentorCard key={mentor.id} mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
               ))}
             </div>

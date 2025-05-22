@@ -76,10 +76,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
   } as MentorProfile,
 };
 
-
-const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount' | 'duration'>[] = [
+const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount' | 'duration' | 'id'>[] = [
   {
-    id: 'gs1',
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
     hostId: 'mentor1', // Dr. Eleanor Vance
@@ -90,10 +88,9 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProf
     price: '$25',
   },
   {
-    id: 'gs2',
     title: 'Startup Pitch Practice & Feedback',
     description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
-    hostId: 'mentor1', // Dr. Eleanor Vance
+    hostId: 'mentor1',
     date: 'November 12th, 2024 at 10:00 AM PST',
     tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
     imageUrl: 'https://placehold.co/600x400.png',
@@ -101,10 +98,9 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProf
     price: '$20',
   },
   {
-    id: 'gs3',
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor2', // Dr. Ben Carter
+    hostId: 'mentor2',
     date: 'November 19th, 2024 at 1:00 PM PST',
     tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
     imageUrl: 'https://placehold.co/600x400.png',
@@ -113,9 +109,8 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProf
   }
 ];
 
-const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImageUrl' | 'duration'>[] = [
+const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfileImageUrl' | 'duration'>[] = [
   {
-    id: 'web1',
     title: 'The Future of Generative AI',
     description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
     hostId: 'mentor1',
@@ -124,7 +119,6 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
     imageUrl: 'https://placehold.co/400x250.png',
   },
   {
-    id: 'web2',
     title: 'Effective Networking in the Tech Industry',
     description: 'Learn strategies for building meaningful professional connections, both online and offline, to advance your career in tech.',
     hostId: 'mentor2',
@@ -133,7 +127,6 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
     imageUrl: 'https://placehold.co/400x250.png',
   },
   {
-    id: 'web3',
     title: 'Demystifying Cloud Computing',
     description: 'A comprehensive overview of cloud computing concepts, services (AWS, Azure, GCP), and how to get started with cloud technologies.',
     hostId: 'mentor1',
@@ -143,27 +136,37 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'speakerName' | 'hostProfileImage
   }
 ];
 
-function enrichInitialData<T extends { hostId: string }, R extends T & { hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount?: number; duration?: string }>(
-  rawData: T[],
+function enrichInitialData<
+  T extends { hostId: string; id?: string; participantCount?: number; duration?: string },
+  R extends T & { id: string; hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount: number; duration: string }
+>(
+  rawData: Omit<T, 'id' | 'hostName' | 'speakerName' | 'hostProfileImageUrl' | 'participantCount' | 'duration'>[],
   mockUsersData: Record<string, UserProfile>,
   type: 'groupSession' | 'webinar'
 ): R[] {
-  return rawData.map(item => {
+  return rawData.map((item, index) => {
     const host = Object.values(mockUsersData).find(u => u.id === item.hostId);
-    const enrichedItem: R = { ...item } as R;
+    const baseId = type === 'groupSession' ? 'gs-initial-' : 'web-initial-';
+    const enrichedItem: R = {
+      ...item,
+      id: item.id || `${baseId}${index + 1}-${Date.now()}`,
+      participantCount: item.participantCount || 0,
+      duration: item.duration || "Not specified",
+    } as R;
+
     if (host) {
       if (type === 'groupSession') {
         enrichedItem.hostName = host.name;
       } else if (type === 'webinar') {
-        enrichedItem.speakerName = host.name; // Default speaker to host
+        enrichedItem.speakerName = host.name;
       }
       enrichedItem.hostProfileImageUrl = host.profileImageUrl;
-    }
-    if (type === 'groupSession') {
-      enrichedItem.participantCount = (item as any).participantCount || 0;
-      enrichedItem.duration = (item as any).duration || 'Not specified';
-    } else if (type === 'webinar') {
-       enrichedItem.duration = (item as any).duration || 'Not specified';
+    } else {
+      if (type === 'groupSession') {
+        enrichedItem.hostName = "Unknown Host";
+      } else if (type === 'webinar') {
+        enrichedItem.speakerName = "Unknown Speaker";
+      }
     }
     return enrichedItem;
   });
@@ -172,6 +175,7 @@ function enrichInitialData<T extends { hostId: string }, R extends T & { hostNam
 
 interface AuthContextType {
   user: UserProfile | null;
+  MOCK_USERS_INSTANCE: Record<string, UserProfile>; // Expose for mentor profile page
   loading: boolean;
   login: (email: string, role?: UserRole) => Promise<void>;
   logout: () => void;
@@ -207,20 +211,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [sessionsVersion, setSessionsVersion] = useState(0);
   const [webinarsVersion, setWebinarsVersion] = useState(0);
 
+  const [currentMockUsers, setCurrentMockUsers] = useState<Record<string, UserProfile>>(() => {
+     if (typeof window !== 'undefined') {
+        const storedMockUsers = localStorage.getItem('vedkarn-MOCK_USERS');
+        if (storedMockUsers) {
+            try {
+                return JSON.parse(storedMockUsers);
+            } catch (e) {
+                console.error("Failed to parse MOCK_USERS from localStorage", e);
+            }
+        }
+    }
+    return JSON.parse(JSON.stringify(MOCK_USERS)); // Deep copy for initial state
+  });
+
+
   const [masterGroupSessionsList, setMasterGroupSessionsList] = useState<GroupSession[]>(() => {
     if (typeof window !== 'undefined') {
       const storedSessions = localStorage.getItem('vedkarn-group-sessions');
       if (storedSessions) {
         try {
-          const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
           // Ensure data loaded from localStorage is also enriched if it's missing derived fields
-          return enrichInitialData(parsedSessions, MOCK_USERS, 'groupSession');
+           const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
+           // A simple check: if the first session doesn't have hostName, assume it needs re-enrichment
+           if (parsedSessions.length > 0 && !parsedSessions[0].hostName) {
+             return enrichInitialData(parsedSessions, currentMockUsers, 'groupSession');
+           }
+          return parsedSessions;
         } catch (e) {
           console.error("Failed to parse group sessions from localStorage", e);
         }
       }
     }
-    return enrichInitialData(INITIAL_MOCK_GROUP_SESSIONS_RAW, MOCK_USERS, 'groupSession');
+    return enrichInitialData(INITIAL_MOCK_GROUP_SESSIONS_RAW, currentMockUsers, 'groupSession');
   });
 
   const [masterWebinarsList, setMasterWebinarsList] = useState<Webinar[]>(() => {
@@ -228,15 +251,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedWebinars = localStorage.getItem('vedkarn-webinars');
       if (storedWebinars) {
         try {
-           // Ensure data loaded from localStorage is also enriched
           const parsedWebinars = JSON.parse(storedWebinars) as Webinar[];
-          return enrichInitialData(parsedWebinars, MOCK_USERS, 'webinar');
+           if (parsedWebinars.length > 0 && !parsedWebinars[0].speakerName) {
+             return enrichInitialData(parsedWebinars, currentMockUsers, 'webinar');
+           }
+          return parsedWebinars;
         } catch (e) {
           console.error("Failed to parse webinars from localStorage", e);
         }
       }
     }
-    return enrichInitialData(INITIAL_MOCK_WEBINARS_RAW, MOCK_USERS, 'webinar');
+    return enrichInitialData(INITIAL_MOCK_WEBINARS_RAW, currentMockUsers, 'webinar');
   });
 
   const router = useRouter();
@@ -248,10 +273,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
-          const mockUserDataFromDB = MOCK_USERS[parsedUser.email];
-           if (mockUserDataFromDB) { // User exists in our mock DB
+          const mockUserDataFromDB = currentMockUsers[parsedUser.email]; // Use currentMockUsers
+           if (mockUserDataFromDB) {
             const mergedUser = { ...mockUserDataFromDB, ...parsedUser };
-            // Ensure role-specific fields are present and correctly typed
             if (mergedUser.role === 'mentor') {
               if (!(mergedUser as MentorProfile).availabilitySlots) {
                 (mergedUser as MentorProfile).availabilitySlots = (mockUserDataFromDB as MentorProfile)?.availabilitySlots || [];
@@ -261,9 +285,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                (mergedUser as MenteeProfile).seekingMentorshipFor = (mergedUser as MenteeProfile).seekingMentorshipFor || (mockUserDataFromDB as MenteeProfile).seekingMentorshipFor || [];
             }
             setUser(mergedUser);
-          } else { // New user not in MOCK_USERS, store as is for profile completion
+          } else {
             setUser(parsedUser);
-            MOCK_USERS[parsedUser.email] = parsedUser;
+            setCurrentMockUsers(prev => ({ ...prev, [parsedUser.email]: parsedUser }));
           }
         } else {
           localStorage.removeItem('vedkarn-user');
@@ -274,19 +298,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLoading(false);
-  }, []);
+  }, []); // Removed currentMockUsers from dependency array to prevent re-running this effect unnecessarily
 
    useEffect(() => {
-    if(!loading) { // Only save to localStorage after initial loading is done
+    if(!loading) {
         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(masterGroupSessionsList));
     }
   }, [masterGroupSessionsList, loading]);
 
   useEffect(() => {
-    if(!loading) { // Only save to localStorage after initial loading is done
+    if(!loading) {
         localStorage.setItem('vedkarn-webinars', JSON.stringify(masterWebinarsList));
     }
   }, [masterWebinarsList, loading]);
+
+  useEffect(() => {
+    if (!loading) {
+        localStorage.setItem('vedkarn-MOCK_USERS', JSON.stringify(currentMockUsers));
+    }
+  }, [currentMockUsers, loading]);
 
 
   useEffect(() => {
@@ -294,11 +324,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const isAuthPage = pathname.startsWith('/auth');
     const isRootPage = pathname === '/';
+    const isLandingPagePath = pathname === '/landingpage';
     const isHowItWorksPage = pathname === '/how-it-works';
     const isApiRoute = pathname.startsWith('/api');
 
     if (!user) {
-      if (!isRootPage && !isHowItWorksPage && !isAuthPage && !isApiRoute) {
+      if (!isRootPage && !isHowItWorksPage && !isAuthPage && !isApiRoute && !isLandingPagePath) {
         router.push('/auth/signin');
       }
     } else {
@@ -306,18 +337,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/auth/complete-profile');
       } else if (user.role && isAuthPage) {
         router.push('/dashboard');
-      } else if (user.role && isRootPage) {
-        // Allow logged-in users to see the root page if explicitly navigated to
-        // No redirect here by default to allow viewing landing page
       }
     }
   }, [user, loading, router, pathname]);
 
-  const login = async (email: string, initialRole?: UserRole) => {
+  const login = useCallback(async (email: string, initialRole?: UserRole) => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    let userToLogin = MOCK_USERS[email];
+    let userToLogin = currentMockUsers[email];
 
     if (userToLogin) {
       if (initialRole && userToLogin.role !== initialRole) {
@@ -326,22 +354,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         userToLogin = { ...userToLogin, name: email.split('@')[0]};
       }
       
-      // Ensure role-specific fields are correctly set up or defaulted from MOCK_USERS
       if (userToLogin.role === 'mentor') {
         userToLogin = {
-            ...MOCK_USERS[email] as MentorProfile, // Start with DB version to get all default mentor fields
-            ...userToLogin // Override with any existing login-time changes
+            ...currentMockUsers[email] as MentorProfile,
+            ...userToLogin
         };
         if (!(userToLogin as MentorProfile).availabilitySlots) {
-          (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
+          (userToLogin as MentorProfile).availabilitySlots = (currentMockUsers[email] as MentorProfile)?.availabilitySlots || [];
         }
       } else if (userToLogin.role === 'mentee') {
          userToLogin = {
-            ...MOCK_USERS[email] as MenteeProfile,
+            ...currentMockUsers[email] as MenteeProfile,
             ...userToLogin
         };
       }
-      MOCK_USERS[email] = userToLogin;
+      setCurrentMockUsers(prev => ({ ...prev, [email]: userToLogin! }));
 
     } else {
       const newUserProfile: UserProfile = {
@@ -368,7 +395,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         (newUserProfile as Partial<MenteeProfile>).desiredCompanies = [];
         (newUserProfile as Partial<MenteeProfile>).seekingMentorshipFor = [];
       }
-      MOCK_USERS[email] = newUserProfile;
+      setCurrentMockUsers(prev => ({ ...prev, [email]: newUserProfile }));
       userToLogin = newUserProfile;
     }
 
@@ -381,36 +408,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.push('/dashboard');
     }
     setLoading(false);
-  };
+  }, [currentMockUsers, router]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('vedkarn-user');
     router.push('/auth/signin');
-  };
+  }, [router]);
 
   const updateUserProfile = useCallback(async (profileData: Partial<UserProfile>) => {
-    if (user && user.email && MOCK_USERS[user.email]) {
-      const updatedUser = { ...MOCK_USERS[user.email], ...profileData };
-      MOCK_USERS[user.email] = updatedUser;
+    if (user && user.email && currentMockUsers[user.email]) {
+      const updatedUser = { ...currentMockUsers[user.email], ...profileData };
+      setCurrentMockUsers(prev => ({ ...prev, [user.email!]: updatedUser }));
       setUser(updatedUser);
       localStorage.setItem('vedkarn-user', JSON.stringify(updatedUser));
     } else {
         throw new Error("User not found or not logged in for profile update.");
     }
-  }, [user]);
+  }, [user, currentMockUsers]);
 
 
   const completeProfile = useCallback(async (profileData: Partial<UserProfile>, role: UserRole) => {
-    if (user && user.email && MOCK_USERS[user.email]) {
-      let completedProfile: UserProfile = { ...MOCK_USERS[user.email], ...profileData, role };
+    if (user && user.email && currentMockUsers[user.email]) {
+      let completedProfile: UserProfile = { ...currentMockUsers[user.email], ...profileData, role };
 
       if (role === 'mentor') {
         const mentorData = profileData as Partial<MentorProfile>;
-        const existingMentorData = MOCK_USERS[user.email] as MentorProfile;
+        const existingMentorData = currentMockUsers[user.email] as MentorProfile;
         completedProfile = {
-          ...existingMentorData, // Start with existing or default mentor structure
-          ...completedProfile, // Apply common updates
+          ...existingMentorData,
+          ...completedProfile,
           expertise: mentorData.expertise || existingMentorData.expertise || [],
           universities: mentorData.universities?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || existingMentorData.universities || [],
           companies: mentorData.companies?.map(exp => ({ ...exp, id: exp.id || `exp-${Date.now()}-${Math.random().toString(16).slice(2)}`})) || existingMentorData.companies || [],
@@ -424,7 +451,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       } else if (role === 'mentee') {
          const menteeData = profileData as Partial<MenteeProfile>;
-         const existingMenteeData = MOCK_USERS[user.email] as MenteeProfile;
+         const existingMenteeData = currentMockUsers[user.email] as MenteeProfile;
         completedProfile = {
           ...existingMenteeData,
           ...completedProfile,
@@ -442,14 +469,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         completedProfile.role = null;
       }
 
-      MOCK_USERS[user.email] = completedProfile;
+      setCurrentMockUsers(prev => ({ ...prev, [user.email!]: completedProfile }));
       setUser(completedProfile);
       localStorage.setItem('vedkarn-user', JSON.stringify(completedProfile));
       router.push('/dashboard');
     } else {
         throw new Error("User not found or not logged in for profile completion.");
     }
-  }, [user, router]);
+  }, [user, router, currentMockUsers]);
 
 
   const confirmBooking = useCallback(async (mentorEmail: string, slotId: string): Promise<void> => {
@@ -457,28 +484,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("Only mentees can book sessions.");
     }
     const menteeId = user.id;
-    const mentorToUpdate = MOCK_USERS[mentorEmail] as MentorProfile | undefined;
-
-    if (mentorToUpdate && mentorToUpdate.availabilitySlots) {
-      const slotIndex = mentorToUpdate.availabilitySlots.findIndex(s => s.id === slotId);
-      if (slotIndex > -1 && !mentorToUpdate.availabilitySlots[slotIndex].isBooked) {
-        const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) =>
-          index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
-        );
-        (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = updatedSlots;
-
-        if (user && user.email === mentorEmail) { 
-            const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
-            setUser(updatedCurrentUser); 
-            localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser)); 
+    
+    setCurrentMockUsers(prevMockUsers => {
+        const mentorToUpdate = prevMockUsers[mentorEmail] as MentorProfile | undefined;
+        if (mentorToUpdate && mentorToUpdate.availabilitySlots) {
+            const slotIndex = mentorToUpdate.availabilitySlots.findIndex(s => s.id === slotId);
+            if (slotIndex > -1 && !mentorToUpdate.availabilitySlots[slotIndex].isBooked) {
+                const updatedSlots = mentorToUpdate.availabilitySlots.map((slot, index) =>
+                index === slotIndex ? { ...slot, isBooked: true, bookedByMenteeId: menteeId } : slot
+                );
+                const updatedMentor = { ...mentorToUpdate, availabilitySlots: updatedSlots };
+                const newMockUsers = { ...prevMockUsers, [mentorEmail]: updatedMentor };
+                
+                if (user && user.email === mentorEmail) { 
+                    setUser(updatedMentor); 
+                    localStorage.setItem('vedkarn-user', JSON.stringify(updatedMentor)); 
+                }
+                setBookingsVersion(v => v + 1); 
+                return newMockUsers;
+            } else {
+                throw new Error("Slot not found or already booked.");
+            }
         }
-        setBookingsVersion(v => v + 1); 
-        return;
-      } else {
-        throw new Error("Slot not found or already booked.");
-      }
-    }
-    throw new Error("Mentor not found.");
+        throw new Error("Mentor not found.");
+    });
   }, [user]);
 
 
@@ -487,7 +516,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
-    const allUserProfiles = Object.values(MOCK_USERS);
+    const allUserProfiles = Object.values(currentMockUsers); // Use currentMockUsers
 
     for (const profile of allUserProfiles) {
       if (profile.role === 'mentor') {
@@ -520,22 +549,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return scheduledSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  }, [user]);
+  }, [user, currentMockUsers]);
 
   const updateMentorAvailability = useCallback(async (mentorId: string, newSlots: AvailabilitySlot[]): Promise<void> => {
-    const mentorEmail = Object.keys(MOCK_USERS).find(email => MOCK_USERS[email].id === mentorId);
-    if (mentorEmail && MOCK_USERS[mentorEmail] && MOCK_USERS[mentorEmail].role === 'mentor') {
-      (MOCK_USERS[mentorEmail] as MentorProfile).availabilitySlots = newSlots;
+     setCurrentMockUsers(prevMockUsers => {
+        const mentorEmail = Object.keys(prevMockUsers).find(email => prevMockUsers[email].id === mentorId);
+        if (mentorEmail && prevMockUsers[mentorEmail] && prevMockUsers[mentorEmail].role === 'mentor') {
+            const updatedMentor = { ...prevMockUsers[mentorEmail] as MentorProfile, availabilitySlots: newSlots };
+            const newMockUsers = { ...prevMockUsers, [mentorEmail]: updatedMentor };
 
-      if (user && user.id === mentorId) {
-        const updatedCurrentUser = { ...MOCK_USERS[mentorEmail] };
-        setUser(updatedCurrentUser);
-        localStorage.setItem('vedkarn-user', JSON.stringify(updatedCurrentUser));
-      }
-      setBookingsVersion(v => v + 1); 
-      return;
-    }
-    throw new Error("Mentor not found or invalid ID for updating availability.");
+            if (user && user.id === mentorId) {
+                setUser(updatedMentor);
+                localStorage.setItem('vedkarn-user', JSON.stringify(updatedMentor));
+            }
+            setBookingsVersion(v => v + 1);
+            return newMockUsers;
+        }
+        throw new Error("Mentor not found or invalid ID for updating availability.");
+     });
   }, [user]);
 
   const createGroupSession = useCallback(async (
@@ -567,7 +598,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [masterGroupSessionsList]);
 
   const getAllGroupSessions = useCallback(async (): Promise<GroupSession[]> => {
-    return [...masterGroupSessionsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return [...masterGroupSessionsList].sort((a,b) => {
+        // A simple date sort, assuming dates are in a format that can be parsed
+        try {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } catch (e) {
+            return 0; // Fallback if date parsing fails
+        }
+    });
   }, [masterGroupSessionsList]);
 
   const deleteMentorGroupSession = useCallback(async (sessionId: string): Promise<void> => {
@@ -643,7 +681,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [masterWebinarsList]);
 
   const getAllWebinars = useCallback(async (): Promise<Webinar[]> => {
-    return [...masterWebinarsList].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+     return [...masterWebinarsList].sort((a,b) => {
+        try {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } catch (e) {
+            return 0;
+        }
+    });
   }, [masterWebinarsList]);
 
   const deleteMentorWebinar = useCallback(async (webinarId: string): Promise<void> => {
@@ -665,6 +709,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user,
+      MOCK_USERS_INSTANCE: currentMockUsers, // Provide the stateful mock users
       loading,
       login,
       logout,
@@ -704,13 +749,25 @@ export const useAuth = () => {
 };
 
 export const getMockMentorProfiles = (): string[] => {
+  // This function now needs to be careful if MOCK_USERS is not directly accessible
+  // or if it should use the instance from context if available.
+  // For now, keeping it simple, assuming MOCK_USERS is somehow accessible or 
+  // this is called where MOCK_USERS is in scope (which it is at the module level).
+  // A better approach might involve passing MOCK_USERS to it if it were used outside this module.
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
     .map(userProfile => {
       const m = userProfile as MentorProfile;
       const universities = m.universities?.map(u => `${u.roleOrDegree} at ${u.institutionName}`).join('; ') || 'N/A';
       const companies = m.companies?.map(c => `${c.roleOrDegree} at ${c.institutionName}`).join('; ') || 'N/A';
-      return `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${universities}, Companies: ${companies}, Years of Exp: ${m.yearsOfExperience || 0}, Mentorship Focus: ${m.mentorshipFocus?.join(', ') || 'N/A'}`;
+      let profileString = `Name: ${m.name}, Bio: ${m.bio || 'N/A'}, Expertise: ${m.expertise?.join(', ') || 'N/A'}, Universities: ${universities}, Companies: ${companies}, Years of Exp: ${m.yearsOfExperience || 0}`;
+      profileString += `, Mentorship Focus: ${m.mentorshipFocus?.join(', ') || 'N/A'}`;
+      if (m.mentorshipFocus?.includes('university')) {
+        profileString += `, Target Degree Levels: ${m.targetDegreeLevels?.join(', ') || 'N/A'}`;
+        profileString += `, Guided Universities: ${m.guidedUniversities?.join(', ') || 'N/A'}`;
+        profileString += `, Application Expertise: ${m.applicationExpertise?.join(', ') || 'N/A'}`;
+      }
+      return profileString;
     });
 };
 
@@ -718,6 +775,7 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
+    // This also relies on MOCK_USERS being in scope.
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
     return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; 
   }

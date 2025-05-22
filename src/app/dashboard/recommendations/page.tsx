@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MentorCard } from "@/components/dashboard/mentor-card";
-import type { MentorProfile } from "@/lib/types";
+import type { MentorProfile, MenteeProfile } from "@/lib/types"; // Added MenteeProfile
 import { getMockMentorProfiles, getMentorByProfileString, useAuth } from "@/context/auth-context";
 import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,18 +26,33 @@ export default function AiRecommendationsPage() {
 
   const menteeProfileForAI = useMemo(() => {
     if (!menteeUser || menteeUser.role !== 'mentee') return "Generic student interested in learning.";
-    const mentee = menteeUser;
+    const mentee = menteeUser as MenteeProfile; // Cast to MenteeProfile
     // Construct a detailed profile string for the AI
-    return `Name: ${mentee.name}, Bio: ${mentee.bio || 'N/A'}, Learning Goals: ${mentee.learningGoals || 'N/A'}, Desired Universities: ${mentee.desiredUniversities?.join(', ') || 'N/A'}, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ') || 'N/A'}, Desired Companies: ${mentee.desiredCompanies?.join(', ') || 'N/A'}, Interests: ${mentee.interests?.join(', ') || 'N/A'}`;
+    let profileString = `Name: ${mentee.name}`;
+    profileString += `, Bio: ${mentee.bio || 'N/A'}`;
+    profileString += `, Interests: ${mentee.interests?.join(', ') || 'N/A'}`;
+    profileString += `, Learning Goals: ${mentee.learningGoals || 'N/A'}`;
+    profileString += `, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ') || 'General Advice'}`;
+    if (mentee.seekingMentorshipFor?.includes('university')) {
+        profileString += `, Current Education Level: ${mentee.currentEducationLevel || 'N/A'}`;
+        profileString += `, Target Degree Level: ${mentee.targetDegreeLevel || 'N/A'}`;
+        profileString += `, Target Fields of Study: ${mentee.targetFieldsOfStudy?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Universities: ${mentee.desiredUniversities?.join(', ') || 'N/A'}`;
+    }
+    if (mentee.seekingMentorshipFor?.includes('career')) {
+        profileString += `, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ') || 'N/A'}`;
+        profileString += `, Desired Companies: ${mentee.desiredCompanies?.join(', ') || 'N/A'}`;
+    }
+    return profileString;
   }, [menteeUser]);
 
   const { data: suggestedMentorsData, isLoading: isLoadingSuggestions, error: suggestionsError } = useQuery<SuggestMentorsOutput, Error>({
-    queryKey: ['allSuggestedMentors', menteeUser?.id], // Unique key for this page
+    queryKey: ['allSuggestedMentors', menteeUser?.id, menteeProfileForAI], // Include menteeProfileForAI in queryKey
     queryFn: async () => {
       if (!menteeUser || menteeUser.role !== 'mentee') return [];
       const input: SuggestMentorsInput = {
         menteeProfile: menteeProfileForAI,
-        mentorProfiles: getMockMentorProfiles(), // Provide all mentor profiles for evaluation
+        mentorProfiles: getMockMentorProfiles(), 
       };
       return suggestMentors(input);
     },
@@ -51,7 +66,6 @@ export default function AiRecommendationsPage() {
       .map(suggestion => {
         const mentor = getMentorByProfileString(suggestion.mentorProfile);
         if (mentor) {
-          // Create an object that matches SuggestedMentorProfileWithDetails
           const profileWithDetails: SuggestedMentorProfileWithDetails = {
             ...mentor,
             relevanceScore: suggestion.relevanceScore,
@@ -61,9 +75,7 @@ export default function AiRecommendationsPage() {
         }
         return null;
       })
-      // Filter out nulls and ensure TypeScript knows the type
       .filter((profile): profile is SuggestedMentorProfileWithDetails => Boolean(profile))
-      // Now 'a' and 'b' are definitely SuggestedMentorProfileWithDetails, so relevanceScore is a number
       .sort((a, b) => b.relevanceScore - a.relevanceScore);
 
     return profilesWithDetails;
