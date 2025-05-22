@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Webinar } from "@/lib/types";
 import { useAuth } from "@/context/auth-context";
@@ -13,13 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2, BellRing } from "lucide-react";
+import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLeft, Presentation, Tv2, BellRing, Loader2 } from "lucide-react"; // Added Loader2
 import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "@/components/core/user-avatar";
+import { requestWebinarReminder } from "@/app/actions/notifyActions"; // Import the server action
+import { useFormState, useFormStatus } from "react-dom"; // For Server Action form handling
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button size="sm" className="flex-1" type="submit" disabled={pending}>
+      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+      {pending ? "Sending..." : "Set Mock Reminder"}
+    </Button>
+  );
+}
 
 export default function WebinarDetailPage() {
   const params = useParams();
-  const webinarId = params.sessionId || params.webinarId as string; // Handle both potential param names
+  const webinarId = params.sessionId || params.webinarId as string;
   const router = useRouter();
   const { user, getWebinarDetails } = useAuth();
   const { toast } = useToast();
@@ -29,8 +41,14 @@ export default function WebinarDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [showNotifyInput, setShowNotifyInput] = useState(false);
-  const [notificationContact, setNotificationContact] = useState("");
   const [reminderSet, setReminderSet] = useState(false);
+
+  // useFormState for the reminder action
+  const initialState = { success: false, message: "", error: undefined };
+  const [formState, formAction] = useFormState(requestWebinarReminder, initialState);
+  
+  const [isPending, startTransition] = useTransition();
+
 
   useEffect(() => {
     if (webinarId) {
@@ -48,6 +66,24 @@ export default function WebinarDetailPage() {
     }
   }, [webinarId, getWebinarDetails]);
 
+  useEffect(() => {
+    if (formState?.success && !isPending) {
+      toast({
+        title: "Reminder Set (Mock)",
+        description: formState.message,
+      });
+      setReminderSet(true);
+      setShowNotifyInput(false);
+    } else if (formState?.error && !formState.success && !isPending) {
+      toast({
+        title: "Reminder Error",
+        description: formState.message || "Could not process reminder request.",
+        variant: "destructive",
+      });
+    }
+  }, [formState, toast, isPending]);
+
+
   const handleRegisterWebinar = () => {
     if (!webinar) return;
     setIsRegistered(true);
@@ -61,25 +97,6 @@ export default function WebinarDetailPage() {
     setShowNotifyInput(true);
   };
 
-  const handleSendMockReminder = () => {
-    if (!notificationContact.trim()) {
-      toast({
-        title: "Input Required",
-        description: "Please enter your phone number or email.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!webinar) return;
-
-    toast({
-      title: "Reminder Set (Mock)",
-      description: `A reminder will be (mock) sent to ${notificationContact} for the webinar "${webinar.title}".`,
-    });
-    setReminderSet(true);
-    setShowNotifyInput(false);
-    setNotificationContact("");
-  };
 
   if (isLoading) {
     return <WebinarDetailSkeleton />;
@@ -99,6 +116,12 @@ export default function WebinarDetailPage() {
       </div>
     );
   }
+  
+  const handleSubmitReminderForm = (formData: FormData) => {
+    startTransition(() => {
+        formAction(formData);
+    });
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -156,7 +179,7 @@ export default function WebinarDetailPage() {
                 <Info className="h-5 w-5 text-primary" />
                 <AlertTitle className="font-semibold">Note on Registration & Reminders</AlertTitle>
                 <AlertDescription>
-                    Registering for this webinar and setting reminders are mock actions. In a real application, this might involve calendar invites and email/SMS confirmations.
+                    Registering for this webinar is a mock action. Setting a reminder will log a request to our server (mock), but no actual messages will be sent.
                 </AlertDescription>
             </Alert>
           </div>
@@ -213,28 +236,34 @@ export default function WebinarDetailPage() {
                         <CheckCircle className="mr-2 h-4 w-4 text-green-500" /> Reminder Set
                       </Button>
                     )}
-                    
                 </CardFooter>
             </Card>
             {showNotifyInput && !reminderSet && (
               <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-lg">Set Reminder</CardTitle>
-                  <CardDescription className="text-xs">Enter your phone or email.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Label htmlFor="notify-contact" className="sr-only">Phone or Email</Label>
-                  <Input 
-                    id="notify-contact"
-                    placeholder="Phone number or email"
-                    value={notificationContact}
-                    onChange={(e) => setNotificationContact(e.target.value)}
-                  />
-                </CardContent>
-                <CardFooter className="flex gap-2">
-                   <Button variant="outline" size="sm" onClick={() => setShowNotifyInput(false)}>Cancel</Button>
-                   <Button size="sm" className="flex-1" onClick={handleSendMockReminder}>Send Mock Reminder</Button>
-                </CardFooter>
+                <form action={handleSubmitReminderForm}>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Set Reminder</CardTitle>
+                    <CardDescription className="text-xs">Enter your phone or email.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Label htmlFor="notify-contact" className="sr-only">Phone or Email</Label>
+                    <Input
+                      id="notify-contact"
+                      name="contactInfo" // Name attribute for FormData
+                      placeholder="Phone number or email"
+                      required
+                    />
+                    <input type="hidden" name="webinarTitle" value={webinar.title} />
+                    <input type="hidden" name="webinarDate" value={webinar.date} />
+                    {formState?.error && !formState.success && (
+                        <p className="text-xs text-destructive">{formState.message}</p>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex gap-2">
+                    <Button variant="outline" size="sm" type="button" onClick={() => setShowNotifyInput(false)}>Cancel</Button>
+                    <SubmitButton />
+                  </CardFooter>
+                </form>
               </Card>
             )}
           </aside>
@@ -289,5 +318,3 @@ function WebinarDetailSkeleton() {
     </div>
   );
 }
-
-    
