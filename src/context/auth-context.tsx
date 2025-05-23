@@ -5,7 +5,7 @@ import type { UserProfile, UserRole, MentorProfile, MenteeProfile, EnrichedBooki
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
-// Mock user data (replace with actual API calls)
+// Define MOCK_USERS first with static dates
 export const MOCK_USERS: Record<string, UserProfile> = {
   'mentor@example.com': {
     id: 'mentor1',
@@ -25,11 +25,11 @@ export const MOCK_USERS: Record<string, UserProfile> = {
       { id: 'comp2-mv', institutionName: 'OpenAI', roleOrDegree: 'Research Engineer', startDate: '2014-07-01', endDate: '2016-06-30' },
     ],
     yearsOfExperience: 10,
-    availabilitySlots: [
-      { id: 'slot1', startTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false},
-      { id: 'slot2', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
-      { id: 'slot3', startTime: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 3)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: false },
-      { id: 'slot-past-booked', startTime: new Date(new Date().setDate(new Date().getDate() -1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() -1)).setHours(new Date().getHours() + 1)).toISOString(), isBooked: true, bookedByMenteeId: 'mentee1' },
+    availabilitySlots: [ // Using static dates
+      { id: 'slot1', startTime: '2024-10-27T10:00:00.000Z', endTime: '2024-10-27T11:00:00.000Z', isBooked: false},
+      { id: 'slot2', startTime: '2024-10-28T14:00:00.000Z', endTime: '2024-10-28T15:00:00.000Z', isBooked: false },
+      { id: 'slot3', startTime: '2024-10-29T16:00:00.000Z', endTime: '2024-10-29T17:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' }, // Example booked slot
+      { id: 'slot-past-booked', startTime: '2024-10-25T09:00:00.000Z', endTime: '2024-10-25T10:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
     ],
     mentorshipFocus: ['career', 'university'],
     targetDegreeLevels: ['Masters', 'PhD'],
@@ -68,19 +68,20 @@ export const MOCK_USERS: Record<string, UserProfile> = {
         { id: 'comp2-bc', institutionName: 'Adobe', roleOrDegree: 'Senior Product Manager', startDate: '2010-06-01', endDate: '2015-02-28', description: 'Managed flagship creative software products.' }
     ],
     yearsOfExperience: 12,
-    availabilitySlots: [
-      { id: 'slot4', startTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
-      { id: 'slot5', startTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString(), endTime: new Date(new Date(new Date().setDate(new Date().getDate() + 2)).setHours(new Date().getHours() + 2)).toISOString(), isBooked: false },
+    availabilitySlots: [ // Using static dates
+      { id: 'slot4', startTime: '2024-10-27T12:00:00.000Z', endTime: '2024-10-27T14:00:00.000Z', isBooked: false },
+      { id: 'slot5', startTime: '2024-10-28T17:00:00.000Z', endTime: '2024-10-28T19:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['career'],
   } as MentorProfile,
 };
 
-const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'hostName' | 'hostProfileImageUrl' | 'participantCount' | 'duration' | 'id'>[] = [
+// Raw initial data (no direct MOCK_USERS access here)
+const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'hostProfileImageUrl' | 'participantCount' | 'duration'>[] = [
   {
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1', // Dr. Eleanor Vance
+    hostId: 'mentor1',
     date: 'November 5th, 2024 at 4:00 PM PST',
     tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
     imageUrl: 'https://placehold.co/600x400.png',
@@ -136,16 +137,18 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfi
   }
 ];
 
+
+// Helper function to enrich initial data
 function enrichInitialData<
   T extends { hostId: string; id?: string; participantCount?: number; duration?: string },
   R extends T & { id: string; hostName?: string; speakerName?: string; hostProfileImageUrl?: string; participantCount: number; duration: string }
 >(
   rawData: Omit<T, 'id' | 'hostName' | 'speakerName' | 'hostProfileImageUrl' | 'participantCount' | 'duration'>[],
-  mockUsersData: Record<string, UserProfile>,
+  mockUsersData: Record<string, UserProfile>, // Explicitly pass MOCK_USERS here
   type: 'groupSession' | 'webinar'
 ): R[] {
   return rawData.map((item, index) => {
-    const host = Object.values(mockUsersData).find(u => u.id === item.hostId);
+    const host = mockUsersData[item.hostId] || Object.values(mockUsersData).find(u => u.id === item.hostId);
     const baseId = type === 'groupSession' ? 'gs-initial-' : 'web-initial-';
     const enrichedItem: R = {
       ...item,
@@ -172,10 +175,9 @@ function enrichInitialData<
   });
 }
 
-
 interface AuthContextType {
   user: UserProfile | null;
-  MOCK_USERS_INSTANCE: Record<string, UserProfile>; // Expose for mentor profile page
+  MOCK_USERS_INSTANCE: Record<string, UserProfile>;
   loading: boolean;
   login: (email: string, role?: UserRole) => Promise<void>;
   logout: () => void;
@@ -216,13 +218,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedMockUsers = localStorage.getItem('vedkarn-MOCK_USERS');
         if (storedMockUsers) {
             try {
-                return JSON.parse(storedMockUsers);
+                // Ensure MOCK_USERS from localStorage also has static dates if it's ever manually edited or from an old version
+                const parsedUsers = JSON.parse(storedMockUsers) as Record<string, UserProfile>;
+                Object.values(parsedUsers).forEach(u => {
+                    if (u.role === 'mentor' && (u as MentorProfile).availabilitySlots) {
+                        (u as MentorProfile).availabilitySlots = ((u as MentorProfile).availabilitySlots || []).map(slot => ({
+                            ...slot,
+                            startTime: slot.startTime, // Assuming they are already ISO strings
+                            endTime: slot.endTime,     // Or add validation/conversion if needed
+                        }));
+                    }
+                });
+                return parsedUsers;
             } catch (e) {
                 console.error("Failed to parse MOCK_USERS from localStorage", e);
             }
         }
     }
-    return JSON.parse(JSON.stringify(MOCK_USERS)); // Deep copy for initial state
+    // For initial load or if localStorage fails, use the module-level MOCK_USERS with static dates
+    return JSON.parse(JSON.stringify(MOCK_USERS));
   });
 
 
@@ -231,11 +245,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedSessions = localStorage.getItem('vedkarn-group-sessions');
       if (storedSessions) {
         try {
-          // Ensure data loaded from localStorage is also enriched if it's missing derived fields
            const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
-           // A simple check: if the first session doesn't have hostName, assume it needs re-enrichment
-           if (parsedSessions.length > 0 && !parsedSessions[0].hostName) {
-             return enrichInitialData(parsedSessions, currentMockUsers, 'groupSession');
+           // Ensure data loaded from localStorage is also enriched if it's missing derived fields
+           // This check is simplified; a more robust check would verify specific derived fields.
+           if (parsedSessions.length > 0 && (!parsedSessions[0].hostName || !parsedSessions[0].hostProfileImageUrl)) {
+             return enrichInitialData(parsedSessions, currentMockUsers, 'groupSession'); // Pass currentMockUsers
            }
           return parsedSessions;
         } catch (e) {
@@ -243,7 +257,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     }
-    return enrichInitialData(INITIAL_MOCK_GROUP_SESSIONS_RAW, currentMockUsers, 'groupSession');
+    return enrichInitialData(INITIAL_MOCK_GROUP_SESSIONS_RAW, MOCK_USERS, 'groupSession');
   });
 
   const [masterWebinarsList, setMasterWebinarsList] = useState<Webinar[]>(() => {
@@ -252,8 +266,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedWebinars) {
         try {
           const parsedWebinars = JSON.parse(storedWebinars) as Webinar[];
-           if (parsedWebinars.length > 0 && !parsedWebinars[0].speakerName) {
-             return enrichInitialData(parsedWebinars, currentMockUsers, 'webinar');
+           if (parsedWebinars.length > 0 && (!parsedWebinars[0].speakerName || !parsedWebinars[0].hostProfileImageUrl)) {
+             return enrichInitialData(parsedWebinars, currentMockUsers, 'webinar'); // Pass currentMockUsers
            }
           return parsedWebinars;
         } catch (e) {
@@ -261,7 +275,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     }
-    return enrichInitialData(INITIAL_MOCK_WEBINARS_RAW, currentMockUsers, 'webinar');
+    return enrichInitialData(INITIAL_MOCK_WEBINARS_RAW, MOCK_USERS, 'webinar');
   });
 
   const router = useRouter();
@@ -273,7 +287,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.email === 'string') {
-          const mockUserDataFromDB = currentMockUsers[parsedUser.email]; // Use currentMockUsers
+          const mockUserDataFromDB = currentMockUsers[parsedUser.email];
            if (mockUserDataFromDB) {
             const mergedUser = { ...mockUserDataFromDB, ...parsedUser };
             if (mergedUser.role === 'mentor') {
@@ -298,22 +312,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLoading(false);
-  }, []); // Removed currentMockUsers from dependency array to prevent re-running this effect unnecessarily
+  }, []); // currentMockUsers removed from dependency to avoid re-initialization loop
 
    useEffect(() => {
-    if(!loading) {
+    if(!loading && typeof window !== 'undefined') {
         localStorage.setItem('vedkarn-group-sessions', JSON.stringify(masterGroupSessionsList));
     }
   }, [masterGroupSessionsList, loading]);
 
   useEffect(() => {
-    if(!loading) {
+    if(!loading && typeof window !== 'undefined') {
         localStorage.setItem('vedkarn-webinars', JSON.stringify(masterWebinarsList));
     }
   }, [masterWebinarsList, loading]);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && typeof window !== 'undefined') {
         localStorage.setItem('vedkarn-MOCK_USERS', JSON.stringify(currentMockUsers));
     }
   }, [currentMockUsers, loading]);
@@ -335,7 +349,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       if (!user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
         router.push('/auth/complete-profile');
-      } else if (user.role && isAuthPage) {
+      } else if (user.role && isAuthPage && pathname !== '/auth/complete-profile') { // Allow access to complete-profile even if role exists
         router.push('/dashboard');
       }
     }
@@ -356,15 +370,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (userToLogin.role === 'mentor') {
         userToLogin = {
-            ...currentMockUsers[email] as MentorProfile,
+            ...MOCK_USERS[email] as MentorProfile, // Use module MOCK_USERS for base structure
             ...userToLogin
         };
         if (!(userToLogin as MentorProfile).availabilitySlots) {
-          (userToLogin as MentorProfile).availabilitySlots = (currentMockUsers[email] as MentorProfile)?.availabilitySlots || [];
+          (userToLogin as MentorProfile).availabilitySlots = (MOCK_USERS[email] as MentorProfile)?.availabilitySlots || [];
         }
       } else if (userToLogin.role === 'mentee') {
          userToLogin = {
-            ...currentMockUsers[email] as MenteeProfile,
+            ...MOCK_USERS[email] as MenteeProfile, // Use module MOCK_USERS for base structure
             ...userToLogin
         };
       }
@@ -512,11 +526,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const getScheduledSessionsForCurrentUser = useCallback(async (): Promise<EnrichedBooking[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async
+    await new Promise(resolve => setTimeout(resolve, 100));
     if (!user) return [];
 
     const scheduledSessions: EnrichedBooking[] = [];
-    const allUserProfiles = Object.values(currentMockUsers); // Use currentMockUsers
+    const allUserProfiles = Object.values(currentMockUsers);
 
     for (const profile of allUserProfiles) {
       if (profile.role === 'mentor') {
@@ -599,11 +613,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getAllGroupSessions = useCallback(async (): Promise<GroupSession[]> => {
     return [...masterGroupSessionsList].sort((a,b) => {
-        // A simple date sort, assuming dates are in a format that can be parsed
         try {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
         } catch (e) {
-            return 0; // Fallback if date parsing fails
+            return 0;
         }
     });
   }, [masterGroupSessionsList]);
@@ -709,7 +722,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user,
-      MOCK_USERS_INSTANCE: currentMockUsers, // Provide the stateful mock users
+      MOCK_USERS_INSTANCE: currentMockUsers,
       loading,
       login,
       logout,
@@ -749,11 +762,6 @@ export const useAuth = () => {
 };
 
 export const getMockMentorProfiles = (): string[] => {
-  // This function now needs to be careful if MOCK_USERS is not directly accessible
-  // or if it should use the instance from context if available.
-  // For now, keeping it simple, assuming MOCK_USERS is somehow accessible or 
-  // this is called where MOCK_USERS is in scope (which it is at the module level).
-  // A better approach might involve passing MOCK_USERS to it if it were used outside this module.
   return Object.values(MOCK_USERS)
     .filter(u => u.role === 'mentor')
     .map(userProfile => {
@@ -775,9 +783,10 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   const nameMatch = profileString.match(/Name: (.*?)(?:, Bio:|, Expertise:|$)/);
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
-    // This also relies on MOCK_USERS being in scope.
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
     return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; 
   }
   return undefined;
 };
+
+    
