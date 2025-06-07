@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit, Presentation, Award, TrendingUp } from "lucide-react";
+import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit, Presentation, Award, TrendingUp, Users } from "lucide-react";
 import Image from "next/image";
 import { HorizontalScrollItems } from "@/components/dashboard/horizontal-scroll-items"; 
 import { UserAvatar } from "@/components/core/user-avatar";
