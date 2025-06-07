@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit } from "lucide-react";
+import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit, Presentation } from "lucide-react";
 import Image from "next/image";
 import { HorizontalScrollItems } from "@/components/dashboard/horizontal-scroll-items"; // New component
 import { UserAvatar } from "@/components/core/user-avatar";
@@ -235,7 +235,7 @@ export default function DashboardHomePage() {
             </p>
           </div>
           <div className="md:w-1/2 flex justify-center md:justify-end opacity-0 animate-fadeInUp" style={{ animationDelay: `${welcomeWords.length * 0.15 + 0.5}s` }}>
-            <MentorshipAbstractArt className="w-full max-w-sm" />
+            <MentorshipAbstractArt className="w-full max-w-md" />
           </div>
         </div>
       </section>
