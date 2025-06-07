@@ -136,6 +136,10 @@ export default {
             '0%': { transform: 'translateX(-50%)' },
             '100%': { transform: 'translateX(0)' },
         },
+        'gentleFloat': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-3px)' },
+        }
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
@@ -145,6 +149,7 @@ export default {
         'textColorEmphasisWaveAccentEnd': 'textColorEmphasisWaveAccentEnd 2s ease-out forwards',
         'scrollLeft': 'scrollLeft var(--animation-duration, 40s) linear infinite',
         'scrollRight': 'scrollRight var(--animation-duration, 40s) linear infinite',
+        'gentleFloat': 'gentleFloat 3s ease-in-out infinite',
   		}
   	}
   },
