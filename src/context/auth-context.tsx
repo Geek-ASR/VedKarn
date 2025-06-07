@@ -25,11 +25,11 @@ export const MOCK_USERS: Record<string, UserProfile> = {
       { id: 'comp2-mv', institutionName: 'OpenAI', roleOrDegree: 'Research Engineer', startDate: '2014-07-01', endDate: '2016-06-30' },
     ],
     yearsOfExperience: 10,
-    availabilitySlots: [ 
-      { id: 'slot1', startTime: '2024-10-27T10:00:00.000Z', endTime: '2024-10-27T11:00:00.000Z', isBooked: false},
-      { id: 'slot2', startTime: '2024-10-28T14:00:00.000Z', endTime: '2024-10-28T15:00:00.000Z', isBooked: false },
-      { id: 'slot3', startTime: '2024-10-29T16:00:00.000Z', endTime: '2024-10-29T17:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' }, 
-      { id: 'slot-past-booked', startTime: '2024-10-25T09:00:00.000Z', endTime: '2024-10-25T10:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
+    availabilitySlots: [
+      { id: 'slot1', startTime: '2025-07-10T10:00:00.000Z', endTime: '2025-07-10T11:00:00.000Z', isBooked: false},
+      { id: 'slot2', startTime: '2025-07-11T14:00:00.000Z', endTime: '2025-07-11T15:00:00.000Z', isBooked: false },
+      { id: 'slot3', startTime: '2025-07-12T16:00:00.000Z', endTime: '2025-07-12T17:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
+      { id: 'slot-past-booked', startTime: '2025-06-05T09:00:00.000Z', endTime: '2025-06-05T10:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' }, // Relative past
     ],
     mentorshipFocus: ['career', 'university'],
     targetDegreeLevels: ['Masters', 'PhD'],
@@ -68,9 +68,9 @@ export const MOCK_USERS: Record<string, UserProfile> = {
         { id: 'comp2-bc', institutionName: 'Adobe', roleOrDegree: 'Senior Product Manager', startDate: '2010-06-01', endDate: '2015-02-28', description: 'Managed flagship creative software products.' }
     ],
     yearsOfExperience: 12,
-    availabilitySlots: [ 
-      { id: 'slot4', startTime: '2024-10-27T12:00:00.000Z', endTime: '2024-10-27T14:00:00.000Z', isBooked: false },
-      { id: 'slot5', startTime: '2024-10-28T17:00:00.000Z', endTime: '2024-10-28T19:00:00.000Z', isBooked: false },
+    availabilitySlots: [
+      { id: 'slot4', startTime: '2025-07-10T12:00:00.000Z', endTime: '2025-07-10T14:00:00.000Z', isBooked: false },
+      { id: 'slot5', startTime: '2025-07-11T17:00:00.000Z', endTime: '2025-07-11T19:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['career'],
   } as MentorProfile,
@@ -90,8 +90,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 8,
     availabilitySlots: [
-      { id: 'slot-jd1', startTime: '2024-11-01T09:00:00.000Z', endTime: '2024-11-01T10:00:00.000Z', isBooked: false },
-      { id: 'slot-jd2', startTime: '2024-11-02T11:00:00.000Z', endTime: '2024-11-02T12:00:00.000Z', isBooked: false },
+      { id: 'slot-jd1', startTime: '2025-08-01T09:00:00.000Z', endTime: '2025-08-01T10:00:00.000Z', isBooked: false },
+      { id: 'slot-jd2', startTime: '2025-08-02T11:00:00.000Z', endTime: '2025-08-02T12:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['career'],
   } as MentorProfile,
@@ -113,7 +113,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 10,
     availabilitySlots: [
-      { id: 'slot-rp1', startTime: '2024-11-03T13:00:00.000Z', endTime: '2024-11-03T14:00:00.000Z', isBooked: false },
+      { id: 'slot-rp1', startTime: '2025-08-03T13:00:00.000Z', endTime: '2025-08-03T14:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['university'],
     targetDegreeLevels: ['PhD'],
@@ -138,8 +138,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 7,
     availabilitySlots: [
-      { id: 'slot-sl1', startTime: '2024-11-04T10:00:00.000Z', endTime: '2024-11-04T11:30:00.000Z', isBooked: false },
-      { id: 'slot-sl2', startTime: '2024-11-05T15:00:00.000Z', endTime: '2024-11-05T16:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
+      { id: 'slot-sl1', startTime: '2025-08-04T10:00:00.000Z', endTime: '2025-08-04T11:30:00.000Z', isBooked: false },
+      { id: 'slot-sl2', startTime: '2025-08-05T15:00:00.000Z', endTime: '2025-08-05T16:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
     ],
     mentorshipFocus: ['career', 'university'],
     targetDegreeLevels: ['Bachelors', 'Masters'],
@@ -152,8 +152,8 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
   {
     title: 'Mastering Data Structures & Algorithms',
     description: 'Join our interactive group session to tackle common DSA problems and improve your coding interview skills. Collaborative problem-solving, weekly challenges, and mock interview practice. This session is ideal for students preparing for technical interviews or looking to strengthen their fundamental computer science knowledge. We will cover arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming.',
-    hostId: 'mentor1',
-    date: 'November 5th, 2024 at 4:00 PM PST',
+    hostId: 'mentor1', // Dr. Eleanor Vance
+    date: 'July 15th, 2025 at 4:00 PM PST',
     tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
     imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxncm91cCUyMGxlYXJuaW5nJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
     maxParticipants: 15,
@@ -162,8 +162,8 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
   {
     title: 'Startup Pitch Practice & Feedback',
     description: 'Refine your startup pitch in a supportive group environment. Get constructive feedback from peers and an experienced entrepreneur. Learn how to structure your pitch, tell a compelling story, and answer tough questions from investors. Each participant will have a chance to present and receive tailored advice.',
-    hostId: 'mentor1',
-    date: 'November 12th, 2024 at 10:00 AM PST',
+    hostId: 'mentor1', // Dr. Eleanor Vance
+    date: 'July 22nd, 2025 at 10:00 AM PST',
     tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
     imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3JvdXAlMjBsZWFybmluZyUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzQ5MzA4NzAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
     maxParticipants: 10,
@@ -172,10 +172,10 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
   {
     title: 'Intro to UX Design Principles',
     description: 'A beginner-friendly group session covering the fundamentals of UX design. Learn about user research, persona creation, wireframing, prototyping, and usability testing. We will work through a mini-project to apply these concepts.',
-    hostId: 'mentor2',
-    date: 'November 19th, 2024 at 1:00 PM PST',
+    hostId: 'mentor2', // Dr. Ben Carter
+    date: 'July 29th, 2025 at 1:00 PM PST',
     tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
-    imageUrl: 'https://placehold.co/600x400.png', // This one remains placeholder as only 2 new images were provided
+    imageUrl: 'https://placehold.co/600x400.png',
     maxParticipants: 20,
     price: 'Free',
   }
@@ -185,24 +185,24 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfi
   {
     title: 'The Future of Generative AI',
     description: 'Explore the latest advancements in Generative AI, its applications, and ethical considerations. Led by a leading AI researcher.',
-    hostId: 'mentor1',
-    date: 'November 8th, 2024 at 9:00 AM PST',
+    hostId: 'mentor1', // Dr. Eleanor Vance
+    date: 'July 8th, 2025 at 9:00 AM PST',
     topic: 'Artificial Intelligence',
     imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   },
   {
     title: 'Effective Networking in the Tech Industry',
     description: 'Learn strategies for building meaningful professional connections, both online and offline, to advance your career in tech.',
-    hostId: 'mentor2',
-    date: 'November 15th, 2024 at 12:00 PM PST',
+    hostId: 'mentor2', // Dr. Ben Carter
+    date: 'July 15th, 2025 at 12:00 PM PST',
     topic: 'Career Development',
     imageUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   },
   {
     title: 'Demystifying Cloud Computing',
     description: 'A comprehensive overview of cloud computing concepts, services (AWS, Azure, GCP), and how to get started with cloud technologies.',
-    hostId: 'mentor1',
-    date: 'November 22nd, 2024 at 3:00 PM PST',
+    hostId: 'mentor1', // Dr. Eleanor Vance
+    date: 'July 22nd, 2025 at 3:00 PM PST',
     topic: 'Cloud Computing',
     imageUrl: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   }
@@ -438,7 +438,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (!userToLogin.name && email) {
         userToLogin = { ...userToLogin, name: email.split('@')[0]};
       }
-      
+
       if (userToLogin.role === 'mentor') {
         userToLogin = {
             ...MOCK_USERS[email] as MentorProfile, // Use module MOCK_USERS for base structure
@@ -569,7 +569,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("Only mentees can book sessions.");
     }
     const menteeId = user.id;
-    
+
     setCurrentMockUsers(prevMockUsers => {
         const mentorToUpdate = prevMockUsers[mentorEmail] as MentorProfile | undefined;
         if (mentorToUpdate && mentorToUpdate.availabilitySlots) {
@@ -580,12 +580,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 );
                 const updatedMentor = { ...mentorToUpdate, availabilitySlots: updatedSlots };
                 const newMockUsers = { ...prevMockUsers, [mentorEmail]: updatedMentor };
-                
-                if (user && user.email === mentorEmail) { 
-                    setUser(updatedMentor); 
-                    localStorage.setItem('vedkarn-user', JSON.stringify(updatedMentor)); 
+
+                if (user && user.email === mentorEmail) {
+                    setUser(updatedMentor);
+                    localStorage.setItem('vedkarn-user', JSON.stringify(updatedMentor));
                 }
-                setBookingsVersion(v => v + 1); 
+                setBookingsVersion(v => v + 1);
                 return newMockUsers;
             } else {
                 throw new Error("Slot not found or already booked.");
@@ -611,7 +611,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (slot.isBooked && slot.bookedByMenteeId) {
               if (user.id === mentorProfile.id || user.id === slot.bookedByMenteeId) {
                 const menteeProfile = allUserProfiles.find(u => u.id === slot.bookedByMenteeId && u.role === 'mentee') as MenteeProfile | undefined;
-                if (menteeProfile) { 
+                if (menteeProfile) {
                   scheduledSessions.push({
                     id: `${mentorProfile.id}-${slot.id}`,
                     mentorId: mentorProfile.id,
@@ -709,14 +709,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, masterGroupSessionsList]);
 
   const updateMentorGroupSession = useCallback(async (
-    sessionId: string, 
+    sessionId: string,
     sessionData: Partial<Omit<GroupSession, 'id' | 'hostId' | 'hostName' | 'hostProfileImageUrl' | 'participantCount'>>
   ): Promise<GroupSession | undefined> => {
     if (!user || user.role !== 'mentor') {
       throw new Error("Only mentors can update group sessions.");
     }
     let updatedSession: GroupSession | undefined;
-    setMasterGroupSessionsList(prevSessions => 
+    setMasterGroupSessionsList(prevSessions =>
       prevSessions.map(session => {
         if (session.id === sessionId) {
           if (session.hostId !== user.id) {
@@ -747,7 +747,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...webinarData,
       id: `web-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       hostId: user.id,
-      speakerName: webinarData.speakerName || user.name, 
+      speakerName: webinarData.speakerName || user.name,
       hostProfileImageUrl: user.profileImageUrl,
       duration: webinarData.duration || "Not specified",
     };
@@ -855,10 +855,7 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
   if (nameMatch && nameMatch[1]) {
     const name = nameMatch[1].trim();
     const foundUser = Object.values(MOCK_USERS).find(u => u.role === 'mentor' && u.name === name);
-    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined; 
+    return foundUser ? MOCK_USERS[foundUser.email] as MentorProfile : undefined;
   }
   return undefined;
 };
-
-    
-
