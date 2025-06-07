@@ -29,7 +29,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
     <div ref={cardRef}>
       <Card 
         className={cn(
-          "overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col",
+          "overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[430px]", // Changed to h-[430px] for consistent height
           isIntersecting ? "animate-fadeInUp" : "opacity-0"
         )}
         style={{ animationDelay: isIntersecting ? animationDelay : undefined }}
@@ -67,7 +67,9 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
                   <p className="text-[11px] text-blue-600 line-clamp-2">{reason}</p>
               </div>
           )}
-          <p className="text-xs text-foreground line-clamp-1 leading-relaxed">{mentor.bio || "No bio available."}</p>
+          <p className="text-xs text-foreground line-clamp-1 leading-relaxed">
+            {mentor.bio || "No bio available."}
+          </p>
           
           {mentor.expertise && mentor.expertise.length > 0 && (
             <div>
@@ -81,6 +83,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
             </div>
           )}
 
+
           {hasUniversityFocus && mentor.targetDegreeLevels && mentor.targetDegreeLevels.length > 0 && (
             <div>
               <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-0.5 flex items-center"><GraduationCap className="h-3 w-3 mr-1" /> Guides For</h4>
@@ -89,6 +92,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
               </p>
             </div>
           )}
+
         </CardContent>
         <CardFooter className="p-3 bg-muted/30 border-t mt-auto">
           <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="sm">
@@ -102,7 +106,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
 
 export function MentorCardSkeleton() {
   return (
-    <div className="bg-card p-4 sm:p-5 rounded-lg shadow space-y-3">
+    <div className="bg-card p-4 sm:p-5 rounded-lg shadow space-y-3 h-[430px] flex flex-col"> {/* Added h-[430px] and flex structure */}
       <div className="flex items-start space-x-3">
         <Skeleton className="h-12 w-12 rounded-full border-2 border-background shadow-md" />
         <div className="flex-1 space-y-1">
@@ -111,16 +115,18 @@ export function MentorCardSkeleton() {
           <Skeleton className="h-3 w-1/4 mt-1" /> 
         </div>
       </div>
-      <Skeleton className="h-3 w-full" /> 
-      <Skeleton className="h-3 w-5/6" /> 
-      <div>
-        <Skeleton className="h-2.5 w-1/4 mb-1" /> 
-        <div className="flex flex-wrap gap-1">
-          <Skeleton className="h-3 w-10 rounded-full" /> 
-          <Skeleton className="h-3 w-14 rounded-full" /> 
+      <div className="flex-grow space-y-2"> {/* Made content area grow */}
+        <Skeleton className="h-3 w-full" /> 
+        <Skeleton className="h-3 w-5/6" /> 
+        <div>
+          <Skeleton className="h-2.5 w-1/4 mb-1" /> 
+          <div className="flex flex-wrap gap-1">
+            <Skeleton className="h-3 w-10 rounded-full" /> 
+            <Skeleton className="h-3 w-14 rounded-full" /> 
+          </div>
         </div>
       </div>
-       <div className="pt-1">
+       <div className="pt-1 mt-auto"> {/* Footer pushes to bottom */}
         <Skeleton className="h-8 w-full rounded-md" /> 
       </div>
     </div>
