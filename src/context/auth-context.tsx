@@ -25,10 +25,10 @@ export const MOCK_USERS: Record<string, UserProfile> = {
       { id: 'comp2-mv', institutionName: 'OpenAI', roleOrDegree: 'Research Engineer', startDate: '2014-07-01', endDate: '2016-06-30' },
     ],
     yearsOfExperience: 10,
-    availabilitySlots: [ // Using static dates
+    availabilitySlots: [ 
       { id: 'slot1', startTime: '2024-10-27T10:00:00.000Z', endTime: '2024-10-27T11:00:00.000Z', isBooked: false},
       { id: 'slot2', startTime: '2024-10-28T14:00:00.000Z', endTime: '2024-10-28T15:00:00.000Z', isBooked: false },
-      { id: 'slot3', startTime: '2024-10-29T16:00:00.000Z', endTime: '2024-10-29T17:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' }, // Example booked slot
+      { id: 'slot3', startTime: '2024-10-29T16:00:00.000Z', endTime: '2024-10-29T17:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' }, 
       { id: 'slot-past-booked', startTime: '2024-10-25T09:00:00.000Z', endTime: '2024-10-25T10:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
     ],
     mentorshipFocus: ['career', 'university'],
@@ -68,11 +68,82 @@ export const MOCK_USERS: Record<string, UserProfile> = {
         { id: 'comp2-bc', institutionName: 'Adobe', roleOrDegree: 'Senior Product Manager', startDate: '2010-06-01', endDate: '2015-02-28', description: 'Managed flagship creative software products.' }
     ],
     yearsOfExperience: 12,
-    availabilitySlots: [ // Using static dates
+    availabilitySlots: [ 
       { id: 'slot4', startTime: '2024-10-27T12:00:00.000Z', endTime: '2024-10-27T14:00:00.000Z', isBooked: false },
       { id: 'slot5', startTime: '2024-10-28T17:00:00.000Z', endTime: '2024-10-28T19:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['career'],
+  } as MentorProfile,
+  'mentor3@example.com': {
+    id: 'mentor3',
+    email: 'mentor3@example.com',
+    name: 'Jane Doe',
+    role: 'mentor',
+    profileImageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Marketing strategist with a knack for branding and digital campaigns. Helps mentees navigate the marketing world and build impactful careers.',
+    interests: ['Digital Marketing', 'Brand Strategy', 'Content Creation'],
+    expertise: ['SEO/SEM', 'Social Media Marketing', 'Brand Development', 'Market Research'],
+    universities: [{ id: 'uni1-jd', institutionName: 'New York University', roleOrDegree: 'M.S. Marketing', startDate: '2012-09-01', endDate: '2014-06-01' }],
+    companies: [
+      { id: 'comp1-jd', institutionName: 'XYZ Corp', roleOrDegree: 'Marketing Director', startDate: '2018-01-01', description: 'Led global marketing initiatives.' },
+      { id: 'comp2-jd', institutionName: 'Startup Inc.', roleOrDegree: 'Head of Marketing', startDate: '2015-05-01', endDate: '2017-12-31', description: 'Built marketing from the ground up.' },
+    ],
+    yearsOfExperience: 8,
+    availabilitySlots: [
+      { id: 'slot-jd1', startTime: '2024-11-01T09:00:00.000Z', endTime: '2024-11-01T10:00:00.000Z', isBooked: false },
+      { id: 'slot-jd2', startTime: '2024-11-02T11:00:00.000Z', endTime: '2024-11-02T12:00:00.000Z', isBooked: false },
+    ],
+    mentorshipFocus: ['career'],
+  } as MentorProfile,
+  'mentor4@example.com': {
+    id: 'mentor4',
+    email: 'mentor4@example.com',
+    name: 'Dr. Raj Patel',
+    role: 'mentor',
+    profileImageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Dedicated to helping students get into top engineering PhD programs. Research focused on renewable energy systems.',
+    interests: ['Sustainable Tech', 'Academic Publishing', 'Grant Writing'],
+    expertise: ['PhD Admissions (Engineering)', 'Research Methodology', 'Thesis Writing', 'Renewable Energy'],
+    universities: [
+      { id: 'uni1-rp', institutionName: 'Georgia Tech', roleOrDegree: 'PhD in Mechanical Engineering', startDate: '2008-08-01', endDate: '2012-05-01' },
+      { id: 'uni2-rp', institutionName: 'University of Michigan', roleOrDegree: 'Postdoctoral Fellow', startDate: '2012-06-01', endDate: '2014-05-31' },
+    ],
+    companies: [
+      { id: 'comp1-rp', institutionName: 'National Renewable Energy Lab', roleOrDegree: 'Senior Researcher', startDate: '2014-06-01', description: 'Published extensively on solar thermal systems.' },
+    ],
+    yearsOfExperience: 10,
+    availabilitySlots: [
+      { id: 'slot-rp1', startTime: '2024-11-03T13:00:00.000Z', endTime: '2024-11-03T14:00:00.000Z', isBooked: false },
+    ],
+    mentorshipFocus: ['university'],
+    targetDegreeLevels: ['PhD'],
+    guidedUniversities: ['Georgia Tech', 'MIT', 'Stanford University'],
+    applicationExpertise: ['Research Statement Review', 'Contacting Professors', 'PhD Fellowship Apps'],
+  } as MentorProfile,
+  'mentor5@example.com': {
+    id: 'mentor5',
+    email: 'mentor5@example.com',
+    name: 'Sarah Lee',
+    role: 'mentor',
+    profileImageUrl: 'https://placehold.co/100x100.png',
+    bio: 'UX Designer and creative director. Passionate about helping individuals break into design and build strong portfolios, whether for university or industry.',
+    interests: ['Interaction Design', 'User Research', 'Visual Storytelling', 'Portfolio Building'],
+    expertise: ['UX/UI Design', 'Portfolio Review', 'Design Thinking', 'Frontend Development Basics', 'Masters Applications (Design)'],
+    universities: [
+      { id: 'uni1-sl', institutionName: 'Rhode Island School of Design', roleOrDegree: 'MFA Graphic Design', startDate: '2013-09-01', endDate: '2015-05-01' },
+    ],
+    companies: [
+      { id: 'comp1-sl', institutionName: 'DesignHub Agency', roleOrDegree: 'Lead UX Designer', startDate: '2018-07-01', description: 'Led design for major client projects.' },
+      { id: 'comp2-sl', institutionName: 'Freelance Designer', roleOrDegree: 'UX Consultant', startDate: '2015-06-01', endDate: '2018-06-30', description: 'Worked with various startups.' },
+    ],
+    yearsOfExperience: 7,
+    availabilitySlots: [
+      { id: 'slot-sl1', startTime: '2024-11-04T10:00:00.000Z', endTime: '2024-11-04T11:30:00.000Z', isBooked: false },
+      { id: 'slot-sl2', startTime: '2024-11-05T15:00:00.000Z', endTime: '2024-11-05T16:00:00.000Z', isBooked: true, bookedByMenteeId: 'mentee1' },
+    ],
+    mentorshipFocus: ['career', 'university'],
+    targetDegreeLevels: ['Bachelors', 'Masters'],
+    applicationExpertise: ['Portfolio Curation', 'Design School Applications', 'Personal Statements (Design)'],
   } as MentorProfile,
 };
 
@@ -790,3 +861,4 @@ export const getMentorByProfileString = (profileString: string): MentorProfile |
 };
 
     
+
