@@ -69,8 +69,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     ],
     yearsOfExperience: 12,
     availabilitySlots: [
-      { id: 'slot4', startTime: '2025-07-10T12:00:00.000Z', endTime: '2025-07-10T14:00:00.000Z', isBooked: false },
-      { id: 'slot5', startTime: '2025-07-11T17:00:00.000Z', endTime: '2025-07-11T19:00:00.000Z', isBooked: false },
+      { id: 'slot4', startTime: '2025-07-15T12:00:00.000Z', endTime: '2025-07-15T14:00:00.000Z', isBooked: false },
+      { id: 'slot5', startTime: '2025-07-16T17:00:00.000Z', endTime: '2025-07-16T19:00:00.000Z', isBooked: false },
     ],
     mentorshipFocus: ['career'],
   } as MentorProfile,
@@ -276,6 +276,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const MOCK_USERS_LOCAL_STORAGE_KEY = 'vedkarn-MOCK_USERS_v2'; // Changed key
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -286,17 +287,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [currentMockUsers, setCurrentMockUsers] = useState<Record<string, UserProfile>>(() => {
      if (typeof window !== 'undefined') {
-        const storedMockUsers = localStorage.getItem('vedkarn-MOCK_USERS');
+        const storedMockUsers = localStorage.getItem(MOCK_USERS_LOCAL_STORAGE_KEY); // Use new key
         if (storedMockUsers) {
             try {
-                // Ensure MOCK_USERS from localStorage also has static dates if it's ever manually edited or from an old version
                 const parsedUsers = JSON.parse(storedMockUsers) as Record<string, UserProfile>;
                 Object.values(parsedUsers).forEach(u => {
                     if (u.role === 'mentor' && (u as MentorProfile).availabilitySlots) {
                         (u as MentorProfile).availabilitySlots = ((u as MentorProfile).availabilitySlots || []).map(slot => ({
                             ...slot,
-                            startTime: slot.startTime, // Assuming they are already ISO strings
-                            endTime: slot.endTime,     // Or add validation/conversion if needed
+                            startTime: slot.startTime, 
+                            endTime: slot.endTime,     
                         }));
                     }
                 });
@@ -306,7 +306,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
         }
     }
-    // For initial load or if localStorage fails, use the module-level MOCK_USERS with static dates
     return JSON.parse(JSON.stringify(MOCK_USERS));
   });
 
@@ -317,10 +316,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedSessions) {
         try {
            const parsedSessions = JSON.parse(storedSessions) as GroupSession[];
-           // Ensure data loaded from localStorage is also enriched if it's missing derived fields
-           // This check is simplified; a more robust check would verify specific derived fields.
            if (parsedSessions.length > 0 && (!parsedSessions[0].hostName || !parsedSessions[0].hostProfileImageUrl)) {
-             return enrichInitialData(parsedSessions, currentMockUsers, 'groupSession'); // Pass currentMockUsers
+             return enrichInitialData(parsedSessions, currentMockUsers, 'groupSession'); 
            }
           return parsedSessions;
         } catch (e) {
@@ -338,7 +335,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const parsedWebinars = JSON.parse(storedWebinars) as Webinar[];
            if (parsedWebinars.length > 0 && (!parsedWebinars[0].speakerName || !parsedWebinars[0].hostProfileImageUrl)) {
-             return enrichInitialData(parsedWebinars, currentMockUsers, 'webinar'); // Pass currentMockUsers
+             return enrichInitialData(parsedWebinars, currentMockUsers, 'webinar'); 
            }
           return parsedWebinars;
         } catch (e) {
@@ -383,7 +380,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLoading(false);
-  }, []); // currentMockUsers removed from dependency to avoid re-initialization loop
+  }, []); 
 
    useEffect(() => {
     if(!loading && typeof window !== 'undefined') {
@@ -399,7 +396,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!loading && typeof window !== 'undefined') {
-        localStorage.setItem('vedkarn-MOCK_USERS', JSON.stringify(currentMockUsers));
+        localStorage.setItem(MOCK_USERS_LOCAL_STORAGE_KEY, JSON.stringify(currentMockUsers)); // Use new key
     }
   }, [currentMockUsers, loading]);
 
@@ -420,7 +417,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       if (!user.role && pathname !== '/auth/complete-profile' && !isApiRoute) {
         router.push('/auth/complete-profile');
-      } else if (user.role && isAuthPage && pathname !== '/auth/complete-profile') { // Allow access to complete-profile even if role exists
+      } else if (user.role && isAuthPage && pathname !== '/auth/complete-profile') { 
         router.push('/dashboard');
       }
     }
@@ -441,7 +438,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (userToLogin.role === 'mentor') {
         userToLogin = {
-            ...MOCK_USERS[email] as MentorProfile, // Use module MOCK_USERS for base structure
+            ...MOCK_USERS[email] as MentorProfile, 
             ...userToLogin
         };
         if (!(userToLogin as MentorProfile).availabilitySlots) {
@@ -449,7 +446,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } else if (userToLogin.role === 'mentee') {
          userToLogin = {
-            ...MOCK_USERS[email] as MenteeProfile, // Use module MOCK_USERS for base structure
+            ...MOCK_USERS[email] as MenteeProfile, 
             ...userToLogin
         };
       }
@@ -685,8 +682,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const getAllGroupSessions = useCallback(async (): Promise<GroupSession[]> => {
     return [...masterGroupSessionsList].sort((a,b) => {
         try {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
+            // Ensure date strings are valid before attempting to parse
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0; // Handle invalid dates
+            return dateB.getTime() - dateA.getTime();
         } catch (e) {
+            console.error("Error parsing date for group session sort:", e);
             return 0;
         }
     });
@@ -767,8 +769,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const getAllWebinars = useCallback(async (): Promise<Webinar[]> => {
      return [...masterWebinarsList].sort((a,b) => {
         try {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
+            // Ensure date strings are valid before attempting to parse
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0; // Handle invalid dates
+            return dateB.getTime() - dateA.getTime();
         } catch (e) {
+            console.error("Error parsing date for webinar sort:", e);
             return 0;
         }
     });
