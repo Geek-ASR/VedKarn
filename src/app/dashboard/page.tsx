@@ -5,15 +5,16 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit, Presentation } from "lucide-react";
+import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit, Presentation, Award, TrendingUp } from "lucide-react";
 import Image from "next/image";
-import { HorizontalScrollItems } from "@/components/dashboard/horizontal-scroll-items"; // New component
+import { HorizontalScrollItems } from "@/components/dashboard/horizontal-scroll-items"; 
 import { UserAvatar } from "@/components/core/user-avatar";
 import { useEffect, useState } from "react";
 import type { EnrichedBooking } from "@/lib/types";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isPast, isFuture } from 'date-fns';
 import { Skeleton } from "@/components/ui/skeleton";
 import { MentorshipAbstractArt } from "@/components/core/mentorship-abstract-art";
+import { cn } from "@/lib/utils";
 
 
 interface ActionCardProps {
@@ -63,11 +64,46 @@ const MOCK_UNIVERSITIES = [
   "Caltech", "IIT Bombay", "IISc Bangalore", "NUS Singapore", "University of Toronto"
 ];
 
+interface MentorStatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  description?: string;
+  className?: string;
+  animationDelay?: string;
+}
+
+function MentorStatCard({ title, value, icon: Icon, description, className, animationDelay }: MentorStatCardProps) {
+  return (
+    <Card 
+      className={cn("opacity-0 animate-fadeInUp shadow-lg hover:shadow-xl transition-shadow", className)} 
+      style={{ animationDelay }}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className="h-5 w-5 text-accent" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-3xl font-bold text-primary">{value}</div>
+        {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
 
 export default function DashboardHomePage() {
   const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = useAuth();
   const [mentorUpcomingSessions, setMentorUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [isLoadingMentorSchedule, setIsLoadingMentorSchedule] = useState(true);
+
+  const [mentorStats, setMentorStats] = useState({
+    totalSessionsCompleted: 0,
+    uniqueMentees: 0,
+    upcomingSessionsCount: 0,
+  });
+  const [isLoadingMentorStats, setIsLoadingMentorStats] = useState(true);
+
 
   const welcomeMessage = `Welcome, ${user?.name || "User"}!`;
   const welcomeWords = welcomeMessage.split(" ");
@@ -75,15 +111,42 @@ export default function DashboardHomePage() {
   useEffect(() => {
     if (user?.role === 'mentor') {
       setIsLoadingMentorSchedule(true);
+      setIsLoadingMentorStats(true);
+
       getScheduledSessionsForCurrentUser()
         .then(sessions => {
-          const upcoming = sessions
-            .filter(s => parseISO(s.startTime) > new Date())
+          const now = new Date();
+          const mentorId = user.id;
+
+          // Upcoming sessions for display list
+          const upcomingDisplay = sessions
+            .filter(s => s.mentorId === mentorId && isFuture(parseISO(s.startTime)))
             .sort((a, b) => parseISO(a.startTime).getTime() - parseISO(b.startTime).getTime())
             .slice(0, 3); 
-          setMentorUpcomingSessions(upcoming);
+          setMentorUpcomingSessions(upcomingDisplay);
+          setIsLoadingMentorSchedule(false);
+          
+          // Calculate stats
+          const completed = sessions.filter(s => s.mentorId === mentorId && isPast(parseISO(s.endTime)));
+          const upcomingForCount = sessions.filter(s => s.mentorId === mentorId && isFuture(parseISO(s.startTime)));
+
+          const menteeIds = new Set<string>();
+          sessions.forEach(s => {
+            if (s.mentorId === mentorId) {
+              menteeIds.add(s.menteeId);
+            }
+          });
+
+          setMentorStats({
+            totalSessionsCompleted: completed.length,
+            uniqueMentees: menteeIds.size,
+            upcomingSessionsCount: upcomingForCount.length,
+          });
         })
-        .finally(() => setIsLoadingMentorSchedule(false));
+        .finally(() => {
+            setIsLoadingMentorSchedule(false); // Ensure this is also set if not already
+            setIsLoadingMentorStats(false);
+        });
     }
   }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]);
 
@@ -94,24 +157,37 @@ export default function DashboardHomePage() {
   if (user.role === 'mentor') {
     return (
       <div className="space-y-6">
-        <Card className="bg-primary text-primary-foreground shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl font-bold">Welcome back, {user.name || "Mentor"}!</CardTitle>
-            <CardDescription className="text-primary-foreground/80 text-sm md:text-base">
-              Manage your schedule, connect with mentees, and share your expertise.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Image 
-                src="https://placehold.co/1200x300.png"
-                alt="Mentor Dashboard Banner"
-                data-ai-hint="professional desk setup"
-                width={1200}
-                height={300}
-                className="rounded-lg object-cover w-full"
-            />
-          </CardContent>
-        </Card>
+        {/* New Welcome and Stats Section for Mentor */}
+        <section className="space-y-4">
+            <h1 className="text-3xl font-bold text-primary">
+                 Welcome back, {user.name || "Mentor"}!
+            </h1>
+            <p className="text-muted-foreground">Here's an overview of your mentorship activity.</p>
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <MentorStatCard 
+                    title="Total Sessions Completed" 
+                    value={isLoadingMentorStats ? "..." : mentorStats.totalSessionsCompleted} 
+                    icon={Award} 
+                    animationDelay="0.1s"
+                    description="Number of successfully conducted sessions."
+                />
+                <MentorStatCard 
+                    title="Unique Mentees" 
+                    value={isLoadingMentorStats ? "..." : mentorStats.uniqueMentees} 
+                    icon={Users} 
+                    animationDelay="0.2s"
+                    description="Total distinct individuals you've mentored."
+                />
+                <MentorStatCard 
+                    title="Upcoming Sessions" 
+                    value={isLoadingMentorStats ? "..." : mentorStats.upcomingSessionsCount} 
+                    icon={CalendarClock} 
+                    animationDelay="0.3s"
+                    description="Confirmed future mentoring sessions."
+                />
+            </div>
+        </section>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <ActionCard
@@ -125,7 +201,7 @@ export default function DashboardHomePage() {
             title="View My Schedule"
             description="See your upcoming and past confirmed sessions."
             href="/dashboard/schedule"
-            icon={CalendarClock} // Changed from CalendarDays for consistency
+            icon={CalendarClock} 
             actionText="Check My Sessions"
           />
           <ActionCard
@@ -139,7 +215,7 @@ export default function DashboardHomePage() {
             title="My Webinars"
             description="Create and manage your webinars."
             href="/dashboard/my-webinars"
-            icon={Presentation} // Changed from Tv2 for variety
+            icon={Presentation} 
             actionText="Manage Webinars"
           />
         </div>
@@ -162,7 +238,7 @@ export default function DashboardHomePage() {
             {!isLoadingMentorSchedule && mentorUpcomingSessions.length > 0 && (
               <ul className="space-y-3">
                 {mentorUpcomingSessions.map(session => (
-                  <li key={session.id} className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                  <li key={session.id} className="flex items-center justify-between p-3 border rounded-md bg-muted/50 hover:bg-muted/70 transition-colors">
                     <div className="flex items-center gap-3">
                        <UserAvatar user={session.mentee} className="h-8 w-8" />
                        <div>
@@ -340,3 +416,6 @@ export default function DashboardHomePage() {
     </div>
   );
 }
+
+
+    
