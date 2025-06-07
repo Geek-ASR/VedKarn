@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
+import { useAuth, MOCK_USERS as CONTEXT_MOCK_USERS } from "@/context/auth-context";
 import type { MentorProfile, AvailabilitySlot, Booking } from "@/lib/types";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +22,9 @@ import Link from "next/link";
 
 export default function MentorProfilePage() {
   const rawParams = useParams();
-  const params = useMemo(() => ({ ...rawParams }), [rawParams]); 
+  const params = useMemo(() => ({ ...rawParams }), [rawParams]);
   const mentorId = params.mentorId as string;
-  const { user: currentUser, confirmBooking, MOCK_USERS_INSTANCE } = useAuth(); 
+  const { user: currentUser, confirmBooking, MOCK_USERS_INSTANCE } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -36,12 +36,12 @@ export default function MentorProfilePage() {
   useEffect(() => {
     if (mentorId) {
       setTimeout(() => {
-        const foundMentor = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
-        setMentor(foundMentor || null);
+        const foundMentorByEmail = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
+        setMentor(foundMentorByEmail || null);
         setLoading(false);
-      }, 300); 
+      }, 300);
     }
-  }, [mentorId, MOCK_USERS_INSTANCE]); 
+  }, [mentorId, MOCK_USERS_INSTANCE]);
 
   const handleBookSession = async () => {
     if (!currentUser || currentUser.role !== 'mentee' || !mentor || !selectedSlot || !mentor.email) {
@@ -347,3 +347,5 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
+
+    
