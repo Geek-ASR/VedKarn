@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useTransition, useMemo } from "react";
@@ -32,8 +33,8 @@ function SubmitButton() {
 
 export default function WebinarDetailPage() {
   const rawParams = useParams();
-  const params = useMemo(() => ({ ...rawParams }), [rawParams]); // Clone/unwrap
-  const webinarId = params.webinarId as string; 
+  const webinarId = useMemo(() => rawParams.webinarId as string, [rawParams.webinarId]);
+
   const router = useRouter();
   const { user, getWebinarDetails } = useAuth();
   const { toast } = useToast();
@@ -319,4 +320,3 @@ function WebinarDetailSkeleton() {
     </div>
   );
 }
-

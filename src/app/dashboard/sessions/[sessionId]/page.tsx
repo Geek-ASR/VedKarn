@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -16,8 +17,8 @@ import { UserAvatar } from "@/components/core/user-avatar";
 
 export default function GroupSessionDetailPage() {
   const rawParams = useParams();
-  const params = useMemo(() => ({ ...rawParams }), [rawParams]); // Clone/unwrap
-  const sessionId = params.sessionId as string;
+  const sessionId = useMemo(() => rawParams.sessionId as string, [rawParams.sessionId]);
+  
   const router = useRouter();
   const { user, getGroupSessionDetails } = useAuth(); // Use getGroupSessionDetails from AuthContext
   const { toast } = useToast();
@@ -252,4 +253,3 @@ const Progress = ({ value, className }: { value: number, className?: string }) =
     <div className="bg-primary h-2.5 rounded-full" style={{ width: `${value}%` }}></div>
   </div>
 );
-

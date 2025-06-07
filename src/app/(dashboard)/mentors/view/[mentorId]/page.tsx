@@ -22,8 +22,8 @@ import Link from "next/link";
 
 export default function MentorProfilePage() {
   const rawParams = useParams();
-  const params = useMemo(() => ({ ...rawParams }), [rawParams]);
-  const mentorId = params.mentorId as string;
+  const mentorId = useMemo(() => rawParams.mentorId as string, [rawParams.mentorId]);
+
   const { user: currentUser, confirmBooking, MOCK_USERS_INSTANCE } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
@@ -347,5 +347,3 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
-
-    
