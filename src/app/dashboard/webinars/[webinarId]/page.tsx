@@ -17,7 +17,7 @@ import { CalendarDays, Clock, Frown, Info, Tag, UserCircle, CheckCircle, ArrowLe
 import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { requestWebinarReminder } from "@/app/actions/notifyActions";
-import { useActionState } from "react"; // Updated import
+import { useActionState } from "react"; 
 import { useFormStatus } from "react-dom";
 
 
@@ -33,7 +33,7 @@ function SubmitButton() {
 
 export default function WebinarDetailPage() {
   const params = useParams();
-  const webinarId = params.sessionId || params.webinarId as string;
+  const webinarId = params.webinarId as string; // Corrected: Directly use params.webinarId
   const router = useRouter();
   const { user, getWebinarDetails } = useAuth();
   const { toast } = useToast();
@@ -45,9 +45,8 @@ export default function WebinarDetailPage() {
   const [showNotifyInput, setShowNotifyInput] = useState(false);
   const [reminderSet, setReminderSet] = useState(false);
 
-  // useActionState for the reminder action
   const initialState = { success: false, message: "", error: undefined };
-  const [formState, formAction] = useActionState(requestWebinarReminder, initialState); // Updated hook name
+  const [formState, formAction] = useActionState(requestWebinarReminder, initialState); 
   
   const [isPending, startTransition] = useTransition();
 
@@ -251,7 +250,7 @@ export default function WebinarDetailPage() {
                     <Label htmlFor="notify-contact" className="sr-only">Phone or Email</Label>
                     <Input
                       id="notify-contact"
-                      name="contactInfo" // Name attribute for FormData
+                      name="contactInfo" 
                       placeholder="Phone number or email"
                       required
                     />
@@ -278,40 +277,40 @@ export default function WebinarDetailPage() {
 function WebinarDetailSkeleton() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <Skeleton className="h-8 w-40 mb-6" /> {/* Back button */}
+      <Skeleton className="h-8 w-40 mb-6" /> 
       <Card className="overflow-hidden shadow-xl rounded-lg">
-        <Skeleton className="h-64 md:h-96 w-full" /> {/* Image */}
+        <Skeleton className="h-64 md:h-96 w-full" /> 
         <div className="grid md:grid-cols-3 gap-0">
           <div className="md:col-span-2 p-6 md:p-8 space-y-6">
-            <Skeleton className="h-8 w-3/4 mb-4" /> {/* Title if no image */}
+            <Skeleton className="h-8 w-3/4 mb-4" /> 
             <div className="flex items-center space-x-3">
               <Skeleton className="h-10 w-10 rounded-full" />
               <Skeleton className="h-5 w-1/2" />
             </div>
             <section className="space-y-2">
-              <Skeleton className="h-6 w-1/3 mb-1" /> {/* Section Title */}
+              <Skeleton className="h-6 w-1/3 mb-1" /> 
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </section>
             <section className="space-y-2">
-              <Skeleton className="h-6 w-1/3 mb-1" /> {/* Section Title */}
+              <Skeleton className="h-6 w-1/3 mb-1" /> 
               <Skeleton className="h-8 w-24 rounded-full" />
             </section>
-            <Skeleton className="h-16 w-full" /> {/* Alert */}
+            <Skeleton className="h-16 w-full" /> 
           </div>
           <aside className="md:col-span-1 p-6 md:p-8 bg-muted/30 md:border-l space-y-6">
             <Card className="shadow-md">
               <CardHeader>
-                <Skeleton className="h-7 w-1/2" /> {/* Card Title */}
+                <Skeleton className="h-7 w-1/2" /> 
               </CardHeader>
               <CardContent className="space-y-3">
                 <Skeleton className="h-5 w-full" />
                 <Skeleton className="h-5 w-3/4" />
               </CardContent>
               <CardFooter className="flex flex-col space-y-3">
-                <Skeleton className="h-12 w-full text-lg py-6" /> {/* Button */}
-                <Skeleton className="h-10 w-full" /> {/* Notify Me Button */}
+                <Skeleton className="h-12 w-full text-lg py-6" /> 
+                <Skeleton className="h-10 w-full" /> 
               </CardFooter>
             </Card>
           </aside>
