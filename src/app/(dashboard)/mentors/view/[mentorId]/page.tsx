@@ -153,7 +153,7 @@ export default function MentorProfilePage() {
                 <h3 className="text-xl font-semibold text-foreground mb-3 border-b pb-1 flex items-center"><Briefcase className="h-5 w-5 mr-2 text-primary" /> Career Expertise</h3>
                 <div className="flex flex-wrap gap-2">
                   {mentor.expertise.map((skill) => (
-                    <Badge key={skill} variant="outline" className="py-1 px-3 text-sm bg-accent/10 text-accent-foreground border-accent/30">{skill}</Badge>
+                    <Badge key={skill} variant="outline" className="py-1 px-3 text-sm bg-accent/10 text-foreground border-accent/30">{skill}</Badge>
                   ))}
                 </div>
               </section>
@@ -347,3 +347,5 @@ function MentorProfileSkeleton() {
     </div>
   );
 }
+
+
