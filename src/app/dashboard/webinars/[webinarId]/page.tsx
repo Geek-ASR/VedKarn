@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Webinar } from "@/lib/types";
 import { useAuth } from "@/context/auth-context";
@@ -32,8 +31,9 @@ function SubmitButton() {
 }
 
 export default function WebinarDetailPage() {
-  const params = useParams();
-  const webinarId = params.webinarId as string; // Corrected: Directly use params.webinarId
+  const rawParams = useParams();
+  const params = useMemo(() => ({ ...rawParams }), [rawParams]); // Clone/unwrap
+  const webinarId = params.webinarId as string; 
   const router = useRouter();
   const { user, getWebinarDetails } = useAuth();
   const { toast } = useToast();

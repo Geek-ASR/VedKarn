@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth, getMentorByProfileString, getMockMentorProfiles } from "@/context/auth-context";
 import type { MentorProfile, AvailabilitySlot, Booking } from "@/lib/types";
@@ -26,7 +25,8 @@ const MOCK_MENTORS_DB_VIEW: MentorProfile[] = Object.values(getMockMentorProfile
 
 
 export default function MentorProfilePage() {
-  const params = useParams();
+  const rawParams = useParams();
+  const params = useMemo(() => ({ ...rawParams }), [rawParams]); // Clone/unwrap
   const mentorId = params.mentorId as string;
   const { user: currentUser, confirmBooking, MOCK_USERS_INSTANCE } = useAuth(); 
   const { toast } = useToast();

@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { GroupSession } from "@/lib/types";
 import { useAuth } from "@/context/auth-context"; // Correctly import useAuth
@@ -16,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "@/components/core/user-avatar";
 
 export default function GroupSessionDetailPage() {
-  const params = useParams();
+  const rawParams = useParams();
+  const params = useMemo(() => ({ ...rawParams }), [rawParams]); // Clone/unwrap
   const sessionId = params.sessionId as string;
   const router = useRouter();
   const { user, getGroupSessionDetails } = useAuth(); // Use getGroupSessionDetails from AuthContext
@@ -252,3 +252,4 @@ const Progress = ({ value, className }: { value: number, className?: string }) =
     <div className="bg-primary h-2.5 rounded-full" style={{ width: `${value}%` }}></div>
   </div>
 );
+
