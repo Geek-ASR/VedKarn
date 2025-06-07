@@ -29,7 +29,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
     <div ref={cardRef}>
       <Card 
         className={cn(
-          "overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[430px]", // Changed to h-[430px] for consistent height
+          "overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[430px]",
           isIntersecting ? "animate-fadeInUp" : "opacity-0"
         )}
         style={{ animationDelay: isIntersecting ? animationDelay : undefined }}
@@ -76,7 +76,7 @@ export function MentorCard({ mentor, relevanceScore, reason, animationDelay }: M
               <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-0.5">Expertise</h4>
               <div className="flex flex-wrap gap-1">
                 {mentor.expertise.slice(0, 2).map((skill) => (
-                  <Badge key={skill} variant="outline" className="text-[10px] bg-accent/10 text-accent-foreground border-accent/30 px-1.5 py-0.5">{skill}</Badge>
+                  <Badge key={skill} variant="outline" className="text-[10px] bg-accent/10 text-foreground border-accent/30 px-1.5 py-0.5">{skill}</Badge>
                 ))}
                 {mentor.expertise.length > 2 && <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">+{mentor.expertise.length - 2} more</Badge>}
               </div>
@@ -132,3 +132,4 @@ export function MentorCardSkeleton() {
     </div>
   );
 }
+
