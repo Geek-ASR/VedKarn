@@ -84,7 +84,7 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
     hostId: 'mentor1',
     date: 'November 5th, 2024 at 4:00 PM PST',
     tags: ['DSA', 'Coding Interview', 'Algorithms', 'Problem Solving', 'Data Structures'],
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxncm91cCUyMGxlYXJuaW5nJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
     maxParticipants: 15,
     price: '$25',
   },
@@ -94,7 +94,7 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
     hostId: 'mentor1',
     date: 'November 12th, 2024 at 10:00 AM PST',
     tags: ['Startup', 'Pitching', 'Entrepreneurship', 'Feedback', 'Business'],
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3JvdXAlMjBsZWFybmluZyUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzQ5MzA4NzAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
     maxParticipants: 10,
     price: '$20',
   },
@@ -104,7 +104,7 @@ const INITIAL_MOCK_GROUP_SESSIONS_RAW: Omit<GroupSession, 'id' | 'hostName' | 'h
     hostId: 'mentor2',
     date: 'November 19th, 2024 at 1:00 PM PST',
     tags: ['UX Design', 'Beginner', 'UI/UX', 'Design Thinking', 'Prototyping'],
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://placehold.co/600x400.png', // This one remains placeholder as only 2 new images were provided
     maxParticipants: 20,
     price: 'Free',
   }
@@ -117,7 +117,7 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfi
     hostId: 'mentor1',
     date: 'November 8th, 2024 at 9:00 AM PST',
     topic: 'Artificial Intelligence',
-    imageUrl: 'https://placehold.co/400x250.png',
+    imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   },
   {
     title: 'Effective Networking in the Tech Industry',
@@ -125,7 +125,7 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfi
     hostId: 'mentor2',
     date: 'November 15th, 2024 at 12:00 PM PST',
     topic: 'Career Development',
-    imageUrl: 'https://placehold.co/400x250.png',
+    imageUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   },
   {
     title: 'Demystifying Cloud Computing',
@@ -133,7 +133,7 @@ const INITIAL_MOCK_WEBINARS_RAW: Omit<Webinar, 'id' | 'speakerName' | 'hostProfi
     hostId: 'mentor1',
     date: 'November 22nd, 2024 at 3:00 PM PST',
     topic: 'Cloud Computing',
-    imageUrl: 'https://placehold.co/400x250.png',
+    imageUrl: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwcmVzZW50YXRpb24lMjBvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NDkzMDg3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   }
 ];
 
