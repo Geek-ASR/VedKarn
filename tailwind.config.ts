@@ -88,6 +88,10 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
+        'fadeInScaleUp': {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(5px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
         'textColorEmphasisWave': {
           '0%': {
             color: 'hsl(var(--primary))',
@@ -145,6 +149,7 @@ export default {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
         'fadeInUp': 'fadeInUp 0.6s ease-out forwards',
+        'fadeInScaleUp': 'fadeInScaleUp 0.5s ease-out forwards',
         'textColorEmphasisWave': 'textColorEmphasisWave 2s ease-out forwards',
         'textColorEmphasisWaveAccentEnd': 'textColorEmphasisWaveAccentEnd 2s ease-out forwards',
         'scrollLeft': 'scrollLeft var(--animation-duration, 40s) linear infinite',

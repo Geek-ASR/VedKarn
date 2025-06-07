@@ -37,19 +37,28 @@ export function MentorshipAbstractArt({ className, ...props }: React.HTMLAttribu
           <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-80 h-80 rounded-t-full bg-indigo-300/40 opacity-50"></div>
         </div>
 
-        {/* Mentor Figure - more rounded, slight shadow, subtle float */}
-        <div className="relative z-30 flex flex-col items-center mr-3 transform transition-transform hover:scale-105 animate-gentleFloat" style={{animationDelay: '0.2s'}}>
+        {/* Mentor Figure - more rounded, slight shadow, subtle float, entrance animation */}
+        <div 
+            className="relative z-30 flex flex-col items-center mr-3 transform transition-transform hover:scale-105 animate-gentleFloat opacity-0 animate-fadeInScaleUp" 
+            style={{animationDelay: '0.5s, 0.2s'}} // fadeInScaleUp delay, gentleFloat delay
+        >
           {/* Head */}
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-rose-400 rounded-full mb-1 shadow-lg"></div>
           {/* Body - more rounded top */}
           <div className="w-10 h-16 sm:w-12 sm:h-20 bg-rose-300 rounded-t-2xl shadow-lg"></div>
         </div>
 
-        {/* Large White Circle - positioned to better connect figures visually */}
-        <div className="absolute z-20 bottom-6 left-1/2 transform -translate-x-1/2 w-20 h-20 sm:w-24 sm:h-24 bg-white/80 rounded-full shadow-2xl backdrop-blur-sm"></div>
+        {/* Large White Circle - positioned to better connect figures visually, entrance animation */}
+        <div 
+            className="absolute z-20 bottom-6 left-1/2 transform -translate-x-1/2 w-20 h-20 sm:w-24 sm:h-24 bg-white/80 rounded-full shadow-2xl backdrop-blur-sm opacity-0 animate-fadeInScaleUp"
+            style={{animationDelay: '0.6s'}}
+        ></div>
 
-        {/* Mentee Figure - more rounded, slight shadow, subtle float */}
-        <div className="relative z-30 flex flex-col items-center ml-3 self-end mb-[-5px] transform transition-transform hover:scale-105 animate-gentleFloat" style={{animationDelay: '0s'}}>
+        {/* Mentee Figure - more rounded, slight shadow, subtle float, entrance animation */}
+        <div 
+            className="relative z-30 flex flex-col items-center ml-3 self-end mb-[-5px] transform transition-transform hover:scale-105 animate-gentleFloat opacity-0 animate-fadeInScaleUp" 
+            style={{animationDelay: '0.7s, 0s'}} // fadeInScaleUp delay, gentleFloat delay
+        >
           {/* Head */}
           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-amber-400 rounded-full mb-0.5 shadow-lg"></div>
           {/* Body - more rounded top */}
@@ -57,15 +66,15 @@ export function MentorshipAbstractArt({ className, ...props }: React.HTMLAttribu
         </div>
 
         {/* Stylized Clouds with subtle animation */}
-        <div className="absolute top-4 left-4 w-10 h-6 sm:w-12 sm:h-8 bg-white/80 rounded-full shadow-md opacity-90 animate-gentleFloat" style={{animationDuration: '4s'}}></div>
-        <div className="absolute top-8 left-10 w-8 h-5 sm:w-10 sm:h-6 bg-white/70 rounded-t-lg rounded-b-xl shadow opacity-80 animate-gentleFloat" style={{animationDuration: '5s', animationDelay: '0.5s'}}></div>
-        <div className="absolute top-6 right-6 w-12 h-8 sm:w-14 sm:h-10 bg-white/80 rounded-t-full rounded-bl-full shadow-lg opacity-90 animate-gentleFloat" style={{animationDuration: '3.5s', animationDelay: '0.3s'}}></div>
+        <div className="absolute top-4 left-4 w-10 h-6 sm:w-12 sm:h-8 bg-white/80 rounded-full shadow-md opacity-0 animate-fadeInScaleUp animate-gentleFloat" style={{animationDelay: '0.8s, 0s', animationDuration: '0.5s, 4s'}}></div>
+        <div className="absolute top-8 left-10 w-8 h-5 sm:w-10 sm:h-6 bg-white/70 rounded-t-lg rounded-b-xl shadow opacity-0 animate-fadeInScaleUp animate-gentleFloat" style={{animationDelay: '0.9s, 0.5s', animationDuration: '0.5s, 5s'}}></div>
+        <div className="absolute top-6 right-6 w-12 h-8 sm:w-14 sm:h-10 bg-white/80 rounded-t-full rounded-bl-full shadow-lg opacity-0 animate-fadeInScaleUp animate-gentleFloat" style={{animationDelay: '1.0s, 0.3s', animationDuration: '0.5s, 3.5s'}}></div>
 
         {/* Decorative Dots - slightly larger, more spread out */}
-        <div className="absolute top-12 right-20 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-pink-400 rounded-full opacity-60 animate-pulse"></div>
-        <div className="absolute top-16 left-16 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full opacity-60 animate-pulse" style={{animationDelay: '0.2s'}}></div>
-        <div className="absolute bottom-24 right-8 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-indigo-400 rounded-full opacity-60 animate-pulse" style={{animationDelay: '0.4s'}}></div>
-        <div className="absolute bottom-16 left-6 w-2 h-2 bg-sky-300 rounded-full opacity-50 animate-pulse" style={{animationDelay: '0.6s'}}></div>
+        <div className="absolute top-12 right-20 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-pink-400 rounded-full opacity-0 animate-fadeInScaleUp animate-pulse" style={{animationDelay: '1.1s'}}></div>
+        <div className="absolute top-16 left-16 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full opacity-0 animate-fadeInScaleUp animate-pulse" style={{animationDelay: '1.2s, 0.2s'}}></div>
+        <div className="absolute bottom-24 right-8 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-indigo-400 rounded-full opacity-0 animate-fadeInScaleUp animate-pulse" style={{animationDelay: '1.3s, 0.4s'}}></div>
+        <div className="absolute bottom-16 left-6 w-2 h-2 bg-sky-300 rounded-full opacity-0 animate-fadeInScaleUp animate-pulse" style={{animationDelay: '1.4s, 0.6s'}}></div>
       </div>
     </div>
   );
