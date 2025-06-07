@@ -1,72 +1,20 @@
 
 "use client";
 
-import { useAuth, getMockMentorProfiles, getMentorByProfileString } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Users, CalendarDays, MessageCircle, Video, Briefcase, Lightbulb, Users2, Presentation, CalendarClock, Edit3, Eye } from "lucide-react";
+import { ArrowRight, User, Briefcase, Lightbulb, Users2, CalendarClock, Edit3, Eye, Sparkles, Building, School, CheckCircle, Edit } from "lucide-react";
 import Image from "next/image";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import type { MentorProfile, MenteeProfile, GroupSession, Webinar, EnrichedBooking } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
-import { suggestMentors, type SuggestMentorsOutput, type SuggestMentorsInput } from "@/ai/flows/suggest-mentors";
-import { suggestGroupSessions, type SuggestGroupSessionsOutput, type SuggestGroupSessionsInput } from "@/ai/flows/suggest-group-sessions";
-import { suggestWebinars, type SuggestWebinarsOutput, type SuggestWebinarsInput } from "@/ai/flows/suggest-webinars";
-import { MentorCard, MentorCardSkeleton } from "@/components/dashboard/mentor-card";
-import { GroupSessionCard, GroupSessionCardSkeleton } from "@/components/dashboard/group-session-card";
-import { WebinarCard, WebinarCardSkeleton } from "@/components/dashboard/webinar-card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo, useState, useRef, useEffect } from "react";
-import { format, parseISO } from 'date-fns';
+import { HorizontalScrollItems } from "@/components/dashboard/horizontal-scroll-items"; // New component
 import { UserAvatar } from "@/components/core/user-avatar";
+import { useEffect, useState } from "react";
+import type { EnrichedBooking } from "@/lib/types";
+import { format, parseISO } from 'date-fns';
+import { Skeleton } from "@/components/ui/skeleton";
+import { MentorshipAbstractArt } from "@/components/core/mentorship-abstract-art";
 
-
-// Data for Mentee's Featured Sessions
-const menteeFeaturedSessionsData = [
-  {
-    title: "Intro Call",
-    description: "If you're looking for a mentor, and you're just not sure about how this all works - this should be for you.",
-    details: "Approx. 30 minutes",
-    price: "Rs. 1000",
-    href: "/dashboard/mentors" // Link to mentor discovery
-  },
-  {
-    title: "Work Review",
-    description: "In this session, a mentor will sit down with you, and give you some inputs to make your work better, be it a review, inputs on your design, or some inspiration.",
-    details: "Approx. 45 minutes",
-    price: "Rs. 2000",
-    href: "/dashboard/mentors"
-  },
-  {
-    title: "Interview Preparation",
-    description: "Some big interviews coming up? In this 1-hour session, a mentor with hiring experience will act as a technical interviewer and ask you some standard hiring questions.",
-    details: "Approx. 60 minutes",
-    price: "Rs. 2500",
-    href: "/dashboard/mentors"
-  }
-];
-
-// Data for Mentee's FAQ
-const menteeFaqData = [
-  {
-    question: "How can I get in touch with a mentor?",
-    answer: "We offer two main ways to get in touch with a mentor: the regular long-term mentorship through application, and by booking a session. For one-on-one mentorship, a payment of Rs. 1500 per session is required. You can then connect via our in-built video call feature."
-  },
-  {
-    question: "How much do mentors cost? How does pricing work?",
-    answer: "Each mentor offers multiple pricing tiers and has different offers. With the mentorship subscription, you'll get charged the monthly fee of the mentor you're subscribed to. If you book a session once, you'll be charged the price of the session once. One-on-one sessions are typically Rs. 1500. We also offer affordable group sessions (5-15 students) at lower costs, and free informative webinars."
-  },
-  {
-    question: "What can I expect from mentors?",
-    answer: "Mentors are vetted and continuously evaluated based on their performances, with the goal to only have the best mentors available to you. Their goal is to get you closer to your goal with the services booked in your plan. However, mentors are professionals in the industry, offering their free time to help you reach your goals. You'll typically receive replies within a few hours and will have pre-scheduled meetings with your mentor, they cannot be available to you 24/7."
-  },
-];
-
-type SuggestedMentorProfileWithDetails = MentorProfile & {
-  relevanceScore: number;
-  reason: string;
-};
 
 interface ActionCardProps {
   title: string;
@@ -101,20 +49,28 @@ function ActionCard({ title, description, href, icon: Icon, actionText }: Action
   );
 }
 
+const MOCK_JOB_ROLES = [
+  "Software Engineer", "Data Scientist", "Product Manager", "UX Designer", "Frontend Developer", 
+  "Backend Developer", "DevOps Engineer", "Cybersecurity Analyst", "AI/ML Engineer", "Cloud Architect",
+  "Marketing Specialist", "Business Analyst", "Financial Analyst"
+];
+const MOCK_COMPANIES = [
+  "Google", "Microsoft", "Amazon", "Meta", "Netflix", "Apple", "Salesforce", "Adobe", 
+  "Oracle", "IBM", "Intel", "Nvidia", "Accenture", "Deloitte"
+];
+const MOCK_UNIVERSITIES = [
+  "Stanford", "MIT", "Harvard", "UC Berkeley", "Cambridge", "Oxford", "ETH Zurich", 
+  "Caltech", "IIT Bombay", "IISc Bangalore", "NUS Singapore", "University of Toronto"
+];
+
 
 export default function DashboardHomePage() {
   const { user, getScheduledSessionsForCurrentUser, bookingsVersion } = useAuth();
-  
-  const [mentorScrollPosition, setMentorScrollPosition] = useState(0);
-  const [sessionScrollPosition, setSessionScrollPosition] = useState(0);
-  const [webinarScrollPosition, setWebinarScrollPosition] = useState(0);
-
-  const mentorScrollContainerRef = useRef<HTMLDivElement>(null);
-  const sessionScrollContainerRef = useRef<HTMLDivElement>(null);
-  const webinarScrollContainerRef = useRef<HTMLDivElement>(null);
-
   const [mentorUpcomingSessions, setMentorUpcomingSessions] = useState<EnrichedBooking[]>([]);
   const [isLoadingMentorSchedule, setIsLoadingMentorSchedule] = useState(true);
+
+  const welcomeMessage = `Welcome, ${user?.name || "User"}!`;
+  const welcomeWords = welcomeMessage.split(" ");
 
   useEffect(() => {
     if (user?.role === 'mentor') {
@@ -130,89 +86,6 @@ export default function DashboardHomePage() {
         .finally(() => setIsLoadingMentorSchedule(false));
     }
   }, [user, getScheduledSessionsForCurrentUser, bookingsVersion]);
-
-
-  const menteeProfileForAI = useMemo(() => {
-    if (!user || user.role !== 'mentee') return "Generic student interested in learning.";
-    const mentee = user as MenteeProfile;
-    let profileString = `Name: ${mentee.name}`;
-    profileString += `, Bio: ${mentee.bio || 'N/A'}`;
-    profileString += `, Interests: ${mentee.interests?.join(', ') || 'N/A'}`;
-    profileString += `, Learning Goals: ${mentee.learningGoals || 'N/A'}`;
-    profileString += `, Seeking Mentorship For: ${mentee.seekingMentorshipFor?.join(', ') || 'General Advice'}`;
-    if (mentee.seekingMentorshipFor?.includes('university')) {
-        profileString += `, Current Education Level: ${mentee.currentEducationLevel || 'N/A'}`;
-        profileString += `, Target Degree Level: ${mentee.targetDegreeLevel || 'N/A'}`;
-        profileString += `, Target Fields of Study: ${mentee.targetFieldsOfStudy?.join(', ') || 'N/A'}`;
-        profileString += `, Desired Universities: ${mentee.desiredUniversities?.join(', ') || 'N/A'}`;
-    }
-    if (mentee.seekingMentorshipFor?.includes('career')) {
-        profileString += `, Desired Job Roles: ${mentee.desiredJobRoles?.join(', ') || 'N/A'}`;
-        profileString += `, Desired Companies: ${mentee.desiredCompanies?.join(', ') || 'N/A'}`;
-    }
-    return profileString;
-  }, [user]);
-
-  const { data: suggestedMentorsData, isLoading: isLoadingMentors } = useQuery<SuggestMentorsOutput, Error>({
-    queryKey: ['dashboardRecommendedMentors', user?.id, menteeProfileForAI], // Include menteeProfileForAI in queryKey
-    queryFn: async () => {
-      if (!user || user.role !== 'mentee') return [];
-      const input: SuggestMentorsInput = {
-        menteeProfile: menteeProfileForAI,
-        mentorProfiles: getMockMentorProfiles(),
-      };
-      return suggestMentors(input);
-    },
-    enabled: !!user && user.role === 'mentee',
-  });
-
-  const { data: suggestedGroupSessionsData, isLoading: isLoadingGroupSessions } = useQuery<SuggestGroupSessionsOutput, Error>({
-    queryKey: ['dashboardRecommendedGroupSessions', user?.id, menteeProfileForAI], // Include menteeProfileForAI
-    queryFn: async () => {
-      if (!user || user.role !== 'mentee') return [];
-      const input: SuggestGroupSessionsInput = { menteeProfile: menteeProfileForAI };
-      return suggestGroupSessions(input);
-    },
-    enabled: !!user && user.role === 'mentee',
-  });
-
-  const { data: suggestedWebinarsData, isLoading: isLoadingWebinars } = useQuery<SuggestWebinarsOutput, Error>({
-    queryKey: ['dashboardRecommendedWebinars', user?.id, menteeProfileForAI], // Include menteeProfileForAI
-    queryFn: async () => {
-      if (!user || user.role !== 'mentee') return [];
-      const input: SuggestWebinarsInput = { menteeProfile: menteeProfileForAI };
-      return suggestWebinars(input);
-    },
-    enabled: !!user && user.role === 'mentee',
-  });
-
-
-  const recommendedMentors = useMemo((): SuggestedMentorProfileWithDetails[] => {
-    if (!suggestedMentorsData) return [];
-    return suggestedMentorsData
-      .map(suggestion => {
-        const mentor = getMentorByProfileString(suggestion.mentorProfile);
-        if (mentor) {
-          return { ...mentor, relevanceScore: suggestion.relevanceScore, reason: suggestion.reason };
-        }
-        return null;
-      })
-      .filter((profile): profile is SuggestedMentorProfileWithDetails => Boolean(profile))
-      .sort((a, b) => b.relevanceScore - a.relevanceScore);
-  }, [suggestedMentorsData]);
-
-  const handleScroll = (direction: 'left' | 'right', scrollContainerRef: React.RefObject<HTMLDivElement>, setScrollPosition: React.Dispatch<React.SetStateAction<number>>) => {
-    const scrollAmount = 280; 
-    if (scrollContainerRef.current) {
-        if (direction === 'left') {
-            scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            setScrollPosition(prev => Math.max(0, prev - scrollAmount));
-        } else {
-            scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            setScrollPosition(prev => prev + scrollAmount);
-        }
-    }
-  };
 
 
   if (!user) return <div className="flex h-screen items-center justify-center"><p>Loading user data...</p></div>;
@@ -252,7 +125,7 @@ export default function DashboardHomePage() {
             title="View My Schedule"
             description="See your upcoming and past confirmed sessions."
             href="/dashboard/schedule"
-            icon={CalendarDays}
+            icon={CalendarClock} // Changed from CalendarDays for consistency
             actionText="Check My Sessions"
           />
           <ActionCard
@@ -266,7 +139,7 @@ export default function DashboardHomePage() {
             title="My Webinars"
             description="Create and manage your webinars."
             href="/dashboard/my-webinars"
-            icon={Tv2}
+            icon={Presentation} // Changed from Tv2 for variety
             actionText="Manage Webinars"
           />
         </div>
@@ -333,188 +206,137 @@ export default function DashboardHomePage() {
   }
 
 
-  // MENTEE DASHBOARD HOME
+  // MENTEE DASHBOARD HOME (New Design)
   return (
-    <div className="space-y-0"> 
-      {/* Welcome Banner */}
-      <section className="bg-primary text-primary-foreground py-4 md:py-6 text-center">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h1 className="text-lg md:text-xl font-bold">Welcome, {user.name || "User"}!</h1>
-          <p className="mt-1 text-xs text-primary-foreground/80 max-w-md mx-auto">
-            Start connecting with mentors and get ready to take your career to the next level!
-          </p>
-          <Button asChild variant="secondary" size="sm" className="mt-2 bg-card text-card-foreground hover:bg-card/90 px-3 py-1 h-auto text-xs">
-            <Link href="/dashboard/mentors">Browse mentors</Link>
-          </Button>
+    <div className="space-y-8 md:space-y-12">
+      {/* Welcome Banner with Abstract Art */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 py-8 md:py-12 rounded-lg shadow-lg">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-center md:text-left md:w-1/2">
+            <h1 className="text-3xl md:text-4xl font-bold text-primary">
+                {welcomeWords.map((word, index) => {
+                    const isNamePart = index >= welcomeWords.length - (user?.name?.split(" ").length || 1);
+                    const animationClass = isNamePart
+                    ? 'animate-textColorEmphasisWaveAccentEnd'
+                    : 'animate-textColorEmphasisWave';
+                    return (
+                    <span
+                        key={index}
+                        className={`inline-block opacity-0 ${animationClass} ${index < welcomeWords.length - 1 ? 'mr-1 lg:mr-2' : ''}`}
+                        style={{ animationDelay: `${index * 0.15 + 0.2}s` }}
+                    >
+                        {word}
+                    </span>
+                    );
+                })}
+            </h1>
+            <p className="mt-3 text-md md:text-lg text-foreground/80 opacity-0 animate-fadeInUp" style={{ animationDelay: `${welcomeWords.length * 0.15 + 0.3}s` }}>
+              Explore opportunities and connect with mentors to accelerate your journey!
+            </p>
+          </div>
+          <div className="md:w-1/2 flex justify-center md:justify-end opacity-0 animate-fadeInUp" style={{ animationDelay: `${welcomeWords.length * 0.15 + 0.5}s` }}>
+            <MentorshipAbstractArt className="w-full max-w-sm" />
+          </div>
         </div>
       </section>
 
-      {/* Recommended for you Section */}
-      {user.role === 'mentee' && (
-        <section className="py-4 md:py-6 bg-background">
-          <div className="container mx-auto px-4 sm:px-6 space-y-3">
-            {/* Recommended Mentors */}
+      {/* Complete Your Profile Section */}
+      <section>
+        <Card className="bg-card shadow-md hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center gap-4">
+            <div className="p-3 bg-accent/10 rounded-full">
+              <Edit className="h-6 w-6 text-accent" />
+            </div>
             <div>
-              <h2 className="text-sm md:text-base font-bold text-foreground mb-1.5">Recommended Mentors</h2>
-              {isLoadingMentors && (
-                <div className="flex space-x-3 overflow-hidden">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={`mentor-skeleton-${i}`} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0"><MentorCardSkeleton /></div>
-                  ))}
-                </div>
-              )}
-              {!isLoadingMentors && recommendedMentors && recommendedMentors.length > 0 && (
-                <div className="relative">
-                  <div ref={mentorScrollContainerRef} className="overflow-x-auto pb-2 no-scrollbar flex space-x-3">
-                      {recommendedMentors.slice(0,5).map((mentor) => ( // Show top 5 mentor suggestions
-                         <div key={mentor.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
-                           <MentorCard mentor={mentor} relevanceScore={mentor.relevanceScore} reason={mentor.reason} />
-                         </div>
-                      ))}
-                  </div>
-                  {recommendedMentors.length > 2 && ( 
-                      <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', mentorScrollContainerRef, setMentorScrollPosition)} disabled={mentorScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronLeft className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', mentorScrollContainerRef, setMentorScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronRight className="h-3 w-3" />
-                          </Button>
-                      </>
-                  )}
-                </div>
-              )}
-              {!isLoadingMentors && recommendedMentors && recommendedMentors.length === 0 && (
-                <p className="text-muted-foreground text-xs">No specific mentor recommendations for you at the moment. Complete your profile or explore all mentors!</p>
-              )}
+              <CardTitle className="text-xl text-primary">Complete Your Profile</CardTitle>
+              <CardDescription className="text-sm">
+                Help us tailor resources and recommendations specifically for you.
+              </CardDescription>
             </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              A complete profile allows our AI to find the best mentors, group sessions, and webinars that align with your unique goals and interests.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild>
+              <Link href="/dashboard/profile">
+                Go to My Profile <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
 
-            {/* Recommended Group Sessions */}
+      {/* Scrolling Job Roles Section */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-foreground flex items-center">
+          <Briefcase className="mr-2 h-5 w-5 text-primary" /> Explore Career Paths
+        </h2>
+        <HorizontalScrollItems items={MOCK_JOB_ROLES} />
+      </section>
+
+      {/* Scrolling Companies Section */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-foreground flex items-center">
+          <Building className="mr-2 h-5 w-5 text-primary" /> Companies Our Mentors Are From
+        </h2>
+        <HorizontalScrollItems items={MOCK_COMPANIES} direction="right" />
+      </section>
+
+      {/* Dream Universities Section */}
+      <section>
+        <Card className="bg-card shadow-md hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+                <School className="h-6 w-6 text-primary" />
+            </div>
             <div>
-              <h2 className="text-sm md:text-base font-bold text-foreground mb-1.5">Recommended Group Sessions</h2>
-              {isLoadingGroupSessions && (
-                <div className="flex space-x-3 overflow-hidden">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={`gs-skeleton-${i}`} className="w-[200px] sm:w-[220px] md:w-[240px] flex-shrink-0"><GroupSessionCardSkeleton /></div>
-                  ))}
-                </div>
-              )}
-              {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length > 0 && (
-                <div className="relative">
-                  <div ref={sessionScrollContainerRef} className="overflow-x-auto pb-2 no-scrollbar flex space-x-3">
-                      {suggestedGroupSessionsData.map((session) => (
-                         <div key={session.id} className="w-[200px] sm:w-[220px] md:w-[240px] flex-shrink-0">
-                           <GroupSessionCard session={session} />
-                         </div>
-                      ))}
-                  </div>
-                   {suggestedGroupSessionsData.length > 2 && (
-                      <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', sessionScrollContainerRef, setSessionScrollPosition)} disabled={sessionScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronLeft className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', sessionScrollContainerRef, setSessionScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronRight className="h-3 w-3" />
-                          </Button>
-                      </>
-                  )}
-                </div>
-              )}
-              {!isLoadingGroupSessions && suggestedGroupSessionsData && suggestedGroupSessionsData.length === 0 && (
-                <p className="text-muted-foreground text-xs">No group session recommendations for you right now. Check back later!</p>
-              )}
+                <CardTitle className="text-xl text-primary">Dream University Guidance</CardTitle>
+                <CardDescription className="text-sm">
+                Connect with alumni and mentors experienced in university admissions.
+                </CardDescription>
             </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Get insights into application processes, essay writing, interview preparation, and more for your target universities from those who have been there.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary/5">
+              <Link href="/dashboard/mentors?mentorshipFocus=university">
+                Find University Mentors <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
+      
+      {/* Scrolling Universities Section */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-foreground flex items-center">
+            <Sparkles className="mr-2 h-5 w-5 text-primary" /> Universities in Our Network
+        </h2>
+        <HorizontalScrollItems items={MOCK_UNIVERSITIES} />
+      </section>
 
-            {/* Recommended Webinars */}
-            <div>
-              <h2 className="text-sm md:text-base font-bold text-foreground mb-1.5">Recommended Webinars</h2>
-               {isLoadingWebinars && (
-                <div className="flex space-x-3 overflow-hidden">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={`webinar-skeleton-${i}`} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0"><WebinarCardSkeleton /></div>
-                  ))}
-                </div>
-              )}
-              {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length > 0 && (
-                <div className="relative">
-                  <div ref={webinarScrollContainerRef} className="overflow-x-auto pb-2 no-scrollbar flex space-x-3">
-                      {suggestedWebinarsData.map((webinar) => (
-                         <div key={webinar.id} className="w-[270px] sm:w-[300px] md:w-[330px] flex-shrink-0">
-                           <WebinarCard webinar={webinar} />
-                         </div>
-                      ))}
-                  </div>
-                  {suggestedWebinarsData.length > 2 && (
-                      <>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('left', webinarScrollContainerRef, setWebinarScrollPosition)} disabled={webinarScrollPosition === 0} className="absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronLeft className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleScroll('right', webinarScrollContainerRef, setWebinarScrollPosition)} className="absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full bg-background/70 hover:bg-background shadow-md hidden md:flex h-5 w-5">
-                              <ChevronRight className="h-3 w-3" />
-                          </Button>
-                      </>
-                  )}
-                </div>
-              )}
-              {!isLoadingWebinars && suggestedWebinarsData && suggestedWebinarsData.length === 0 && (
-                <p className="text-muted-foreground text-xs">No webinar recommendations for you at this time. Explore upcoming events!</p>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Quick Links / Other Actions (Simplified) */}
+      <section>
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-xl">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-3">
+                <Button variant="outline" asChild><Link href="/dashboard/mentors">Browse All Mentors</Link></Button>
+                <Button variant="outline" asChild><Link href="/dashboard/group-sessions">View Group Sessions</Link></Button>
+                <Button variant="outline" asChild><Link href="/dashboard/webinars">Explore Webinars</Link></Button>
+                <Button variant="outline" asChild><Link href="/dashboard/schedule">My Schedule</Link></Button>
+            </CardContent>
+        </Card>
+      </section>
 
-      {/* Featured Sessions Section (for Mentees) */}
-      {user.role === 'mentee' && (
-        <section className="py-4 md:py-6 bg-muted/40">
-          <div className="container mx-auto px-4 sm:px-6">
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-2">Featured Sessions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {menteeFeaturedSessionsData.map((session) => (
-                <Card key={session.title} className="shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
-                  <CardHeader className="p-2">
-                    <CardTitle className="text-xs text-primary">{session.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-grow p-2 pt-0">
-                    <p className="text-muted-foreground text-[11px] line-clamp-2 mb-1">{session.description}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between items-center text-xs border-t p-2 mt-auto">
-                    <span className="text-muted-foreground text-[10px]">{session.details}</span>
-                    <span className="font-semibold text-primary text-[10px]">{session.price}</span>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Frequently Asked Questions Section (for Mentees) */}
-      {user.role === 'mentee' && (
-        <section className="py-4 md:py-6 bg-background">
-          <div className="container mx-auto px-4 sm:px-6">
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-2 text-left">Frequently Asked Questions</h2>
-            <Accordion type="single" collapsible className="w-full space-y-1">
-              {menteeFaqData.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="bg-muted/30 rounded-md px-2 shadow-sm hover:shadow-md transition-shadow">
-                  <AccordionTrigger className="text-left hover:no-underline text-xs font-semibold text-foreground py-1.5">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground text-xs pt-0 pb-1.5">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-            <div className="text-center mt-3">
-              <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 h-auto text-xs" asChild>
-                <Link href="/how-it-works">Read more</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
-

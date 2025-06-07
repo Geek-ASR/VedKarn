@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -127,6 +128,14 @@ export default {
             transform: 'translateY(0)',
           }
         },
+        'scrollLeft': {
+            '0%': { transform: 'translateX(0)' },
+            '100%': { transform: 'translateX(-50%)' },
+        },
+        'scrollRight': {
+            '0%': { transform: 'translateX(-50%)' },
+            '100%': { transform: 'translateX(0)' },
+        },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
@@ -134,6 +143,8 @@ export default {
         'fadeInUp': 'fadeInUp 0.6s ease-out forwards',
         'textColorEmphasisWave': 'textColorEmphasisWave 2s ease-out forwards',
         'textColorEmphasisWaveAccentEnd': 'textColorEmphasisWaveAccentEnd 2s ease-out forwards',
+        'scrollLeft': 'scrollLeft var(--animation-duration, 40s) linear infinite',
+        'scrollRight': 'scrollRight var(--animation-duration, 40s) linear infinite',
   		}
   	}
   },
