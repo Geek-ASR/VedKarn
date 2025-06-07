@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth, MOCK_USERS as CONTEXT_MOCK_USERS } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context";
 import type { MentorProfile, AvailabilitySlot, Booking } from "@/lib/types";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format, parseISO, addHours } from 'date-fns';
+import { format, parseISO, addHours, isSameDay, startOfDay } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
@@ -36,8 +36,8 @@ export default function MentorProfilePage() {
   useEffect(() => {
     if (mentorId) {
       setTimeout(() => {
-        const foundMentorByEmail = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
-        setMentor(foundMentorByEmail || null);
+        const foundMentor = Object.values(MOCK_USERS_INSTANCE).find(m => m.id === mentorId && m.role === 'mentor') as MentorProfile | undefined;
+        setMentor(foundMentor || null);
         setLoading(false);
       }, 300);
     }
@@ -103,7 +103,7 @@ export default function MentorProfilePage() {
   }
   
   const availableSlotsForDate = mentor.availabilitySlots?.filter(slot => 
-    !slot.isBooked && selectedDate && format(parseISO(slot.startTime), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+    !slot.isBooked && selectedDate && isSameDay(parseISO(slot.startTime), selectedDate)
   ) || [];
 
   const hasCareerFocus = mentor.mentorshipFocus?.includes('career');
@@ -256,9 +256,9 @@ export default function MentorProfilePage() {
                       onSelect={date => { setSelectedDate(date); setSelectedSlot(null); }}
                       initialFocus
                       disabled={(date) => 
-                        date < new Date(new Date().setDate(new Date().getDate() -1)) || 
+                        date < startOfDay(new Date()) || // Disable dates strictly before today
                         !(mentor.availabilitySlots?.some(slot => 
-                            !slot.isBooked && format(parseISO(slot.startTime), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
+                            !slot.isBooked && isSameDay(parseISO(slot.startTime), date))
                         )
                       }
                     />
